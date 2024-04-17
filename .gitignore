@@ -1,6 +1,3 @@
 /local_test
 __pycache__
-.pytest_cache
 db.*
-.nonogram_pgpass
-.env
