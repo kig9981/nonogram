@@ -1,5 +1,5 @@
 import pytest
-from src.NonogramServer.NonogramServer.views import get_nonogram_board
+from NonogramServer.views import get_nonogram_board
 from django.test.client import RequestFactory
 
 
@@ -8,6 +8,7 @@ def mock_request():
     return RequestFactory()
 
 
+@pytest.mark.django_db
 def test_get_nonogram_board(mock_request: RequestFactory):
     url = '/get_nonogram_board/'
     request = mock_request.post(
@@ -16,4 +17,4 @@ def test_get_nonogram_board(mock_request: RequestFactory):
         content_type="Application/json",
     )
     response = get_nonogram_board(request)
-    assert response.content == b"get_nonogram_board"
+    assert response.content == b"get_nonogram_board(post)"
