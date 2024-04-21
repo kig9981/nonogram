@@ -12,6 +12,8 @@ pytest = "^8.1.1"
 pytest-django = "^4.8.0"
 flake8 = "^7.0.0"
 django-redis = "^5.4.0"
+psycopg2-binary = "^2.9.9"
+django-environ = "^0.11.2"
 
 
 [build-system]
