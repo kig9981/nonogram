@@ -1,5 +1,4 @@
 from NonogramServer.models import NonogramBoard
-import json
 from Nonogram.utils import deserialize_gameboard
 
 
