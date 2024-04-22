@@ -19,9 +19,11 @@ class GameBoardCellStatus(IntEnum):
 
 def validate_gameboard(
     board: List[List[Union[int, RealBoardCellStatus]]]
-) -> None:
+) -> bool:
     if not board or not isinstance(board, list):
         raise ValueError("Invalid gameboard(Invalid type).")
+
+    valid_gameboard = True
 
     row_length = len(board[0])
 
@@ -34,6 +36,10 @@ def validate_gameboard(
                 raise ValueError("Invalid gameboard(Invalid item type)")
             if isinstance(item, int) and not (-1 <= item <= 1):
                 raise ValueError("Invalid gameboard(Invalid range(-1 ~ 1))")
+            if int(item) == -1:
+                valid_gameboard = False
+
+    return valid_gameboard
 
 
 def deserialize_gameboard(
