@@ -32,10 +32,10 @@ def validate_gameboard(
             raise ValueError("Invalid gameboard(Row length error).")
 
         for item in row:
-            if not isinstance(item, int) or not isinstance(item, RealBoardCellStatus):
-                raise ValueError("Invalid gameboard(Invalid item type)")
+            if not isinstance(item, int) and not isinstance(item, RealBoardCellStatus):
+                raise ValueError("Invalid gameboard(Invalid item type).")
             if isinstance(item, int) and not (-1 <= item <= 1):
-                raise ValueError("Invalid gameboard(Invalid range(-1 ~ 1))")
+                raise ValueError("Invalid gameboard(Invalid range(-1 ~ 1)).")
             if int(item) == -1:
                 valid_gameboard = False
 
