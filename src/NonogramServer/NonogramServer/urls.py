@@ -21,4 +21,5 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("get_nonogram_board/", views.get_nonogram_board, name="get_nonogram_board"),
+    path("set_cell_status/", views.set_cell_status, name="set_cell_status"),
 ]
