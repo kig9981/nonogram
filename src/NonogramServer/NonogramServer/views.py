@@ -18,3 +18,17 @@ def set_cell_status(request: HttpRequest):
         return HttpResponse("set_cell_status(get)")
     else:
         return HttpResponse("set_cell_status(post)")
+
+
+def create_new_session(request: HttpRequest):
+    if request.method == "GET":
+        return HttpResponse("create_new_session(get)")
+    else:
+        return HttpResponse("create_new_session(post)")
+
+
+def create_new_game(request: HttpRequest):
+    if request.method == "GET":
+        return HttpResponse("create_new_game(get)")
+    else:
+        return HttpResponse("create_new_game(post)")
