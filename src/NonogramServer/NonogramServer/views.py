@@ -6,6 +6,28 @@ from .models import NonogramBoard
 
 # Create your views here.
 def get_nonogram_board(request: HttpRequest):
+    '''
+    노노그램 보드에 대한 정보를 반환하는 메서드.
+    Args:
+        Application/json으로 요청을 받는 것을 전제로 한다.
+        session_id (int): 유저의 세션 id
+        board_id (int): 게임보드의 id, session_id가 0인 경우에 참조한다.
+        game_turn (int): 원하는 턴 수. session_id가 0이 아닌 경우 참조한다.
+
+    Returns:
+        session_id가 0이 아닌경우, 해당 session_id가 존재하지 않는다면 404에러(session_id not found)를 반환.
+        존재한다면 board_id와 game_turn을 참조해서 게임 진행 상황을 반환.
+        board_id가 존재하지 않는다면 404에러(board_id not found)를 반환.
+        game_turn이 0인 경우 현재 플레이어의 게임보드를 리턴.
+        game_turn이 음수이거나 현재 진행 턴보다 큰 경우 400에러(invalid game_turn)를 반환.
+        이외의 경우에는 선택한 턴의 게임 진행 정보를 반환.
+
+        성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
+        board (list[list]): [요청한 게임보드/게임 진행 정보를 반영한 게임보드]를 2차원 배열로 반환.
+                            각 원소의 값은 Nonogram.utils의 GameBoardCellStatus, RealBoardCellStatus 참조.
+        num_row (int): 게임보드의 행 수
+        num_column (int): 게임보드의 열 수
+    '''
     # NonogramBoard.objects.get(pk=-1)
     if request.method == "GET":
         return HttpResponse("get_nonogram_board(get)")
@@ -14,6 +36,26 @@ def get_nonogram_board(request: HttpRequest):
 
 
 def set_cell_status(request: HttpRequest):
+    '''
+    진행중인 게임의 특정 cell의 상태를 변화시키는 메서드.
+    Args:
+        Application/json으로 요청을 받는 것을 전제로 한다.
+        session_id (int): 유저의 세션 id
+        x_coord (int): 변화시키는 x좌표
+        y_coord (int): 변화시키는 y좌표
+        new_status (int): 변화시킬 상태, Nonogram.utils.GameBoardCellStatus 참고
+    Returns:
+        해당 session_id가 존재하지 않는다면 404에러(session_id not found)를 반환.
+        현재 진행중인 게임이 없다면 404에러(gameplay not found)를 반환.
+        좌표가 유효하지 않을 경우 400에러(invalid coordinate)를 반환.
+        상태가 유효하지 않을 경우 400에러(invalid status)를 반환.
+        이외의 경우에는 결과를 반환.
+
+        성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
+        response (int): 적용 여부에 따라 응답 코드를 반환.
+                        0=UNCHANGED
+                        1=APPLIED
+    '''
     if request.method == "GET":
         return HttpResponse("set_cell_status(get)")
     else:
@@ -21,6 +63,14 @@ def set_cell_status(request: HttpRequest):
 
 
 def create_new_session(request: HttpRequest):
+    '''
+    새로운 세션을 생성하는 메서드.
+    Args:
+        None
+    Returns:
+        요청한 사항에 대한 응답을 json형식으로 리턴.
+        session_id: 생성에 성공한 경우 해당 session_id, 실패한 경우 0을 반환
+    '''
     if request.method == "GET":
         return HttpResponse("create_new_session(get)")
     else:
@@ -28,6 +78,21 @@ def create_new_session(request: HttpRequest):
 
 
 def create_new_game(request: HttpRequest):
+    '''
+    특정 세션에서 새 게임을 시작하는 메서드.
+    Args:
+        Application/json으로 요청을 받는 것을 전제로 한다.
+        session_id (int): 유저의 세션 id
+        force_new_game (bool): 이미 진행중인 게임을 강제로 종료 후 시작할지 여부
+    Returns:
+        요청한 사항에 대한 응답을 json형식으로 리턴.
+        session_id: 생성에 성공한 경우 해당 session_id, 실패한 경우 0을 반환
+
+        성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
+        response (int): 적용 여부에 따라 응답 코드를 반환.
+                        0=GAME_EXIST
+                        1=NEW_GAME_STARTED
+    '''
     if request.method == "GET":
         return HttpResponse("create_new_game(get)")
     else:
