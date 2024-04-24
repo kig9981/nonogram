@@ -20,6 +20,7 @@ def test_get_nonogram_board(mock_request: RequestFactory):
     response = get_nonogram_board(request)
     assert response.content == b"get_nonogram_board(post)"
 
+
 @pytest.mark.django_db
 def test_set_cell_status(mock_request: RequestFactory):
     url = '/set_cell_status/'
