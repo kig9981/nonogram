@@ -2,6 +2,8 @@ from enum import IntEnum
 import json
 from typing import List
 from typing import Union
+from django.db.models import Model
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class RealBoardCellStatus(IntEnum):
@@ -75,3 +77,15 @@ def serialize_gameboard(
     serialize_string = json.dumps(board)
 
     return serialize_string
+
+
+def get_from_db(
+    model_class: Model,
+    label: str,
+    **kwargs,
+):
+    try:
+        query = model_class.objects.get(**kwargs)
+    except ObjectDoesNotExist:
+        raise ObjectDoesNotExist(label)
+    return query
