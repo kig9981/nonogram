@@ -40,9 +40,17 @@ class Session(models.Model):
 
 
 class History(models.Model):
-    gameplay_id = models.IntegerField(primary_key=True)
     session_id = models.ForeignKey("Session", on_delete=models.CASCADE)
-    number_of_turn = models.IntegerField()
+    gameplay_id = models.IntegerField()
+    current_turn = models.IntegerField()
     type_of_move = models.IntegerField(choices=MoveType)
     x_coord = models.IntegerField()
     y_coord = models.IntegerField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['session_id', 'gameplay_id', 'current_turn'],
+                name="(session, game, turn) tuple"
+            ),
+        ]
