@@ -26,7 +26,7 @@ class NonogramBoard(models.Model):
             raise ValidationError("Invalid board data (" + str(error) + ")")
         row, column = len(board), len(board[0])
 
-        if row is not self.num_row or column is not self.num_column:
+        if row != self.num_row or column != self.num_column:
             raise ValidationError("Mismatch between provided row and column counts and actual board data")
 
 
