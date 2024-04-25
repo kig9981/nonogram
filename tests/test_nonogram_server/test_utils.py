@@ -14,7 +14,7 @@ def test_validate_gameboard():
         result = validate_gameboard(board)
         assert result
     except ValueError as error:
-        assert "valid gameboard: should not make exception(" + str(error) + ")" and 0
+        assert f"valid gameboard: should not make exception({error})" and 0
 
     board = [
         [1, -1],
