@@ -1,7 +1,77 @@
 from django.shortcuts import render
 from django.http import HttpRequest
 from django.http import HttpResponse
+from django.http import JsonResponse
+from django.http import HttpResponseNotFound
+from django.http import HttpResponseBadRequest
+from django.core.exceptions import ObjectDoesNotExist
 from .models import NonogramBoard
+from .models import Session
+from .models import History
+from Nonogram.utils import get_from_db
+import json
+
+
+def process_board_query(
+    query: dict,
+) -> HttpResponse:
+    board_id = query['board_id']
+
+    board_data = get_from_db(
+        model_class=NonogramBoard,
+        label=f"board_id {board_id}",
+        board_id=board_id,
+    )
+
+    response_data = {
+        "board": board_data.board,
+        "num_row": board_data.num_row,
+        "num_column": board_data.num_column,
+    }
+
+    return JsonResponse(json.dumps(response_data))
+
+
+def process_gameplay_query(
+    query: dict,
+) -> HttpResponse:
+    GAME_NOT_START = 0
+    session_id = query['session_id']
+    game_turn = query['game_turn']
+
+    session = get_from_db(
+        model_class=Session,
+        label=f"session_id {session_id}",
+        session_id=session_id,
+    )
+
+    if game_turn == GAME_NOT_START:
+        board_data = NonogramBoard.objects.get(pk=session.board_id)
+
+        response_data = {
+            "board": board_data.board,
+            "num_row": board_data.num_row,
+            "num_column": board_data.num_column,
+        }
+
+        return JsonResponse(json.dumps(response_data))
+
+    latest_turn_info = History.objects.get(pk=session.current_game_id)
+    latest_turn = latest_turn_info.number_of_turn
+
+    if game_turn < 0 or game_turn > latest_turn:
+        return HttpResponseBadRequest(f"invalid game_turn. must be between 0 to {latest_turn}(latest turn)")
+
+    board = None
+
+    if game_turn == latest_turn:
+        # TODO: 게임보드 로직 구현
+        pass
+    else:
+        # TODO: 게임보드 로직 구현
+        pass
+
+    # TODO: json포맷으로 변경 후 리턴하는 로직 구현
 
 
 # Create your views here.
@@ -28,11 +98,21 @@ def get_nonogram_board(request: HttpRequest):
         num_row (int): 게임보드의 행 수
         num_column (int): 게임보드의 열 수
     '''
-    # NonogramBoard.objects.get(pk=-1)
     if request.method == "GET":
         return HttpResponse("get_nonogram_board(get)")
     else:
-        return HttpResponse("get_nonogram_board(post)")
+        BOARD_ID_QUERY = 0
+        query = json.loads(request.body)
+        try:
+            session_id = query['session_id']
+            if session_id == BOARD_ID_QUERY:
+                return process_board_query(query)
+            else:
+                return process_gameplay_query(query)
+        except KeyError as error:
+            return HttpResponseBadRequest(f"{error} is missing.")
+        except ObjectDoesNotExist as error:
+            return HttpResponseNotFound(f"{error} not found.")
 
 
 def set_cell_status(request: HttpRequest):
