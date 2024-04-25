@@ -23,7 +23,7 @@ class NonogramBoard(models.Model):
         try:
             board = deserialize_gameboard(self.board)
         except ValueError as error:
-            raise ValidationError("Invalid board data (" + str(error) + ")")
+            raise ValidationError(f"Invalid board data ({error})")
         row, column = len(board), len(board[0])
 
         if row != self.num_row or column != self.num_column:
