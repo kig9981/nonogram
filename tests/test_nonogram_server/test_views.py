@@ -80,20 +80,16 @@ def test_get_nonogram_board(mock_request: RequestFactory):
         query_dict=query_dict,
     )
 
-    assert (response.status_code == HTTPStatus.NOT_FOUND
-    and response.content.decode() == f"board_id {BOARD_ID_UNUSED_FOR_TEST} not found.")
+    assert (
+        response.status_code == HTTPStatus.NOT_FOUND and
+        response.content.decode() == f"board_id {BOARD_ID_UNUSED_FOR_TEST} not found."
+    )
 
     for test_board in test_boards:
         query_dict = {
             "session_id": 0,
             "board_id": test_board['board_id'],
         }
-        query = json.dumps(query_dict)
-        request = mock_request.post(
-            path=url,
-            data=query,
-            content_type="Application/json",
-        )
         response = send_test_request(
             mock_request=mock_request,
             request_function=get_nonogram_board,
