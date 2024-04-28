@@ -29,7 +29,7 @@ def process_board_query(
         "num_column": board_data.num_column,
     }
 
-    return JsonResponse(json.dumps(response_data))
+    return JsonResponse(response_data)
 
 
 def process_gameplay_query(
@@ -54,7 +54,7 @@ def process_gameplay_query(
             "num_column": board_data.num_column,
         }
 
-        return JsonResponse(json.dumps(response_data))
+        return JsonResponse(response_data)
 
     latest_turn_info = History.objects.get(pk=session.current_game_id)
     latest_turn = latest_turn_info.number_of_turn
