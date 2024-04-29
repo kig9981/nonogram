@@ -39,6 +39,7 @@ def send_test_request(
 def test_get_nonogram_board(
     mock_request: RequestFactory,
     test_boards,
+    add_test_data,
 ):
     url = '/get_nonogram_board/'
 
