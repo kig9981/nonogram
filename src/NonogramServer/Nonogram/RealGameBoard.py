@@ -1,5 +1,6 @@
 from NonogramServer.models import NonogramBoard
 from Nonogram.utils import deserialize_gameboard
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class RealGameBoard:
@@ -12,7 +13,7 @@ class RealGameBoard:
             board_str = NonogramBoard.objects.get(pk=board_id)
             self.board = deserialize_gameboard(board_str)
 
-        except NonogramBoard.DoesNotExist:
-            raise "board_id not exist"
+        except ObjectDoesNotExist:
+            raise ObjectDoesNotExist("board_id not exist")
         except ValueError as error:
             raise error
