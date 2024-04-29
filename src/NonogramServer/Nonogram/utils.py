@@ -89,3 +89,57 @@ def get_from_db(
     except ObjectDoesNotExist:
         raise ObjectDoesNotExist(label)
     return query
+
+
+def validate_gameplay(
+    board: List[List[Union[int, GameBoardCellStatus]]]
+) -> None:
+    if not board or not isinstance(board, list):
+        raise ValueError("Invalid gameplay(Invalid type).")
+
+    row_length = len(board[0])
+
+    for row in board:
+        if len(row) != row_length:
+            raise ValueError("Invalid gameplay(Row length error).")
+
+        for item in row:
+            if not isinstance(item, int) and not isinstance(item, GameBoardCellStatus):
+                raise ValueError("Invalid gameplay(Invalid item type).")
+            if isinstance(item, int) and not (0 <= item <= 3):
+                raise ValueError("Invalid gameplay(Invalid range(0 ~ 3)).")
+
+
+def deserialize_gameplay(
+    serialized_string: str
+) -> List[List[GameBoardCellStatus]]:
+    board = json.loads(serialized_string)
+    try:
+        validate_gameplay(board)
+    except ValueError as error:
+        raise ValueError("Failed to deserialize : " + str(error))
+
+    board = [
+        [GameBoardCellStatus(item) for item in row]
+        for row in board
+    ]
+
+    return board
+
+
+def serialize_gameplay(
+    board: List[List[GameBoardCellStatus]]
+) -> str:
+    try:
+        validate_gameboard(board)
+    except ValueError as error:
+        raise ValueError("Failed to serialize : " + str(error))
+
+    board = [
+        [int(item) for item in row]
+        for row in board
+    ]
+
+    serialize_string = json.dumps(board)
+
+    return serialize_string
