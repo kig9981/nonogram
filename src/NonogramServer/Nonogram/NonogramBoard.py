@@ -3,7 +3,7 @@ from Nonogram.utils import GameBoardCellState
 from Nonogram.utils import RealBoardCellState
 
 
-class NonogramBoard:
+class NonogramGameplay:
     def __init__(
         self,
         board_id: int,

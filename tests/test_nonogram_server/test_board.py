@@ -1,5 +1,5 @@
 import pytest
-from Nonogram.NonogramBoard import NonogramBoard
+from Nonogram.NonogramBoard import NonogramGameplay
 from Nonogram.utils import deserialize_gameboard
 from Nonogram.utils import GameBoardCellState
 from Nonogram.utils import RealBoardCellState
@@ -13,7 +13,7 @@ def test_nonogram_board_mark(test_boards):
         num_row = test_board["num_row"]
         num_column = test_board["num_column"]
 
-        game_board = NonogramBoard(board_id)
+        game_board = NonogramGameplay(board_id)
 
         for x in range(num_row):
             for y in range(num_column):

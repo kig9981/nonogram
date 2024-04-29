@@ -21,7 +21,7 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("get_nonogram_board/", views.get_nonogram_board, name="get_nonogram_board"),
-    path("set_cell_status/", views.set_cell_status, name="set_cell_status"),
+    path("set_cell_state/", views.set_cell_state, name="set_cell_state"),
     path("create_new_session/", views.create_new_session, name="create_new_session"),
     path("create_new_game/", views.create_new_game, name="create_new_game"),
 ]
