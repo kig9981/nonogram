@@ -5,7 +5,10 @@ from Nonogram.utils import RealBoardCellState
 
 
 @pytest.mark.django_db
-def test_nonogram_board_mark(test_boards):
+def test_nonogram_board_mark(
+    test_boards,
+    add_test_data,
+):
     for test_board in test_boards:
         board_id = test_board["board_id"]
         board = test_board["board"]
