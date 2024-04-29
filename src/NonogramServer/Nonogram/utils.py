@@ -6,13 +6,13 @@ from django.db.models import Model
 from django.core.exceptions import ObjectDoesNotExist
 
 
-class RealBoardCellStatus(IntEnum):
+class RealBoardCellState(IntEnum):
     UNKNOWN = -1
     WHITE = 0
     BLACK = 1
 
 
-class GameBoardCellStatus(IntEnum):
+class GameBoardCellState(IntEnum):
     NOT_SELECTED = 0
     REVEALED = 1
     MARK_X = 2
@@ -20,7 +20,7 @@ class GameBoardCellStatus(IntEnum):
 
 
 def validate_gameboard(
-    board: List[List[Union[int, RealBoardCellStatus]]]
+    board: List[List[Union[int, RealBoardCellState]]]
 ) -> bool:
     if not board or not isinstance(board, list):
         raise ValueError("Invalid gameboard(Invalid type).")
@@ -34,7 +34,7 @@ def validate_gameboard(
             raise ValueError("Invalid gameboard(Row length error).")
 
         for item in row:
-            if not isinstance(item, int) and not isinstance(item, RealBoardCellStatus):
+            if not isinstance(item, int) and not isinstance(item, RealBoardCellState):
                 raise ValueError("Invalid gameboard(Invalid item type).")
             if isinstance(item, int) and not (-1 <= item <= 1):
                 raise ValueError("Invalid gameboard(Invalid range(-1 ~ 1)).")
@@ -46,7 +46,7 @@ def validate_gameboard(
 
 def deserialize_gameboard(
     serialized_string: str
-) -> List[List[RealBoardCellStatus]]:
+) -> List[List[RealBoardCellState]]:
     board = json.loads(serialized_string)
     try:
         validate_gameboard(board)
@@ -54,7 +54,7 @@ def deserialize_gameboard(
         raise ValueError("Failed to deserialize : " + str(error))
 
     board = [
-        [RealBoardCellStatus(item) for item in row]
+        [RealBoardCellState(item) for item in row]
         for row in board
     ]
 
@@ -62,7 +62,7 @@ def deserialize_gameboard(
 
 
 def serialize_gameboard(
-    board: List[List[RealBoardCellStatus]]
+    board: List[List[RealBoardCellState]]
 ) -> str:
     try:
         validate_gameboard(board)
@@ -92,7 +92,7 @@ def get_from_db(
 
 
 def validate_gameplay(
-    board: List[List[Union[int, GameBoardCellStatus]]]
+    board: List[List[Union[int, GameBoardCellState]]]
 ) -> None:
     if not board or not isinstance(board, list):
         raise ValueError("Invalid gameplay(Invalid type).")
@@ -104,7 +104,7 @@ def validate_gameplay(
             raise ValueError("Invalid gameplay(Row length error).")
 
         for item in row:
-            if not isinstance(item, int) and not isinstance(item, GameBoardCellStatus):
+            if not isinstance(item, int) and not isinstance(item, GameBoardCellState):
                 raise ValueError("Invalid gameplay(Invalid item type).")
             if isinstance(item, int) and not (0 <= item <= 3):
                 raise ValueError("Invalid gameplay(Invalid range(0 ~ 3)).")
@@ -112,7 +112,7 @@ def validate_gameplay(
 
 def deserialize_gameplay(
     serialized_string: str
-) -> List[List[GameBoardCellStatus]]:
+) -> List[List[GameBoardCellState]]:
     board = json.loads(serialized_string)
     try:
         validate_gameplay(board)
@@ -120,7 +120,7 @@ def deserialize_gameplay(
         raise ValueError("Failed to deserialize : " + str(error))
 
     board = [
-        [GameBoardCellStatus(item) for item in row]
+        [GameBoardCellState(item) for item in row]
         for row in board
     ]
 
@@ -128,7 +128,7 @@ def deserialize_gameplay(
 
 
 def serialize_gameplay(
-    board: List[List[GameBoardCellStatus]]
+    board: List[List[GameBoardCellState]]
 ) -> str:
     try:
         validate_gameboard(board)
