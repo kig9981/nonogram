@@ -9,7 +9,7 @@ from Nonogram.utils import RealBoardCellState
 def test_nonogram_board_mark(test_boards):
     for test_board in test_boards:
         board_id = test_board["board_id"]
-        board = deserialize_gameboard(test_board["board"])
+        board = test_board["board"]
         num_row = test_board["num_row"]
         num_column = test_board["num_column"]
 
