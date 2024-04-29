@@ -10,8 +10,8 @@ class RealGameBoard:
     ):
         self.board_id = board_id
         try:
-            board_str = NonogramBoard.objects.get(pk=board_id)
-            self.board = deserialize_gameboard(board_str)
+            board_data = NonogramBoard.objects.get(pk=board_id)
+            self.board = deserialize_gameboard(board_data.board)
 
         except ObjectDoesNotExist:
             raise ObjectDoesNotExist("board_id not exist")
