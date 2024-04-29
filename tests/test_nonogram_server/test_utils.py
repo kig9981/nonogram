@@ -57,7 +57,24 @@ def test_serialize_gameboard():
 
 
 def test_validate_gameplay():
-    pass
+    cwd = os.path.dirname(__file__)
+    test_data_path = os.path.join(cwd, 'test_data')
+    test_validate_gameplay_path = os.path.join(test_data_path, 'test_validate_gameplay.json')
+    with open(test_validate_gameplay_path, 'r') as f:
+        test_boards = json.load(f)
+
+    for test_board in test_boards:
+        board = test_board["board"]
+        valid = test_board["valid"]
+        try:
+            result = validate_gameplay(board)
+            if not valid:
+                assert f"test case <{board}> failed\n error message: invalid gameplay: should make exception" and False
+        except ValueError as error:
+            if valid:
+                assert f"test case <{board}> failed\n error message: valid gameplay: should not make exception" and False
+            elif str(error) != test_board["exception_message"]:
+                assert f"test case <{board}> failed\n error message: incorrect exception: should be [{test_board['exception_message']}] but [{error}]" and False
 
 
 def test_deserialize_gameplay():

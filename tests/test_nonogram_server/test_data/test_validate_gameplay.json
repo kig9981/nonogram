@@ -1,0 +1,26 @@
+[
+    {
+        "board": [[2, 0], [3, 1]],
+        "valid": true
+    },
+    {
+        "board": [[1, 3], [0, 1, 1]],
+        "valid": false,
+        "exception_message": "Invalid gameplay(Row length error)."
+    },
+    {
+        "board": 14,
+        "valid": false,
+        "exception_message": "Invalid gameplay(Invalid type)."
+    },
+    {
+        "board": [["1", 3.1], [[1], {"1": 1}]],
+        "valid": false,
+        "exception_message": "Invalid gameplay(Invalid item type)."
+    },
+    {
+        "board": [[1, -1], [0, 2]],
+        "valid": false,
+        "exception_message": "Invalid gameplay(Invalid range(0 ~ 3))."
+    }
+]
