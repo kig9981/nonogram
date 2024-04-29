@@ -124,7 +124,6 @@ def test_get_nonogram_board(
         latest_turn = 0 if session.current_game is None else session.current_game.current_turn
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
-
         assert response.content.decode() == f"invalid game_turn. must be between 0 to {latest_turn}(latest turn)"
 
 
