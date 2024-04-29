@@ -48,7 +48,7 @@ def process_gameplay_query(
         session_id=session_id,
     )
 
-    board_data = NonogramBoard.objects.get(pk=session.board_id)
+    board_data = session.board_data
 
     if game_turn == GAME_NOT_START:
         response_data = {
@@ -60,7 +60,7 @@ def process_gameplay_query(
         return JsonResponse(response_data)
 
     latest_turn_info = session.current_game
-    latest_turn = latest_turn_info.number_of_turn
+    latest_turn = 0 if latest_turn_info is None else latest_turn_info.number_of_turn
 
     if game_turn < 0 or game_turn > latest_turn:
         return HttpResponseBadRequest(f"invalid game_turn. must be between 0 to {latest_turn}(latest turn)")
