@@ -45,24 +45,26 @@ def validate_gameboard(
 
 
 def deserialize_gameboard(
-    serialized_string: str
-) -> List[List[RealBoardCellState]]:
+    serialized_string: str,
+    return_int: bool = False,
+) -> List[List[Union[RealBoardCellState, int]]]:
     board = json.loads(serialized_string)
     try:
         validate_gameboard(board)
     except ValueError as error:
         raise ValueError("Failed to deserialize : " + str(error))
 
-    board = [
-        [RealBoardCellState(item) for item in row]
-        for row in board
-    ]
+    if not return_int:
+        board = [
+            [RealBoardCellState(item) for item in row]
+            for row in board
+        ]
 
     return board
 
 
 def serialize_gameboard(
-    board: List[List[RealBoardCellState]]
+    board: List[List[Union[RealBoardCellState, int]]]
 ) -> str:
     try:
         validate_gameboard(board)
@@ -111,24 +113,26 @@ def validate_gameplay(
 
 
 def deserialize_gameplay(
-    serialized_string: str
-) -> List[List[GameBoardCellState]]:
+    serialized_string: str,
+    return_int: bool = False,
+) -> List[List[Union[GameBoardCellState, int]]]:
     board = json.loads(serialized_string)
     try:
         validate_gameplay(board)
     except ValueError as error:
         raise ValueError("Failed to deserialize : " + str(error))
 
-    board = [
-        [GameBoardCellState(item) for item in row]
-        for row in board
-    ]
+    if not return_int:
+        board = [
+            [GameBoardCellState(item) for item in row]
+            for row in board
+        ]
 
     return board
 
 
 def serialize_gameplay(
-    board: List[List[GameBoardCellState]]
+    board: List[List[Union[GameBoardCellState, int]]]
 ) -> str:
     try:
         validate_gameboard(board)
