@@ -57,7 +57,7 @@ def add_test_data(
     from NonogramServer.models import History
     from Nonogram.NonogramBoard import NonogramGameplay
     from Nonogram.utils import serialize_gameplay
-    from Nonogram.utils import deserialize_gameplay
+
     for test_board in test_boards:
         nonogram_board = NonogramBoard(
             board_id=test_board['board_id'],
@@ -89,8 +89,7 @@ def add_test_data(
             x = move["x"]
             y = move["y"]
             new_state = move["state"]
-            assert current_turn >= 0
-            print(session_data.session_id, gameplay_id+1, current_turn+1)
+
             history = History(
                 current_session=session_data,
                 gameplay_id=gameplay_id + 1,
