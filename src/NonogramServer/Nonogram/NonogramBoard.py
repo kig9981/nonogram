@@ -1,6 +1,6 @@
-from RealGameBoard import RealGameBoard
-from utils import GameBoardCellState
-from utils import RealBoardCellState
+from Nonogram.RealGameBoard import RealGameBoard
+from Nonogram.utils import GameBoardCellState
+from Nonogram.utils import RealBoardCellState
 
 
 class NonogramBoard:
