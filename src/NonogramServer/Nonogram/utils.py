@@ -135,7 +135,7 @@ def serialize_gameplay(
     board: List[List[Union[GameBoardCellState, int]]]
 ) -> str:
     try:
-        validate_gameboard(board)
+        validate_gameplay(board)
     except ValueError as error:
         raise ValueError("Failed to serialize : " + str(error))
 
