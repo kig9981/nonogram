@@ -3,7 +3,11 @@ import json
 from src.NonogramServer.Nonogram.utils import validate_gameboard
 from src.NonogramServer.Nonogram.utils import deserialize_gameboard
 from src.NonogramServer.Nonogram.utils import serialize_gameboard
+from src.NonogramServer.Nonogram.utils import validate_gameplay
+from src.NonogramServer.Nonogram.utils import deserialize_gameplay
+from src.NonogramServer.Nonogram.utils import serialize_gameplay
 from src.NonogramServer.Nonogram.utils import RealBoardCellStatus
+from src.NonogramServer.Nonogram.utils import GameBoardCellStatus
 
 
 def test_validate_gameboard():
@@ -57,8 +61,22 @@ def test_validate_gameplay():
 
 
 def test_deserialize_gameplay():
-    pass
+    board = [
+        [1, 1],
+        [1, 1],
+    ]
+
+    board_str = "[[1, 1], [1, 1]]"
+
+    assert deserialize_gameplay(board_str) == board
 
 
 def test_serialize_gameplay():
-    pass
+    board = [
+        [GameBoardCellStatus.REVEALED, GameBoardCellStatus.REVEALED],
+        [GameBoardCellStatus.REVEALED, GameBoardCellStatus.REVEALED],
+    ]
+
+    board_str = "[[1, 1], [1, 1]]"
+
+    assert serialize_gameboard(board) == board_str
