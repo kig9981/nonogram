@@ -17,6 +17,6 @@ class RealGameBoard:
             raise ObjectDoesNotExist("board_id not exist")
         except ValueError as error:
             raise error
-        
+
         self.num_row = len(self.board)
         self.num_column = len(self.board[0])

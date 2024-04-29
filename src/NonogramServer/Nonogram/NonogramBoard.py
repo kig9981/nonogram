@@ -22,7 +22,7 @@ class NonogramGameplay:
         self,
         x: int,
         y: int,
-        new_state: GameBoardCellState,      
+        new_state: GameBoardCellState,
     ) -> bool:
         if not (0 <= x < self.num_row) or not (0 <= y < self.num_column):
             raise ValueError("incorrect coordinate")
@@ -37,4 +37,3 @@ class NonogramGameplay:
             return False
         self.playboard[x][y] = new_state
         return current_cell_state != new_state
-
