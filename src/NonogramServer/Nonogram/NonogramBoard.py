@@ -1,5 +1,6 @@
 from RealGameBoard import RealGameBoard
 from utils import GameBoardCellState
+from utils import RealBoardCellState
 
 
 class NonogramBoard:
@@ -22,4 +23,18 @@ class NonogramBoard:
         x: int,
         y: int,
         new_state: GameBoardCellState,      
-    ):
+    ) -> bool:
+        if not (0 <= x < self.num_row) or not (0 <= y < self.num_column):
+            raise ValueError("incorrect coordinate")
+        current_cell_state = self.playboard[x][y]
+        current_cell = self.board.board[x][y]
+        if current_cell_state == GameBoardCellState.REVEALED:
+            return False
+        if new_state == GameBoardCellState.REVEALED:
+            if current_cell == RealBoardCellState.BLACK:
+                self.playboard[x][y] = new_state
+                return True
+            return False
+        self.playboard[x][y] = new_state
+        return current_cell_state != new_state
+
