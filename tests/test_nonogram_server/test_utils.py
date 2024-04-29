@@ -89,3 +89,15 @@ def test_serialize_gameboard():
     board_str = "[[1, 1], [1, 1]]"
 
     assert serialize_gameboard(board) == board_str
+
+
+def test_validate_gameplay():
+    pass
+
+
+def test_deserialize_gameplay():
+    pass
+
+
+def test_serialize_gameplay():
+    pass
