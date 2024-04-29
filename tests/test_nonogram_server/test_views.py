@@ -4,7 +4,7 @@ import os
 from typing import Dict
 from http import HTTPStatus
 from NonogramServer.views import get_nonogram_board
-from NonogramServer.views import set_cell_status
+from NonogramServer.views import set_cell_state
 from NonogramServer.views import create_new_session
 from NonogramServer.views import create_new_game
 from django.test.client import RequestFactory
@@ -82,8 +82,8 @@ def test_get_nonogram_board(
 
 
 @pytest.mark.django_db
-def test_set_cell_status(mock_request: RequestFactory):
-    url = '/set_cell_status/'
+def test_set_cell_state(mock_request: RequestFactory):
+    url = '/set_cell_state/'
     query_dict = {"session_id": 0}
     query = json.dumps(query_dict)
     request = mock_request.post(
@@ -91,8 +91,8 @@ def test_set_cell_status(mock_request: RequestFactory):
         data=query,
         content_type="Application/json",
     )
-    response = set_cell_status(request)
-    assert response.content == b"set_cell_status(post)"
+    response = set_cell_state(request)
+    assert response.content == b"set_cell_state(post)"
 
 
 @pytest.mark.django_db
