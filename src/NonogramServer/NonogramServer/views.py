@@ -9,6 +9,8 @@ from .models import NonogramBoard
 from .models import Session
 from .models import History
 from Nonogram.utils import get_from_db
+from Nonogram.utils import deserialize_gameplay
+from Nonogram.NonogramBoard import NonogramGameplay
 import json
 
 
@@ -45,9 +47,9 @@ def process_gameplay_query(
         session_id=session_id,
     )
 
-    if game_turn == GAME_NOT_START:
-        board_data = NonogramBoard.objects.get(pk=session.board_id)
+    board_data = NonogramBoard.objects.get(pk=session.board_id)
 
+    if game_turn == GAME_NOT_START:
         response_data = {
             "board": board_data.board,
             "num_row": board_data.num_row,
@@ -65,13 +67,30 @@ def process_gameplay_query(
     board = None
 
     if game_turn == latest_turn:
-        # TODO: 게임보드 로직 구현
-        pass
+        board = deserialize_gameplay(latest_turn_info.board)
     else:
-        # TODO: 게임보드 로직 구현
-        pass
+        gameplay = NonogramGameplay(session.board_id)
 
-    # TODO: json포맷으로 변경 후 리턴하는 로직 구현
+        moves = History.objects.filter(
+            session_id=session.session_id,
+            gameplay_id=latest_turn_info.gameplay_id,
+            current_turn__lte=game_turn,
+        )
+
+        for move in moves:
+            gameplay.mark(
+                x=move.x_coord,
+                y=move.y_coord,
+                new_state=move.type_of_move,
+            )
+
+    response_data = {
+        "board": board,
+        "num_row": board_data.num_row,
+        "num_column": board_data.num_column,
+    }
+
+    return JsonResponse(response_data)
 
 
 # Create your views here.
@@ -94,7 +113,7 @@ def get_nonogram_board(request: HttpRequest):
 
         성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
         board (list[list]): [요청한 게임보드/게임 진행 정보를 반영한 게임보드]를 2차원 배열로 반환.
-                            각 원소의 값은 Nonogram.utils의 GameBoardCellStatus, RealBoardCellStatus 참조.
+                            각 원소의 값은 Nonogram.utils의 GameBoardCellState, RealBoardCellState 참조.
         num_row (int): 게임보드의 행 수
         num_column (int): 게임보드의 열 수
     '''
@@ -115,7 +134,7 @@ def get_nonogram_board(request: HttpRequest):
             return HttpResponseNotFound(f"{error} not found.")
 
 
-def set_cell_status(request: HttpRequest):
+def set_cell_state(request: HttpRequest):
     '''
     진행중인 게임의 특정 cell의 상태를 변화시키는 메서드.
     Args:
@@ -123,12 +142,12 @@ def set_cell_status(request: HttpRequest):
         session_id (int): 유저의 세션 id
         x_coord (int): 변화시키는 x좌표
         y_coord (int): 변화시키는 y좌표
-        new_status (int): 변화시킬 상태, Nonogram.utils.GameBoardCellStatus 참고
+        new_state (int): 변화시킬 상태, Nonogram.utils.GameBoardCellState 참고
     Returns:
         해당 session_id가 존재하지 않는다면 404에러(session_id not found)를 반환.
         현재 진행중인 게임이 없다면 404에러(gameplay not found)를 반환.
         좌표가 유효하지 않을 경우 400에러(invalid coordinate)를 반환.
-        상태가 유효하지 않을 경우 400에러(invalid status)를 반환.
+        상태가 유효하지 않을 경우 400에러(invalid state)를 반환.
         이외의 경우에는 결과를 반환.
 
         성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
@@ -137,9 +156,9 @@ def set_cell_status(request: HttpRequest):
                         1=APPLIED
     '''
     if request.method == "GET":
-        return HttpResponse("set_cell_status(get)")
+        return HttpResponse("set_cell_state(get)")
     else:
-        return HttpResponse("set_cell_status(post)")
+        return HttpResponse("set_cell_state(post)")
 
 
 def create_new_session(request: HttpRequest):
