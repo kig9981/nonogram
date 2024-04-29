@@ -9,6 +9,7 @@ from .models import NonogramBoard
 from .models import Session
 from .models import History
 from Nonogram.utils import get_from_db
+from Nonogram.utils import deserialize_gameboard
 from Nonogram.utils import deserialize_gameplay
 from Nonogram.NonogramBoard import NonogramGameplay
 import json
@@ -26,7 +27,7 @@ def process_board_query(
     )
 
     response_data = {
-        "board": board_data.board,
+        "board": deserialize_gameboard(board_data.board),
         "num_row": board_data.num_row,
         "num_column": board_data.num_column,
     }
@@ -67,7 +68,10 @@ def process_gameplay_query(
     board = None
 
     if game_turn == latest_turn:
-        board = deserialize_gameplay(latest_turn_info.board)
+        board = deserialize_gameplay(
+            serialized_string=latest_turn_info.board,
+            return_int=True,
+        )
     else:
         gameplay = NonogramGameplay(session.board_id)
 
@@ -83,6 +87,11 @@ def process_gameplay_query(
                 y=move.y_coord,
                 new_state=move.type_of_move,
             )
+
+        board = [
+            [int(gameplay.board[x][y]) for y in range(board_data.num_column)]
+            for x in range(board_data.num_row)
+        ]
 
     response_data = {
         "board": board,
