@@ -37,3 +37,9 @@ class NonogramGameplay:
             return False
         self.playboard[x][y] = new_state
         return current_cell_state != new_state
+
+    def get_int_board(self):
+        return [
+            [int(self.board[x][y]) for y in range(self.board.num_column)]
+            for x in range(self.board.num_row)
+        ]
