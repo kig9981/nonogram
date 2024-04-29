@@ -55,10 +55,8 @@ def test_get_nonogram_board(
         query_dict=query_dict,
     )
 
-    assert (
-        response.status_code == HTTPStatus.NOT_FOUND and
-        response.content.decode() == f"board_id {BOARD_ID_UNUSED_FOR_TEST} not found."
-    )
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.content.decode() == f"board_id {BOARD_ID_UNUSED_FOR_TEST} not found."
 
     for test_board in test_boards:
         query_dict = {
