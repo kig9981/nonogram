@@ -88,10 +88,7 @@ def process_gameplay_query(
                 new_state=move.type_of_move,
             )
 
-        board = [
-            [int(gameplay.board[x][y]) for y in range(board_data.num_column)]
-            for x in range(board_data.num_row)
-        ]
+        board = gameplay.get_int_board()
 
     response_data = {
         "board": board,
