@@ -1,3 +1,5 @@
+import os
+import json
 from src.NonogramServer.Nonogram.utils import validate_gameboard
 from src.NonogramServer.Nonogram.utils import deserialize_gameboard
 from src.NonogramServer.Nonogram.utils import serialize_gameboard
@@ -5,68 +7,27 @@ from src.NonogramServer.Nonogram.utils import RealBoardCellStatus
 
 
 def test_validate_gameboard():
-    board = [
-        [1, 1],
-        [1, 1],
-    ]
+    cwd = os.path.dirname(__file__)
+    test_data_path = os.path.join(cwd, 'test_data')
+    test_validate_gameboard_path = os.path.join(test_data_path, 'test_validate_gameboard.json')
+    with open(test_validate_gameboard_path, 'r') as f:
+        test_boards = json.load(f)
 
-    try:
-        result = validate_gameboard(board)
-        assert result
-    except ValueError as error:
-        assert f"valid gameboard: should not make exception({error})" and 0
-
-    board = [
-        [1, -1],
-        [0, 1],
-    ]
-
-    try:
-        result = validate_gameboard(board)
-        assert not result
-    except ValueError:
-        assert "valid gameboard: should not make exception" and 0
-
-    board = [
-        [1, -1],
-        [0, 1, 1],
-    ]
-
-    try:
-        result = validate_gameboard(board)
-        assert "invalid gameboard: should make exception" and 0
-    except ValueError as error:
-        assert "Invalid gameboard(Row length error)." == str(error)
-
-    board = 14
-
-    try:
-        result = validate_gameboard(board)
-        assert "invalid gameboard: should make exception" and 0
-    except ValueError as error:
-        assert "Invalid gameboard(Invalid type)." == str(error)
-
-    board = [
-        ["1", "1"],
-        ["1", "1"],
-    ]
-
-    try:
-        result = validate_gameboard(board)
-        assert "invalid gameboard: should make exception" and 0
-    except ValueError as error:
-        assert "Invalid gameboard(Invalid item type)." == str(error)
-
-    board = [
-        [1, -1],
-        [0, 2],
-    ]
-
-    try:
-        result = validate_gameboard(board)
-        assert "invalid gameboard: should make exception" and 0
-    except ValueError as error:
-        assert "Invalid gameboard(Invalid range(-1 ~ 1))." == str(error)
+    for test_board in test_boards:
+        board = test_board["board"]
+        valid = test_board["valid"]
+        try:
+            result = validate_gameboard(board)
+            if valid:
+                if result != test_board["result"]:
+                    assert f"test case <{board}> failed\n error message: should be [{test_board['result']}]" and False
+            else:
+                assert f"test case <{board}> failed\n error message: invalid gameboard: should make exception" and False
+        except ValueError as error:
+            if valid:
+                assert f"test case <{board}> failed\n error message: valid gameboard: should not make exception" and False
+            elif str(error) != test_board["exception_message"]:
+                assert f"test case <{board}> failed\n error message: incorrect exception: should be [{test_board['exception_message']}] but [{error}]" and False
 
 
 def test_deserialize_gameboard():
