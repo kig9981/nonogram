@@ -59,7 +59,7 @@ def process_gameplay_query(
 
         return JsonResponse(response_data)
 
-    latest_turn_info = History.objects.get(pk=session.current_game_id)
+    latest_turn_info = session.current_game
     latest_turn = latest_turn_info.number_of_turn
 
     if game_turn < 0 or game_turn > latest_turn:
@@ -76,7 +76,7 @@ def process_gameplay_query(
         gameplay = NonogramGameplay(session.board_id)
 
         moves = History.objects.filter(
-            session_id=session.session_id,
+            current_session=session,
             gameplay_id=latest_turn_info.gameplay_id,
             current_turn__lte=game_turn,
         )
