@@ -3,7 +3,6 @@ import json
 import os
 from typing import Dict
 from http import HTTPStatus
-from NonogramServer.models import NonogramBoard
 from NonogramServer.views import get_nonogram_board
 from NonogramServer.views import set_cell_status
 from NonogramServer.views import create_new_session
@@ -13,31 +12,6 @@ from django.http import HttpResponse
 
 
 BOARD_ID_UNUSED_FOR_TEST = -1
-
-
-def get_test_board():
-    cwd = os.path.dirname(__file__)
-    test_data_path = os.path.join(cwd, 'test_data')
-    test_board_path = os.path.join(test_data_path, 'test_board.json')
-    with open(test_board_path, 'r') as f:
-        test_boards = json.load(f)
-
-    return test_boards
-
-
-@pytest.fixture(scope='function')
-def django_db_setup(django_db_setup, django_db_blocker):
-    test_boards = get_test_board()
-    for test_board in test_boards:
-        nonogram_board = NonogramBoard(
-            board_id=test_board['board_id'],
-            board=test_board['board'],
-            num_row=test_board['num_row'],
-            num_column=test_board['num_column'],
-            theme="test data",
-        )
-        with django_db_blocker.unblock():
-            nonogram_board.save()
 
 
 @pytest.fixture
@@ -63,10 +37,11 @@ def send_test_request(
 
 
 @pytest.mark.django_db
-def test_get_nonogram_board(mock_request: RequestFactory):
+def test_get_nonogram_board(
+    mock_request: RequestFactory,
+    test_boards,
+):
     url = '/get_nonogram_board/'
-
-    test_boards = get_test_board()
 
     query_dict = {
         "session_id": 0,
