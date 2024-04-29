@@ -40,6 +40,6 @@ class NonogramGameplay:
 
     def get_int_board(self):
         return [
-            [int(self.board[x][y]) for y in range(self.board.num_column)]
+            [int(self.playboard[x][y]) for y in range(self.board.num_column)]
             for x in range(self.board.num_row)
         ]
