@@ -34,9 +34,7 @@ class Session(models.Model):
     session_id = models.IntegerField(primary_key=True)
     current_game_id = models.ForeignKey("History", on_delete=models.CASCADE, null=True)
     board_id = models.ForeignKey("NonogramBoard", on_delete=models.CASCADE, null=True)
-    revealed = models.TextField(null=True)
-    mark_x = models.TextField(null=True)
-    mark_question = models.TextField(null=True)
+    board = models.TextField(null=True)
 
 
 class History(models.Model):
