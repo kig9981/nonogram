@@ -67,7 +67,7 @@ def test_validate_gameplay():
         board = test_board["board"]
         valid = test_board["valid"]
         try:
-            result = validate_gameplay(board)
+            validate_gameplay(board)
             if not valid:
                 assert f"test case <{board}> failed\n error message: invalid gameplay: should make exception" and False
         except ValueError as error:
@@ -96,4 +96,4 @@ def test_serialize_gameplay():
 
     board_str = "[[1, 1], [1, 1]]"
 
-    assert serialize_gameboard(board) == board_str
+    assert serialize_gameplay(board) == board_str
