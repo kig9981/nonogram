@@ -32,13 +32,13 @@ class NonogramBoard(models.Model):
 
 class Session(models.Model):
     session_id = models.IntegerField(primary_key=True)
-    current_game_id = models.ForeignKey("History", on_delete=models.CASCADE, null=True)
-    board_id = models.ForeignKey("NonogramBoard", on_delete=models.CASCADE, null=True)
+    current_game = models.ForeignKey("History", on_delete=models.SET_DEFAULT, null=True, default=None)
+    board_data = models.ForeignKey("NonogramBoard", on_delete=models.SET_DEFAULT, null=True, default=None)
     board = models.TextField(null=True)
 
 
 class History(models.Model):
-    session_id = models.ForeignKey("Session", on_delete=models.CASCADE)
+    current_session = models.ForeignKey("Session", on_delete=models.CASCADE)
     gameplay_id = models.IntegerField()
     current_turn = models.IntegerField()
     type_of_move = models.IntegerField(choices=MoveType)
@@ -48,7 +48,7 @@ class History(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['session_id', 'gameplay_id', 'current_turn'],
+                fields=['current_session', 'gameplay_id', 'current_turn'],
                 name="(session, game, turn) tuple"
             ),
         ]
