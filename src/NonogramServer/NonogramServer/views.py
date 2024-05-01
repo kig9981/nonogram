@@ -158,12 +158,38 @@ def set_cell_state(request: HttpRequest):
 
         성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
         response (int): 적용 여부에 따라 응답 코드를 반환.
-                        0=UNCHANGED
-                        1=APPLIED
+                        0(or False)=UNCHANGED
+                        1(or True)=APPLIED
     '''
     if request.method == "GET":
         return HttpResponse("set_cell_state(get)")
     else:
+        query = json.loads(request.body)
+        try:
+            session_id = query['session_id']
+            x = query['x_coord']
+            y = query['y_coord']
+            new_state = query['new_state']
+            session = get_from_db(
+                model_class=Session,
+                label=f"session_id {session_id}",
+                session_id=session_id,
+            )
+            if session.current_game is None or session.board_data is None:
+                return HttpResponseNotFound("gameplay not found.")
+            
+            board_data = session.board_data
+            num_row = board_data.num_row
+            num_column = board_data.num_column
+            if not isinstance(x, int) or not isinstance(y, int) or not (0 <= x < num_row) or not (0 <= y < num_column):
+                return HttpResponseBadRequest("invalid coordinate.")
+            if not isinstance(new_state, int) or not (0 <= new_state <= 3):
+                return HttpResponseBadRequest("invalid coordinate. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), or 3(MARK_QUESTION).")
+            # TODO: 변경사항 적용
+        except KeyError as error:
+            return HttpResponseBadRequest(f"{error} is missing.")
+        except ObjectDoesNotExist as error:
+            return HttpResponseNotFound(f"{error} not found.")
         return HttpResponse("set_cell_state(post)")
 
 
