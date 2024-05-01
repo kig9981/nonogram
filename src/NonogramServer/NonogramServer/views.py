@@ -62,7 +62,7 @@ def process_gameplay_query(
     latest_turn_info = session.current_game
     latest_turn = 0 if latest_turn_info is None else latest_turn_info.current_turn
 
-    if game_turn < 0 or game_turn > latest_turn:
+    if not (0 <= game_turn <= latest_turn):
         return HttpResponseBadRequest(f"invalid game_turn. must be between 0 to {latest_turn}(latest turn)")
 
     board = None
@@ -186,15 +186,12 @@ def set_cell_state(request: HttpRequest):
             if not isinstance(new_state, int) or not (0 <= new_state <= 3):
                 return HttpResponseBadRequest("invalid coordinate. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), or 3(MARK_QUESTION).")
             changed = session.mark(x, y, new_state)
-            response_data = {
-                "response": changed,
-            }
+            response_data = {"response": changed}
             return JsonResponse(response_data)
         except KeyError as error:
             return HttpResponseBadRequest(f"{error} is missing.")
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
-        return HttpResponse("set_cell_state(post)")
 
 
 def create_new_session(request: HttpRequest):

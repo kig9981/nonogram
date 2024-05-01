@@ -277,8 +277,6 @@ def test_set_cell_state(
                     assert response_data["response"] == expected_result
 
 
-
-
 @pytest.mark.django_db
 def test_create_new_session(mock_request: RequestFactory):
     url = '/create_new_session/'
