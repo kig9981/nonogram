@@ -42,6 +42,7 @@ def test_get_nonogram_board(
     mock_request: RequestFactory,
     test_boards,
     test_sessions,
+    test_histories,
     add_test_data,
 ):
     url = '/get_nonogram_board/'
@@ -111,7 +112,6 @@ def test_get_nonogram_board(
 
         query_dict = {
             "session_id": session_id,
-            "board_id": board_id,
             "game_turn": -1,
         }
         response = send_test_request(
@@ -125,6 +125,29 @@ def test_get_nonogram_board(
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.content.decode() == f"invalid game_turn. must be between 0 to {latest_turn}(latest turn)"
+
+    for test_history in test_histories:
+        session_id = test_history["session_id"]
+        for cur_turn, move in enumerate(test_history["moves"]):
+            x, y = move["x"], move["y"]
+            new_state = move["state"]
+            query_dict = {
+                "session_id": session_id,
+                "game_turn": cur_turn + 1,
+            }
+            response = send_test_request(
+                mock_request=mock_request,
+                request_function=get_nonogram_board,
+                url=url,
+                query_dict=query_dict,
+            )
+
+            assert response.status_code == HTTPStatus.OK
+
+            applied_board = move["board"]
+            response_data = json.loads(response.content)
+
+            assert response_data["board"] == applied_board
 
 
 @pytest.mark.django_db
