@@ -8,19 +8,20 @@ from django.core.exceptions import ObjectDoesNotExist
 from .models import NonogramBoard
 from .models import Session
 from .models import History
-from Nonogram.utils import get_from_db
+from Nonogram.utils import async_get_from_db
 from Nonogram.utils import deserialize_gameboard
 from Nonogram.utils import deserialize_gameplay
 from Nonogram.NonogramBoard import NonogramGameplay
+from Nonogram.RealGameBoard import RealGameBoard
 import json
 
 
-def process_board_query(
+async def process_board_query(
     query: dict,
 ) -> HttpResponse:
     board_id = query['board_id']
 
-    board_data = get_from_db(
+    board_data = await async_get_from_db(
         model_class=NonogramBoard,
         label=f"board_id {board_id}",
         board_id=board_id,
@@ -35,16 +36,17 @@ def process_board_query(
     return JsonResponse(response_data)
 
 
-def process_gameplay_query(
+async def process_gameplay_query(
     query: dict,
 ) -> HttpResponse:
     GAME_NOT_START = 0
     session_id = query['session_id']
     game_turn = query['game_turn']
 
-    session = get_from_db(
+    session = await async_get_from_db(
         model_class=Session,
         label=f"session_id {session_id}",
+        select_related=['board_data', 'current_game'],
         session_id=session_id,
     )
 
@@ -65,23 +67,29 @@ def process_gameplay_query(
     if not (0 <= game_turn <= latest_turn):
         return HttpResponseBadRequest(f"invalid game_turn. must be between 0 to {latest_turn}(latest turn)")
 
-    board = None
-
     if game_turn == latest_turn:
         board = deserialize_gameplay(
             serialized_string=session.board,
             return_int=True,
         )
     else:
-        gameplay = NonogramGameplay(session.board_data.board_id)
+        board_id = session.board_data.board_id
+        board = deserialize_gameboard(session.board_data.board)
+        real_board = RealGameBoard(
+            board_id=board_id,
+            board=board,
+        )
 
-        moves = History.objects.filter(
+        gameplay = NonogramGameplay(
+            board_id=board_id,
+            board=real_board,
+        )
+
+        async for move in History.objects.filter(
             current_session=session,
             gameplay_id=latest_turn_info.gameplay_id,
             current_turn__lte=game_turn,
-        )
-
-        for move in moves:
+        ):
             gameplay.mark(
                 x=move.x_coord,
                 y=move.y_coord,
@@ -100,7 +108,7 @@ def process_gameplay_query(
 
 
 # Create your views here.
-def get_nonogram_board(request: HttpRequest):
+async def get_nonogram_board(request: HttpRequest):
     '''
     노노그램 보드에 대한 정보를 반환하는 메서드.
     Args:
@@ -131,16 +139,16 @@ def get_nonogram_board(request: HttpRequest):
         try:
             session_id = query['session_id']
             if session_id == BOARD_ID_QUERY:
-                return process_board_query(query)
+                return await process_board_query(query)
             else:
-                return process_gameplay_query(query)
+                return await process_gameplay_query(query)
         except KeyError as error:
             return HttpResponseBadRequest(f"{error} is missing.")
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
 
 
-def set_cell_state(request: HttpRequest):
+async def set_cell_state(request: HttpRequest):
     '''
     진행중인 게임의 특정 cell의 상태를 변화시키는 메서드.
     Args:
@@ -170,11 +178,13 @@ def set_cell_state(request: HttpRequest):
             x = query['x_coord']
             y = query['y_coord']
             new_state = query['new_state']
-            session = get_from_db(
+            session = await async_get_from_db(
                 model_class=Session,
                 label=f"session_id {session_id}",
+                select_related=['current_game', 'board_data'],
                 session_id=session_id,
             )
+
             if session.current_game is None or session.board_data is None:
                 return HttpResponseNotFound("gameplay not found.")
 
@@ -185,7 +195,7 @@ def set_cell_state(request: HttpRequest):
                 return HttpResponseBadRequest("invalid coordinate.")
             if not isinstance(new_state, int) or not (0 <= new_state <= 3):
                 return HttpResponseBadRequest("invalid coordinate. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), or 3(MARK_QUESTION).")
-            changed = session.mark(x, y, new_state)
+            changed = await session.async_mark(x, y, new_state)
             response_data = {"response": changed}
             return JsonResponse(response_data)
         except KeyError as error:
