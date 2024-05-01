@@ -1,16 +1,18 @@
 from Nonogram.RealGameBoard import RealGameBoard
 from Nonogram.utils import GameBoardCellState
 from Nonogram.utils import RealBoardCellState
+from typing import Optional
 
 
 class NonogramGameplay:
     def __init__(
         self,
         board_id: int,
+        board: Optional[RealGameBoard] = None,
     ):
         self.board_size = None
         self.board_id = board_id
-        self.board = RealGameBoard(board_id)
+        self.board = board if board is not None else RealGameBoard(board_id)
         self.num_row = self.board.num_row
         self.num_column = self.board.num_column
         self.playboard = [
