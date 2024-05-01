@@ -105,7 +105,7 @@ class Session(models.Model):
             self.board = serialize_gameplay(play)
             self.save()
         return changed
-    
+
     async def async_mark(
         self,
         x: int,
