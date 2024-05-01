@@ -68,7 +68,7 @@ class Session(models.Model):
 
         if current_game is None or board_data is None:
             return False
-        
+
         num_row = board_data.num_row
         num_column = board_data.num_column
 
