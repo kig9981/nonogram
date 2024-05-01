@@ -1,0 +1,7 @@
+[flake8]
+exclude =
+    admin.py
+    tests.py
+
+ignore =
+        E501
