@@ -60,7 +60,7 @@ def process_gameplay_query(
         return JsonResponse(response_data)
 
     latest_turn_info = session.current_game
-    latest_turn = 0 if latest_turn_info is None else latest_turn_info.number_of_turn
+    latest_turn = 0 if latest_turn_info is None else latest_turn_info.current_turn
 
     if game_turn < 0 or game_turn > latest_turn:
         return HttpResponseBadRequest(f"invalid game_turn. must be between 0 to {latest_turn}(latest turn)")
@@ -69,11 +69,11 @@ def process_gameplay_query(
 
     if game_turn == latest_turn:
         board = deserialize_gameplay(
-            serialized_string=latest_turn_info.board,
+            serialized_string=session.board,
             return_int=True,
         )
     else:
-        gameplay = NonogramGameplay(session.board_id)
+        gameplay = NonogramGameplay(session.board_data.board_id)
 
         moves = History.objects.filter(
             current_session=session,
