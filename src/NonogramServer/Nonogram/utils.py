@@ -2,6 +2,7 @@ from enum import IntEnum
 import json
 from typing import List
 from typing import Union
+from typing import Optional
 from django.db.models import Model
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -84,10 +85,30 @@ def serialize_gameboard(
 def get_from_db(
     model_class: Model,
     label: str,
+    select_related: Optional[List[str]] = None,
     **kwargs,
 ):
     try:
-        query = model_class.objects.get(**kwargs)
+        if select_related is None:
+            query = model_class.objects.get(**kwargs)
+        else:
+            query = model_class.objects.select_related(*select_related).get(**kwargs)
+    except ObjectDoesNotExist:
+        raise ObjectDoesNotExist(label)
+    return query
+
+
+async def async_get_from_db(
+    model_class: Model,
+    label: str,
+    select_related: Optional[List[str]] = None,
+    **kwargs,
+):
+    try:
+        if select_related is None:
+            query = await model_class.objects.aget(**kwargs)
+        else:
+            query = await model_class.objects.select_related(*select_related).aget(**kwargs)
     except ObjectDoesNotExist:
         raise ObjectDoesNotExist(label)
     return query
