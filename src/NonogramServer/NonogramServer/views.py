@@ -177,7 +177,7 @@ def set_cell_state(request: HttpRequest):
             )
             if session.current_game is None or session.board_data is None:
                 return HttpResponseNotFound("gameplay not found.")
-            
+
             board_data = session.board_data
             num_row = board_data.num_row
             num_column = board_data.num_column
@@ -185,7 +185,11 @@ def set_cell_state(request: HttpRequest):
                 return HttpResponseBadRequest("invalid coordinate.")
             if not isinstance(new_state, int) or not (0 <= new_state <= 3):
                 return HttpResponseBadRequest("invalid coordinate. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), or 3(MARK_QUESTION).")
-            # TODO: 변경사항 적용
+            changed = session.mark(x, y, new_state)
+            response_data = {
+                "response": changed,
+            }
+            return JsonResponse(response_data)
         except KeyError as error:
             return HttpResponseBadRequest(f"{error} is missing.")
         except ObjectDoesNotExist as error:
