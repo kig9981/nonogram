@@ -1,6 +1,5 @@
 import pytest
 import json
-import random
 from typing import Any
 from typing import List
 from typing import Dict
@@ -22,6 +21,7 @@ from django.http import HttpResponse
 
 BOARD_ID_UNUSED_FOR_TEST = -1
 SESSION_ID_UNUSED_FOR_TEST = -1
+BOARD_QUERY = 0
 
 
 @pytest.fixture
@@ -47,56 +47,12 @@ def send_test_request(
 
 
 @pytest.mark.django_db
-def test_get_nonogram_board(
+def test_board_for_get_nonogram_board(
     mock_request: RequestFactory,
     test_boards: List[Dict[str, Any]],
-    test_sessions: List[Dict[str, Any]],
-    test_histories: List[Dict[str, Any]],
     add_test_data,
 ):
-    BOARD_QUERY = 0
     url = '/get_nonogram_board/'
-
-    query_dict = {}
-
-    response = send_test_request(
-        mock_request=mock_request,
-        request_function=get_nonogram_board,
-        url=url,
-        query_dict=query_dict,
-    )
-
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.content.decode() == "'session_id' is missing."
-
-    query_dict = {
-        "session_id": BOARD_QUERY,
-    }
-
-    response = send_test_request(
-        mock_request=mock_request,
-        request_function=get_nonogram_board,
-        url=url,
-        query_dict=query_dict,
-    )
-
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.content.decode() == "'board_id' is missing."
-
-    query_dict = {
-        "session_id": BOARD_QUERY,
-        "board_id": BOARD_ID_UNUSED_FOR_TEST,
-    }
-
-    response = send_test_request(
-        mock_request=mock_request,
-        request_function=get_nonogram_board,
-        url=url,
-        query_dict=query_dict,
-    )
-
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.content.decode() == f"board_id {BOARD_ID_UNUSED_FOR_TEST} not found."
 
     for test_board in test_boards:
         query_dict = {
@@ -117,6 +73,15 @@ def test_get_nonogram_board(
         assert response_data["board"] == test_board["board"]
         assert response_data["num_row"] == test_board["num_row"]
         assert response_data["num_column"] == test_board["num_column"]
+
+
+@pytest.mark.django_db
+def test_session_for_get_nonogram_board(
+    mock_request: RequestFactory,
+    test_sessions: List[Dict[str, Any]],
+    add_test_data,
+):
+    url = '/get_nonogram_board/'
 
     for test_session in test_sessions:
         GAME_NOT_START = 0
@@ -175,6 +140,15 @@ def test_get_nonogram_board(
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.content.decode() == f"invalid game_turn. must be between 0 to {latest_turn}(latest turn)"
 
+
+@pytest.mark.django_db
+def test_history_for_get_nonogram_board(
+    mock_request: RequestFactory,
+    test_histories: List[Dict[str, Any]],
+    add_test_data,
+):
+    url = '/get_nonogram_board/'
+
     for test_history in test_histories:
         session_id = test_history["session_id"]
         for cur_turn, move in enumerate(test_history["moves"]):
@@ -198,9 +172,108 @@ def test_get_nonogram_board(
 
 
 @pytest.mark.django_db
-def test_set_cell_state(
+def test_get_nonogram_board(
+    mock_request: RequestFactory,
+    add_test_data,
+):
+    url = '/get_nonogram_board/'
+
+    query_dict = {}
+
+    response = send_test_request(
+        mock_request=mock_request,
+        request_function=get_nonogram_board,
+        url=url,
+        query_dict=query_dict,
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.content.decode() == "'session_id' is missing."
+
+    query_dict = {
+        "session_id": BOARD_QUERY,
+    }
+
+    response = send_test_request(
+        mock_request=mock_request,
+        request_function=get_nonogram_board,
+        url=url,
+        query_dict=query_dict,
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.content.decode() == "'board_id' is missing."
+
+    query_dict = {
+        "session_id": BOARD_QUERY,
+        "board_id": BOARD_ID_UNUSED_FOR_TEST,
+    }
+
+    response = send_test_request(
+        mock_request=mock_request,
+        request_function=get_nonogram_board,
+        url=url,
+        query_dict=query_dict,
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.content.decode() == f"board_id {BOARD_ID_UNUSED_FOR_TEST} not found."
+
+
+@pytest.mark.django_db
+def test_session_for_set_cell_state(
     mock_request: RequestFactory,
     test_sessions: List[Dict[str, Any]],
+    add_test_data,
+):
+    url = '/set_cell_state/'
+
+    moves = [
+        GameBoardCellState.NOT_SELECTED,
+        GameBoardCellState.MARK_X,
+        GameBoardCellState.MARK_QUESTION,
+        GameBoardCellState.REVEALED,
+        GameBoardCellState.NOT_SELECTED,
+        GameBoardCellState.MARK_X,
+        GameBoardCellState.MARK_QUESTION,
+    ]
+
+    for test_session in test_sessions:
+        session_id = test_session["session_id"]
+        board_id = test_session["board_id"]
+
+        play = NonogramGameplay(board_id)
+        session = Session.objects.get(pk=session_id)
+        play.playboard = deserialize_gameplay(session.board)
+
+        for x in range(play.num_row):
+            for y in range(play.num_column):
+                for new_state in moves:
+                    expected_result = play.mark(x, y, new_state)
+                    query_dict = {
+                        "session_id": session_id,
+                        "x_coord": x,
+                        "y_coord": y,
+                        "new_state": new_state,
+                    }
+
+                    response = send_test_request(
+                        mock_request=mock_request,
+                        request_function=set_cell_state,
+                        url=url,
+                        query_dict=query_dict,
+                    )
+
+                    assert response.status_code == HTTPStatus.OK
+
+                    response_data = json.loads(response.content)
+
+                    assert response_data["response"] == expected_result
+
+
+@pytest.mark.django_db
+def test_set_cell_state(
+    mock_request: RequestFactory,
     add_test_data,
 ):
     url = '/set_cell_state/'
@@ -232,49 +305,6 @@ def test_set_cell_state(
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.content.decode() == f"session_id {SESSION_ID_UNUSED_FOR_TEST} not found."
-
-    moves = [
-        GameBoardCellState.NOT_SELECTED,
-        GameBoardCellState.MARK_X,
-        GameBoardCellState.MARK_QUESTION,
-    ]
-
-    for test_session in test_sessions:
-        session_id = test_session["session_id"]
-        board_id = test_session["board_id"]
-
-        play = NonogramGameplay(board_id)
-        session = Session.objects.get(pk=session_id)
-        play.playboard = deserialize_gameplay(session.board)
-
-        for x in range(play.num_row):
-            for y in range(play.num_column):
-                random.shuffle(moves)
-                query = moves
-                query.append(GameBoardCellState.REVEALED)
-                random.shuffle(moves)
-                query += moves
-                for new_state in query:
-                    expected_result = play.mark(x, y, new_state)
-                    query_dict = {
-                        "session_id": session_id,
-                        "x_coord": x,
-                        "y_coord": y,
-                        "new_state": new_state,
-                    }
-
-                    response = send_test_request(
-                        mock_request=mock_request,
-                        request_function=set_cell_state,
-                        url=url,
-                        query_dict=query_dict,
-                    )
-
-                    assert response.status_code == HTTPStatus.OK
-
-                    response_data = json.loads(response.content)
-
-                    assert response_data["response"] == expected_result
 
 
 @pytest.mark.django_db
