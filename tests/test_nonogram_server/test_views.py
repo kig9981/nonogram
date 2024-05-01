@@ -12,8 +12,10 @@ from NonogramServer.views import set_cell_state
 from NonogramServer.views import create_new_session
 from NonogramServer.views import create_new_game
 from Nonogram.utils import GameBoardCellState
+from Nonogram.utils import deserialize_gameboard
 from Nonogram.utils import deserialize_gameplay
 from Nonogram.NonogramBoard import NonogramGameplay
+from Nonogram.RealGameBoard import RealGameBoard
 from django.test.client import RequestFactory
 from django.http import HttpRequest
 from django.http import HttpResponse
@@ -29,7 +31,7 @@ def mock_request():
     return RequestFactory()
 
 
-def send_test_request(
+async def send_test_request(
     mock_request: RequestFactory,
     request_function: Callable[[HttpRequest], HttpResponse],
     url: str,
@@ -41,13 +43,14 @@ def send_test_request(
         data=query,
         content_type="Application/json",
     )
-    response = request_function(request)
+    response = await request_function(request)
 
     return response
 
 
-@pytest.mark.django_db
-def test_board_for_get_nonogram_board(
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_board_for_get_nonogram_board(
     mock_request: RequestFactory,
     test_boards: List[Dict[str, Any]],
     add_test_data,
@@ -59,7 +62,7 @@ def test_board_for_get_nonogram_board(
             "session_id": BOARD_QUERY,
             "board_id": test_board['board_id'],
         }
-        response = send_test_request(
+        response = await send_test_request(
             mock_request=mock_request,
             request_function=get_nonogram_board,
             url=url,
@@ -75,8 +78,9 @@ def test_board_for_get_nonogram_board(
         assert response_data["num_column"] == test_board["num_column"]
 
 
-@pytest.mark.django_db
-def test_session_for_get_nonogram_board(
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_session_for_get_nonogram_board(
     mock_request: RequestFactory,
     test_sessions: List[Dict[str, Any]],
     add_test_data,
@@ -92,7 +96,7 @@ def test_session_for_get_nonogram_board(
             "session_id": session_id,
         }
 
-        response = send_test_request(
+        response = await send_test_request(
             mock_request=mock_request,
             request_function=get_nonogram_board,
             url=url,
@@ -106,7 +110,7 @@ def test_session_for_get_nonogram_board(
             "session_id": session_id,
             "game_turn": GAME_NOT_START,
         }
-        response = send_test_request(
+        response = await send_test_request(
             mock_request=mock_request,
             request_function=get_nonogram_board,
             url=url,
@@ -117,8 +121,8 @@ def test_session_for_get_nonogram_board(
 
         response_data = json.loads(response.content)
 
-        board = NonogramBoard.objects.get(pk=board_id)
-        session = Session.objects.get(pk=session_id)
+        board = await NonogramBoard.objects.aget(pk=board_id)
+        session = await Session.objects.select_related('current_game').aget(pk=session_id)
 
         assert response_data["board"] == board.board
         assert response_data["num_row"] == board.num_row
@@ -128,7 +132,7 @@ def test_session_for_get_nonogram_board(
             "session_id": session_id,
             "game_turn": -1,
         }
-        response = send_test_request(
+        response = await send_test_request(
             mock_request=mock_request,
             request_function=get_nonogram_board,
             url=url,
@@ -141,8 +145,9 @@ def test_session_for_get_nonogram_board(
         assert response.content.decode() == f"invalid game_turn. must be between 0 to {latest_turn}(latest turn)"
 
 
-@pytest.mark.django_db
-def test_history_for_get_nonogram_board(
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_history_for_get_nonogram_board(
     mock_request: RequestFactory,
     test_histories: List[Dict[str, Any]],
     add_test_data,
@@ -156,7 +161,7 @@ def test_history_for_get_nonogram_board(
                 "session_id": session_id,
                 "game_turn": cur_turn + 1,
             }
-            response = send_test_request(
+            response = await send_test_request(
                 mock_request=mock_request,
                 request_function=get_nonogram_board,
                 url=url,
@@ -171,8 +176,9 @@ def test_history_for_get_nonogram_board(
             assert response_data["board"] == applied_board
 
 
-@pytest.mark.django_db
-def test_get_nonogram_board(
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_get_nonogram_board(
     mock_request: RequestFactory,
     add_test_data,
 ):
@@ -180,7 +186,7 @@ def test_get_nonogram_board(
 
     query_dict = {}
 
-    response = send_test_request(
+    response = await send_test_request(
         mock_request=mock_request,
         request_function=get_nonogram_board,
         url=url,
@@ -194,7 +200,7 @@ def test_get_nonogram_board(
         "session_id": BOARD_QUERY,
     }
 
-    response = send_test_request(
+    response = await send_test_request(
         mock_request=mock_request,
         request_function=get_nonogram_board,
         url=url,
@@ -209,7 +215,7 @@ def test_get_nonogram_board(
         "board_id": BOARD_ID_UNUSED_FOR_TEST,
     }
 
-    response = send_test_request(
+    response = await send_test_request(
         mock_request=mock_request,
         request_function=get_nonogram_board,
         url=url,
@@ -220,8 +226,9 @@ def test_get_nonogram_board(
     assert response.content.decode() == f"board_id {BOARD_ID_UNUSED_FOR_TEST} not found."
 
 
-@pytest.mark.django_db
-def test_session_for_set_cell_state(
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_session_for_set_cell_state(
     mock_request: RequestFactory,
     test_sessions: List[Dict[str, Any]],
     add_test_data,
@@ -242,8 +249,18 @@ def test_session_for_set_cell_state(
         session_id = test_session["session_id"]
         board_id = test_session["board_id"]
 
-        play = NonogramGameplay(board_id)
-        session = Session.objects.get(pk=session_id)
+        board_data = await NonogramBoard.objects.aget(pk=board_id)
+
+        real_board = RealGameBoard(
+            board_id=board_id,
+            board=deserialize_gameboard(board_data.board)
+        )
+
+        play = NonogramGameplay(
+            board_id=board_id,
+            board=real_board,
+        )
+        session = await Session.objects.aget(pk=session_id)
         play.playboard = deserialize_gameplay(session.board)
 
         for x in range(play.num_row):
@@ -257,7 +274,7 @@ def test_session_for_set_cell_state(
                         "new_state": new_state,
                     }
 
-                    response = send_test_request(
+                    response = await send_test_request(
                         mock_request=mock_request,
                         request_function=set_cell_state,
                         url=url,
@@ -271,15 +288,16 @@ def test_session_for_set_cell_state(
                     assert response_data["response"] == expected_result
 
 
-@pytest.mark.django_db
-def test_set_cell_state(
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_set_cell_state(
     mock_request: RequestFactory,
     add_test_data,
 ):
     url = '/set_cell_state/'
     query_dict = {}
 
-    response = send_test_request(
+    response = await send_test_request(
         mock_request=mock_request,
         request_function=set_cell_state,
         url=url,
@@ -296,7 +314,7 @@ def test_set_cell_state(
         "new_state": GameBoardCellState.NOT_SELECTED,
     }
 
-    response = send_test_request(
+    response = await send_test_request(
         mock_request=mock_request,
         request_function=set_cell_state,
         url=url,
