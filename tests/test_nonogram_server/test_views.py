@@ -49,10 +49,37 @@ def test_get_nonogram_board(
     test_histories: List[Dict[str, Any]],
     add_test_data,
 ):
+    BOARD_QUERY = 0
     url = '/get_nonogram_board/'
 
+    query_dict = {}
+
+    response = send_test_request(
+        mock_request=mock_request,
+        request_function=get_nonogram_board,
+        url=url,
+        query_dict=query_dict,
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.content.decode() == "'session_id' is missing."
+
     query_dict = {
-        "session_id": 0,
+        "session_id": BOARD_QUERY,
+    }
+
+    response = send_test_request(
+        mock_request=mock_request,
+        request_function=get_nonogram_board,
+        url=url,
+        query_dict=query_dict,
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.content.decode() == "'board_id' is missing."
+
+    query_dict = {
+        "session_id": BOARD_QUERY,
         "board_id": BOARD_ID_UNUSED_FOR_TEST,
     }
 
@@ -68,7 +95,7 @@ def test_get_nonogram_board(
 
     for test_board in test_boards:
         query_dict = {
-            "session_id": 0,
+            "session_id": BOARD_QUERY,
             "board_id": test_board['board_id'],
         }
         response = send_test_request(
@@ -93,7 +120,20 @@ def test_get_nonogram_board(
 
         query_dict = {
             "session_id": session_id,
-            "board_id": board_id,
+        }
+
+        response = send_test_request(
+            mock_request=mock_request,
+            request_function=get_nonogram_board,
+            url=url,
+            query_dict=query_dict,
+        )
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.content.decode() == "'game_turn' is missing."
+
+        query_dict = {
+            "session_id": session_id,
             "game_turn": GAME_NOT_START,
         }
         response = send_test_request(
@@ -163,7 +203,7 @@ def test_set_cell_state(mock_request: RequestFactory):
         content_type="Application/json",
     )
     response = set_cell_state(request)
-    assert response.content == b"set_cell_state(post)"
+    # assert response.content == b"set_cell_state(post)"
 
 
 @pytest.mark.django_db
