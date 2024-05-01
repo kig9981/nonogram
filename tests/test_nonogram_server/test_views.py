@@ -1,6 +1,9 @@
 import pytest
 import json
+from typing import Any
+from typing import List
 from typing import Dict
+from typing import Callable
 from http import HTTPStatus
 from NonogramServer.models import NonogramBoard
 from NonogramServer.models import Session
@@ -9,6 +12,7 @@ from NonogramServer.views import set_cell_state
 from NonogramServer.views import create_new_session
 from NonogramServer.views import create_new_game
 from django.test.client import RequestFactory
+from django.http import HttpRequest
 from django.http import HttpResponse
 
 
@@ -22,7 +26,7 @@ def mock_request():
 
 def send_test_request(
     mock_request: RequestFactory,
-    request_function,
+    request_function: Callable[[HttpRequest], HttpResponse],
     url: str,
     query_dict: Dict[str, object],
 ) -> HttpResponse:
@@ -40,9 +44,9 @@ def send_test_request(
 @pytest.mark.django_db
 def test_get_nonogram_board(
     mock_request: RequestFactory,
-    test_boards,
-    test_sessions,
-    test_histories,
+    test_boards: List[Dict[str, Any]],
+    test_sessions: List[Dict[str, Any]],
+    test_histories: List[Dict[str, Any]],
     add_test_data,
 ):
     url = '/get_nonogram_board/'
@@ -129,8 +133,6 @@ def test_get_nonogram_board(
     for test_history in test_histories:
         session_id = test_history["session_id"]
         for cur_turn, move in enumerate(test_history["moves"]):
-            x, y = move["x"], move["y"]
-            new_state = move["state"]
             query_dict = {
                 "session_id": session_id,
                 "game_turn": cur_turn + 1,
