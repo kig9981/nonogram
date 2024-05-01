@@ -103,4 +103,4 @@ def add_test_data(
                 history.save()
                 session_data.current_game = history
                 session_data.board = serialize_gameplay(board.get_int_board())
-                session_data.save
+                session_data.save()
