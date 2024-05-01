@@ -105,3 +105,52 @@ class Session(models.Model):
             self.board = serialize_gameplay(play)
             self.save()
         return changed
+    
+    async def async_mark(
+        self,
+        x: int,
+        y: int,
+        new_state: GameBoardCellState,
+    ) -> bool:
+        board_data = self.board_data
+        current_game = self.current_game
+
+        if current_game is None or board_data is None:
+            return False
+
+        num_row = board_data.num_row
+        num_column = board_data.num_column
+
+        if not (0 <= x < num_row) or not (0 <= y < num_column):
+            return False
+
+        board = deserialize_gameboard(board_data.board)
+        play = deserialize_gameplay(self.board)
+
+        current_cell_state = play[x][y]
+        current_cell = board[x][y]
+        changed = False
+
+        if current_cell_state == GameBoardCellState.REVEALED:
+            return False
+        if new_state == GameBoardCellState.REVEALED:
+            if current_cell == RealBoardCellState.BLACK:
+                changed = True
+        elif current_cell_state != new_state:
+            changed = True
+
+        if changed:
+            play[x][y] = new_state
+            new_history = History(
+                current_session=self,
+                gameplay_id=current_game.gameplay_id,
+                current_turn=current_game.current_turn + 1,
+                type_of_move=int(new_state),
+                x_coord=x,
+                y_coord=y,
+            )
+            await new_history.asave()
+            self.current_game = new_history
+            self.board = serialize_gameplay(play)
+            await self.asave()
+        return changed
