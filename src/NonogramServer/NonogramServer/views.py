@@ -15,6 +15,7 @@ from Nonogram.utils import deserialize_gameplay
 from Nonogram.NonogramBoard import NonogramGameplay
 from Nonogram.RealGameBoard import RealGameBoard
 import json
+import uuid
 
 
 async def process_board_query(
@@ -221,13 +222,11 @@ async def create_new_session(request: HttpRequest):
     if request.method == "GET":
         return HttpResponse("create_new_session(get)")
     else:
-        try:
-            return HttpResponse("create_new_session(post)")
-        except KeyError as error:
-            return HttpResponseBadRequest(f"{error} is missing.")
-        except ObjectDoesNotExist as error:
-            return HttpResponseNotFound(f"{error} not found.")
-
+        session_id = str(uuid.uuid4())
+        session = Session(session_id=session_id)
+        await session.asave()
+        response_data = {"session_id": session_id}
+        return JsonResponse(response_data)
 
 
 async def create_new_game(request: HttpRequest):
