@@ -19,7 +19,6 @@ from Nonogram.RealGameBoard import RealGameBoard
 import json
 import uuid
 import asyncio
-import random
 
 
 async def process_board_query(
@@ -274,7 +273,6 @@ async def create_new_game(request: HttpRequest):
             )
 
             if session.board_data is not None:
-                game = session.current_game
                 if not force_new_game:
                     response_data = {
                         "response": GAME_EXIST,
@@ -285,7 +283,7 @@ async def create_new_game(request: HttpRequest):
                 coroutine = []
 
                 async for history in History.objects.filter(current_session=session):
-                    history.current_session=None
+                    history.current_session = None
                     coroutine.append(history.asave())
 
                 await asyncio.gather(*coroutine)

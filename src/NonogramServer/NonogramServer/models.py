@@ -106,8 +106,8 @@ class Session(models.Model):
                 gameplay_id = uuid.uuid4()
                 current_turn = 1
             else:
-                gameplay_id=current_game.gameplay_id
-                current_turn=current_game.current_turn + 1
+                gameplay_id = current_game.gameplay_id
+                current_turn = current_game.current_turn + 1
             new_history = History(
                 current_session=self,
                 gameplay_id=gameplay_id,
@@ -161,8 +161,8 @@ class Session(models.Model):
                 gameplay_id = uuid.uuid4()
                 current_turn = 1
             else:
-                gameplay_id=current_game.gameplay_id
-                current_turn=current_game.current_turn + 1
+                gameplay_id = current_game.gameplay_id
+                current_turn = current_game.current_turn + 1
             new_history = History(
                 current_session=self,
                 gameplay_id=gameplay_id,
