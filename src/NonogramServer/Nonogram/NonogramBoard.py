@@ -2,12 +2,13 @@ from Nonogram.RealGameBoard import RealGameBoard
 from Nonogram.utils import GameBoardCellState
 from Nonogram.utils import RealBoardCellState
 from typing import Optional
+from uuid import UUID
 
 
 class NonogramGameplay:
     def __init__(
         self,
-        board_id: int,
+        board_id: UUID,
         board: Optional[RealGameBoard] = None,
     ):
         self.board_size = None
