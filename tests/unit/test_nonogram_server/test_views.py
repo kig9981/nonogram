@@ -401,14 +401,55 @@ async def test_create_new_session(mock_request: RequestFactory):
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
-async def test_create_new_game(mock_request: RequestFactory):
+async def test_create_new_game(
+    mock_request: RequestFactory,
+    test_sessions: List[Dict[str, Any]],
+    add_test_data,
+):
     url = '/create_new_game/'
-    query_dict = {"session_id": 0}
-    query = json.dumps(query_dict)
-    request = mock_request.post(
-        path=url,
-        data=query,
-        content_type="Application/json",
+    query_dict = {}
+    for key, value in {
+        'session_id': 1,
+        'board_id': 1,
+        'force_new_game': 1,
+    }.items():
+        response = await send_test_request(
+            mock_request=mock_request,
+            request_function=create_new_game,
+            url=url,
+            query_dict=query_dict,
+        )
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.content.decode() == f"'{key}' is missing."
+        query_dict[key] = value
+
+    response = await send_test_request(
+        mock_request=mock_request,
+        request_function=create_new_game,
+        url=url,
+        query_dict=query_dict,
     )
-    response = await create_new_game(request)
-    # assert response.content == b"create_new_game(post)"
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.content.decode() == "invalid type."
+
+    for test_session in test_sessions:
+        session_id = test_session["session_id"]
+        board_id = test_session["session_id"]
+
+        query_dict = {
+            'session_id': session_id,
+            'board_id': board_id,
+            'force_new_game': False,
+        }
+
+        response = await send_test_request(
+            mock_request=mock_request,
+            request_function=create_new_game,
+            url=url,
+            query_dict=query_dict,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        response_data = json.loads(response.content)
+
+        assert response_data[""]
