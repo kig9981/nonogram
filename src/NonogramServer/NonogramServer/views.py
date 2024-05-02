@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.http import HttpResponseNotFound
 from django.http import HttpResponseBadRequest
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ValidationError
 from .models import NonogramBoard
 from .models import Session
 from .models import History
@@ -146,6 +147,8 @@ async def get_nonogram_board(request: HttpRequest):
             return HttpResponseBadRequest(f"{error} is missing.")
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
+        except ValidationError as error:
+            return HttpResponseBadRequest(f"'{error.message}' is not valid id.")
 
 
 async def set_cell_state(request: HttpRequest):
@@ -202,6 +205,8 @@ async def set_cell_state(request: HttpRequest):
             return HttpResponseBadRequest(f"{error} is missing.")
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
+        except ValidationError as error:
+            return HttpResponseBadRequest(f"'{error.message}' is not valid id.")
 
 
 async def create_new_session(request: HttpRequest):
