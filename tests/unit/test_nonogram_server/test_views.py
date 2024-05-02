@@ -1,5 +1,6 @@
 import pytest
 import json
+import uuid
 from typing import Any
 from typing import List
 from typing import Dict
@@ -14,6 +15,7 @@ from NonogramServer.views import create_new_game
 from Nonogram.utils import GameBoardCellState
 from Nonogram.utils import deserialize_gameboard
 from Nonogram.utils import deserialize_gameplay
+from Nonogram.utils import is_uuid4
 from Nonogram.NonogramBoard import NonogramGameplay
 from Nonogram.RealGameBoard import RealGameBoard
 from django.test.client import RequestFactory
@@ -21,8 +23,8 @@ from django.http import HttpRequest
 from django.http import HttpResponse
 
 
-BOARD_ID_UNUSED_FOR_TEST = -1
-SESSION_ID_UNUSED_FOR_TEST = -1
+BOARD_ID_UNUSED_FOR_TEST = str(uuid.uuid4())
+SESSION_ID_UNUSED_FOR_TEST = str(uuid.uuid4())
 BOARD_QUERY = 0
 
 
@@ -249,7 +251,7 @@ async def test_session_for_set_cell_state(
         session_id = test_session["session_id"]
         board_id = test_session["board_id"]
 
-        board_data = await NonogramBoard.objects.aget(pk=board_id)
+        board_data = await NonogramBoard.objects.aget(pk=uuid.UUID(board_id))
 
         real_board = RealGameBoard(
             board_id=board_id,
@@ -260,7 +262,7 @@ async def test_session_for_set_cell_state(
             board_id=board_id,
             board=real_board,
         )
-        session = await Session.objects.aget(pk=session_id)
+        session = await Session.objects.aget(pk=uuid.UUID(session_id))
         play.playboard = deserialize_gameplay(session.board)
 
         for x in range(play.num_row):
