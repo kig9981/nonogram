@@ -1,10 +1,12 @@
 from enum import IntEnum
 import json
+import uuid
 from typing import List
 from typing import Union
 from typing import Optional
 from django.db.models import Model
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ValidationError
 
 
 class RealBoardCellState(IntEnum):
@@ -95,6 +97,8 @@ def get_from_db(
             query = model_class.objects.select_related(*select_related).get(**kwargs)
     except ObjectDoesNotExist:
         raise ObjectDoesNotExist(label)
+    except ValidationError:
+        raise ValidationError(label)
     return query
 
 
@@ -111,6 +115,8 @@ async def async_get_from_db(
             query = await model_class.objects.select_related(*select_related).aget(**kwargs)
     except ObjectDoesNotExist:
         raise ObjectDoesNotExist(label)
+    except ValidationError:
+        raise ValidationError(label)
     return query
 
 
@@ -168,3 +174,13 @@ def serialize_gameplay(
     serialize_string = json.dumps(board)
 
     return serialize_string
+
+
+def is_uuid4(
+    uuid_to_test: str
+) -> bool:
+    try:
+        uuid.UUID(uuid_to_test, version=4)
+    except ValueError:
+        return False
+    return True
