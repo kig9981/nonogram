@@ -263,13 +263,13 @@ async def create_new_game(request: HttpRequest):
             board_id = query['board_id']
             force_new_game = query['force_new_game']
 
-            if not isinstance(session_id, str) or not isinstance(board_id, str) or not isinstance(force_new_game, bool):
+            if not isinstance(session_id, str) or (not isinstance(board_id, str) and board_id != RANDOM_BOARD) or not isinstance(force_new_game, bool):
                 return HttpResponseBadRequest("invalid type.")
 
             session = await async_get_from_db(
                 model_class=Session,
                 label=f"session_id {session_id}",
-                select_related=['current_game'],
+                select_related=['current_game', 'board_data'],
                 session_id=session_id,
             )
 
@@ -291,18 +291,21 @@ async def create_new_game(request: HttpRequest):
                 await asyncio.gather(*coroutine)
 
             if board_id == RANDOM_BOARD:
-                number_of_board = await NonogramBoard.objects.acount()
-                random_pk = random.randint(1, number_of_board)
-                board_data = await NonogramBoard.objects.aget(pk=random_pk)
+                # TODO: 더 빠르게 랜덤셀렉트하는걸로 바꾸기
+                board_data = await NonogramBoard.objects.order_by('?').afirst()
                 board_id = str(board_data.board_id)
             else:
-                board_data = await NonogramBoard.objects.aget(board_id=board_id)
+                board_data = await async_get_from_db(
+                    model_class=NonogramBoard,
+                    label=f"board_id {board_id}",
+                    board_id=board_id,
+                )
 
             session.board_data = board_data
             session.board = serialize_gameboard(
                 [
-                    [GameBoardCellState.NOT_SELECTED for _ in board_data.num_column]
-                    for _ in board_data.num_row
+                    [GameBoardCellState.NOT_SELECTED for _ in range(board_data.num_column)]
+                    for _ in range(board_data.num_row)
                 ]
             )
             session.current_game = None
