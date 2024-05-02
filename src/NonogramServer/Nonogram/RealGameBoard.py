@@ -17,7 +17,7 @@ class RealGameBoard:
         self.board_id = board_id
         if board is None:
             try:
-                board_data = NonogramBoard.objects.get(pk=board_id)
+                board_data = NonogramBoard.objects.get(board_id=board_id)
                 self.board = deserialize_gameboard(board_data.board)
             except ObjectDoesNotExist:
                 raise ObjectDoesNotExist("board_id not exist")

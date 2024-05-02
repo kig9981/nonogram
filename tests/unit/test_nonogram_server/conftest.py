@@ -57,11 +57,13 @@ def add_test_data(
     from NonogramServer.models import Session
     from NonogramServer.models import History
     from Nonogram.NonogramBoard import NonogramGameplay
+    from Nonogram.RealGameBoard import RealGameBoard
+    from Nonogram.utils import deserialize_gameboard
     from Nonogram.utils import serialize_gameplay
 
     for test_board in test_boards:
         nonogram_board = NonogramBoard(
-            board_id=uuid.UUID(test_board['board_id']),
+            board_id=test_board['board_id'],
             board=test_board['board'],
             num_row=test_board['num_row'],
             num_column=test_board['num_column'],
@@ -71,23 +73,31 @@ def add_test_data(
             nonogram_board.save()
 
     for test_session in test_sessions:
+        board_id = test_session['board_id']
         with django_db_blocker.unblock():
-            board_data = NonogramGameplay(
-                board_id=uuid.UUID(test_session['board_id']),
-            ).get_int_board()
-        board = serialize_gameplay(board_data)
+            board_data = NonogramBoard.objects.get(board_id=board_id)
+        real_board = RealGameBoard(
+            board_id=board_id,
+            board=deserialize_gameboard(board_data.board),
+        )
+        gameplay = NonogramGameplay(
+            board_id=board_id,
+            board=real_board,
+        ).get_int_board()
+        board = serialize_gameplay(gameplay)
         session = Session(
-            session_id=uuid.UUID(test_session['session_id']),
-            board_data_id=uuid.UUID(test_session['board_id']),
+            session_id=test_session['session_id'],
+            board_data=board_data,
             board=board,
         )
         with django_db_blocker.unblock():
             session.save()
 
-    for gameplay_id, test_history in enumerate(test_histories):
+    for test_history in test_histories:
         with django_db_blocker.unblock():
-            session_data = Session.objects.get(pk=uuid.UUID(test_history["session_id"]))
+            session_data = Session.objects.get(pk=test_history["session_id"])
             board = NonogramGameplay(board_id=session_data.board_data.board_id)
+        gameplay_id = uuid.uuid4()
         for current_turn, move in enumerate(test_history["moves"]):
             x = move["x"]
             y = move["y"]
@@ -95,7 +105,7 @@ def add_test_data(
 
             history = History(
                 current_session=session_data,
-                gameplay_id=gameplay_id + 1,
+                gameplay_id=gameplay_id,
                 current_turn=current_turn + 1,
                 type_of_move=new_state,
                 x_coord=x,
