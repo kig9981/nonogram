@@ -102,10 +102,16 @@ class Session(models.Model):
 
         if changed:
             play[x][y] = new_state
+            if current_game is None:
+                gameplay_id = uuid.uuid4()
+                current_turn = 1
+            else:
+                gameplay_id=current_game.gameplay_id
+                current_turn=current_game.current_turn + 1
             new_history = History(
                 current_session=self,
-                gameplay_id=current_game.gameplay_id,
-                current_turn=current_game.current_turn + 1,
+                gameplay_id=gameplay_id,
+                current_turn=current_turn,
                 type_of_move=int(new_state),
                 x_coord=x,
                 y_coord=y,
@@ -125,7 +131,7 @@ class Session(models.Model):
         board_data = self.board_data
         current_game = self.current_game
 
-        if current_game is None or board_data is None:
+        if board_data is None:
             return False
 
         num_row = board_data.num_row
@@ -151,10 +157,16 @@ class Session(models.Model):
 
         if changed:
             play[x][y] = new_state
+            if current_game is None:
+                gameplay_id = uuid.uuid4()
+                current_turn = 1
+            else:
+                gameplay_id=current_game.gameplay_id
+                current_turn=current_game.current_turn + 1
             new_history = History(
                 current_session=self,
-                gameplay_id=current_game.gameplay_id,
-                current_turn=current_game.current_turn + 1,
+                gameplay_id=gameplay_id,
+                current_turn=current_turn,
                 type_of_move=int(new_state),
                 x_coord=x,
                 y_coord=y,
