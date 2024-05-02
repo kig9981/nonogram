@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.core.exceptions import ValidationError
 from Nonogram.utils import deserialize_gameboard
@@ -35,8 +36,8 @@ class NonogramBoard(models.Model):
 
 
 class History(models.Model):
-    current_session = models.ForeignKey("Session", on_delete=models.CASCADE)
-    gameplay_id = models.IntegerField()
+    current_session = models.ForeignKey("Session", on_delete=models.SET_NULL, null=True)
+    gameplay_id = models.UUIDField(default=uuid.uuid4, editable=False)
     current_turn = models.IntegerField()
     type_of_move = models.IntegerField(choices=MoveType)
     x_coord = models.IntegerField()
@@ -45,14 +46,14 @@ class History(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['current_session', 'gameplay_id', 'current_turn'],
-                name="(session, game, turn) tuple"
+                fields=['gameplay_id', 'current_turn'],
+                name="(game, turn) tuple"
             ),
         ]
 
 
 class Session(models.Model):
-    session_id = models.IntegerField(primary_key=True)
+    session_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     current_game = models.ForeignKey("History", on_delete=models.SET_DEFAULT, null=True, default=None)
     board_data = models.ForeignKey("NonogramBoard", on_delete=models.SET_DEFAULT, null=True, default=None)
     board = models.TextField(null=True)
