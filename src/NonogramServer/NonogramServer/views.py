@@ -216,7 +216,13 @@ async def create_new_session(request: HttpRequest):
     if request.method == "GET":
         return HttpResponse("create_new_session(get)")
     else:
-        return HttpResponse("create_new_session(post)")
+        try:
+            return HttpResponse("create_new_session(post)")
+        except KeyError as error:
+            return HttpResponseBadRequest(f"{error} is missing.")
+        except ObjectDoesNotExist as error:
+            return HttpResponseNotFound(f"{error} not found.")
+
 
 
 async def create_new_game(request: HttpRequest):
