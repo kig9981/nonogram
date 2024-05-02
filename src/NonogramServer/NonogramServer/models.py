@@ -15,9 +15,18 @@ class MoveType(models.IntegerChoices):
     MARK_QUESTION = 3
 
 
+def validate_uuid4(value):
+    try:
+        val = uuid.UUID(str(value))
+        if val.version != 4:
+            raise ValidationError("This field requires version 4 UUID.")
+    except ValueError:
+        raise ValidationError("Invalid UUID format.")
+
+
 # Create your models here.
 class NonogramBoard(models.Model):
-    board_id = models.IntegerField(primary_key=True)
+    board_id = models.UUIDField(primary_key=True, validators=[validate_uuid4], editable=False)
     board = models.TextField(null=True)
     num_row = models.IntegerField(default=5)
     num_column = models.IntegerField(default=5)
@@ -37,7 +46,7 @@ class NonogramBoard(models.Model):
 
 class History(models.Model):
     current_session = models.ForeignKey("Session", on_delete=models.SET_NULL, null=True)
-    gameplay_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    gameplay_id = models.UUIDField(validators=[validate_uuid4], editable=False)
     current_turn = models.IntegerField()
     type_of_move = models.IntegerField(choices=MoveType)
     x_coord = models.IntegerField()
@@ -53,7 +62,7 @@ class History(models.Model):
 
 
 class Session(models.Model):
-    session_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    session_id = models.UUIDField(primary_key=True, validators=[validate_uuid4], editable=False)
     current_game = models.ForeignKey("History", on_delete=models.SET_DEFAULT, null=True, default=None)
     board_data = models.ForeignKey("NonogramBoard", on_delete=models.SET_DEFAULT, null=True, default=None)
     board = models.TextField(null=True)
