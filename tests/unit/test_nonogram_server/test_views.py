@@ -406,6 +406,9 @@ async def test_create_new_game(
     test_sessions: List[Dict[str, Any]],
     add_test_data,
 ):
+    RANDOM_BOARD = 0
+    GAME_EXIST = 0
+    NEW_GAME_STARTED = 1
     url = '/create_new_game/'
     query_dict = {}
     for key, value in {
@@ -434,7 +437,7 @@ async def test_create_new_game(
 
     for test_session in test_sessions:
         session_id = test_session["session_id"]
-        board_id = test_session["session_id"]
+        board_id = test_session["board_id"]
 
         query_dict = {
             'session_id': session_id,
@@ -452,4 +455,42 @@ async def test_create_new_game(
         assert response.status_code == HTTPStatus.OK
         response_data = json.loads(response.content)
 
-        assert response_data[""]
+        assert response_data["response"] == GAME_EXIST
+
+        query_dict = {
+            'session_id': session_id,
+            'board_id': board_id,
+            'force_new_game': True,
+        }
+
+        response = await send_test_request(
+            mock_request=mock_request,
+            request_function=create_new_game,
+            url=url,
+            query_dict=query_dict,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        response_data = json.loads(response.content)
+
+        assert response_data["response"] == NEW_GAME_STARTED
+        assert response_data["board_id"] == board_id
+
+        query_dict = {
+            'session_id': session_id,
+            'board_id': RANDOM_BOARD,
+            'force_new_game': True,
+        }
+
+        response = await send_test_request(
+            mock_request=mock_request,
+            request_function=create_new_game,
+            url=url,
+            query_dict=query_dict,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        response_data = json.loads(response.content)
+
+        assert response_data["response"] == NEW_GAME_STARTED
+        assert response_data["board_id"] == board_id
