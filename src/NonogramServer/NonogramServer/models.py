@@ -26,7 +26,7 @@ def validate_uuid4(value):
 
 # Create your models here.
 class NonogramBoard(models.Model):
-    board_id = models.UUIDField(primary_key=True, validators=[validate_uuid4], editable=False)
+    board_id = models.UUIDField(validators=[validate_uuid4], editable=False, unique=True)
     board = models.TextField(null=True)
     num_row = models.IntegerField(default=5)
     num_column = models.IntegerField(default=5)
@@ -62,7 +62,7 @@ class History(models.Model):
 
 
 class Session(models.Model):
-    session_id = models.UUIDField(primary_key=True, validators=[validate_uuid4], editable=False)
+    session_id = models.UUIDField(primary_key=True, validators=[validate_uuid4], editable=False, unique=True)
     current_game = models.ForeignKey("History", on_delete=models.SET_DEFAULT, null=True, default=None)
     board_data = models.ForeignKey("NonogramBoard", on_delete=models.SET_DEFAULT, null=True, default=None)
     board = models.TextField(null=True, default=None)
