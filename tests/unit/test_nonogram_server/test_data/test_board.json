@@ -1,6 +1,6 @@
 [
     {
-        "board_id": -2,
+        "board_id": "1034e55b-e484-4356-8066-6f3836d800d0",
         "board": [[0, 1], [1, 0]],
         "num_row": 2,
         "num_column": 2
