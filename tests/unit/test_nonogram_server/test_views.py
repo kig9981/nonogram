@@ -18,6 +18,7 @@ from Nonogram.utils import deserialize_gameplay
 from Nonogram.utils import is_uuid4
 from Nonogram.NonogramBoard import NonogramGameplay
 from Nonogram.RealGameBoard import RealGameBoard
+from django.core.exceptions import ObjectDoesNotExist
 from django.test.client import RequestFactory
 from django.http import HttpRequest
 from django.http import HttpResponse
@@ -379,15 +380,23 @@ async def test_set_cell_state(
 @pytest.mark.django_db(transaction=True)
 async def test_create_new_session(mock_request: RequestFactory):
     url = '/create_new_session/'
-    query_dict = {"session_id": 0}
-    query = json.dumps(query_dict)
-    request = mock_request.post(
-        path=url,
-        data=query,
-        content_type="Application/json",
+    query_dict = {}
+    response = await send_test_request(
+        mock_request=mock_request,
+        request_function=create_new_session,
+        url=url,
+        query_dict=query_dict,
     )
-    response = await create_new_session(request)
-    assert response.content == b"create_new_session(post)"
+    assert response.status_code == HTTPStatus.OK
+    response_data = json.loads(response.content)
+
+    session_id = response_data["session_id"]
+
+    assert is_uuid4(session_id)
+    try:
+        await Session.objects.aget(pk=session_id)
+    except ObjectDoesNotExist:
+        assert "session_id saving failed." and False
 
 
 @pytest.mark.asyncio
