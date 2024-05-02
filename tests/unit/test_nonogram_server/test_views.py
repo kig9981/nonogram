@@ -25,7 +25,9 @@ from django.http import HttpResponse
 
 BOARD_ID_UNUSED_FOR_TEST = str(uuid.uuid4())
 SESSION_ID_UNUSED_FOR_TEST = str(uuid.uuid4())
+INCORRECT_ID = "xxxxxxx"
 BOARD_QUERY = 0
+GAME_NOT_START = 0
 
 
 @pytest.fixture
@@ -90,7 +92,6 @@ async def test_session_for_get_nonogram_board(
     url = '/get_nonogram_board/'
 
     for test_session in test_sessions:
-        GAME_NOT_START = 0
         session_id = test_session["session_id"]
         board_id = test_session["board_id"]
 
@@ -227,6 +228,36 @@ async def test_get_nonogram_board(
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.content.decode() == f"board_id {BOARD_ID_UNUSED_FOR_TEST} not found."
 
+    query_dict = {
+        "session_id": BOARD_QUERY,
+        "board_id": INCORRECT_ID,
+    }
+
+    response = await send_test_request(
+        mock_request=mock_request,
+        request_function=get_nonogram_board,
+        url=url,
+        query_dict=query_dict,
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.content.decode() == f"'board_id {INCORRECT_ID}' is not valid id."
+
+    query_dict = {
+        "session_id": INCORRECT_ID,
+        "game_turn": GAME_NOT_START,
+    }
+
+    response = await send_test_request(
+        mock_request=mock_request,
+        request_function=get_nonogram_board,
+        url=url,
+        query_dict=query_dict,
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.content.decode() == f"'session_id {INCORRECT_ID}' is not valid id."
+
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
@@ -325,6 +356,23 @@ async def test_set_cell_state(
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.content.decode() == f"session_id {SESSION_ID_UNUSED_FOR_TEST} not found."
+
+    query_dict = {
+        "session_id": INCORRECT_ID,
+        "x_coord": 0,
+        "y_coord": 0,
+        "new_state": GameBoardCellState.NOT_SELECTED,
+    }
+
+    response = await send_test_request(
+        mock_request=mock_request,
+        request_function=set_cell_state,
+        url=url,
+        query_dict=query_dict,
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.content.decode() == f"'session_id {INCORRECT_ID}' is not valid id."
 
 
 @pytest.mark.asyncio
