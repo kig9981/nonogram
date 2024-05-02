@@ -9,13 +9,17 @@ from django.core.exceptions import ValidationError
 from .models import NonogramBoard
 from .models import Session
 from .models import History
+from Nonogram.utils import GameBoardCellState
 from Nonogram.utils import async_get_from_db
+from Nonogram.utils import serialize_gameboard
 from Nonogram.utils import deserialize_gameboard
 from Nonogram.utils import deserialize_gameplay
 from Nonogram.NonogramBoard import NonogramGameplay
 from Nonogram.RealGameBoard import RealGameBoard
 import json
 import uuid
+import asyncio
+import random
 
 
 async def process_board_query(
@@ -66,7 +70,7 @@ async def process_gameplay_query(
     latest_turn_info = session.current_game
     latest_turn = 0 if latest_turn_info is None else latest_turn_info.current_turn
 
-    if not (0 <= game_turn <= latest_turn):
+    if not isinstance(game_turn, int) or not (0 <= game_turn <= latest_turn):
         return HttpResponseBadRequest(f"invalid game_turn. must be between 0 to {latest_turn}(latest turn)")
 
     if game_turn == latest_turn:
@@ -91,7 +95,7 @@ async def process_gameplay_query(
             current_session=session,
             gameplay_id=latest_turn_info.gameplay_id,
             current_turn__lte=game_turn,
-        ):
+        ).order_by("current_turn"):
             gameplay.mark(
                 x=move.x_coord,
                 y=move.y_coord,
@@ -115,8 +119,8 @@ async def get_nonogram_board(request: HttpRequest):
     노노그램 보드에 대한 정보를 반환하는 메서드.
     Args:
         Application/json으로 요청을 받는 것을 전제로 한다.
-        session_id (int): 유저의 세션 id
-        board_id (int): 게임보드의 id, session_id가 0인 경우에 참조한다.
+        session_id (str): 유저의 세션 id
+        board_id (str): 게임보드의 id, session_id가 0인 경우에 참조한다.
         game_turn (int): 원하는 턴 수. session_id가 0이 아닌 경우 참조한다.
 
     Returns:
@@ -157,7 +161,7 @@ async def set_cell_state(request: HttpRequest):
     진행중인 게임의 특정 cell의 상태를 변화시키는 메서드.
     Args:
         Application/json으로 요청을 받는 것을 전제로 한다.
-        session_id (int): 유저의 세션 id
+        session_id (str): 유저의 세션 id
         x_coord (int): 변화시키는 x좌표
         y_coord (int): 변화시키는 y좌표
         new_state (int): 변화시킬 상태, Nonogram.utils.GameBoardCellState 참고
@@ -189,7 +193,7 @@ async def set_cell_state(request: HttpRequest):
                 session_id=session_id,
             )
 
-            if session.current_game is None or session.board_data is None:
+            if session.board_data is None:
                 return HttpResponseNotFound("gameplay not found.")
 
             board_data = session.board_data
@@ -234,7 +238,8 @@ async def create_new_game(request: HttpRequest):
     특정 세션에서 새 게임을 시작하는 메서드.
     Args:
         Application/json으로 요청을 받는 것을 전제로 한다.
-        session_id (int): 유저의 세션 id
+        session_id (str): 유저의 세션 id
+        board_id (str): 시작하려고 하는 board_id, 0일 경우 랜덤 보드로 시작
         force_new_game (bool): 이미 진행중인 게임을 강제로 종료 후 시작할지 여부
     Returns:
         요청한 사항에 대한 응답을 json형식으로 리턴.
@@ -244,8 +249,76 @@ async def create_new_game(request: HttpRequest):
         response (int): 적용 여부에 따라 응답 코드를 반환.
                         0=GAME_EXIST
                         1=NEW_GAME_STARTED
+        board_id (str): 랜덤 보드를 요청한 경우 선택된 보드를, 아니면 argument로 주어진 board_id를 반환
     '''
     if request.method == "GET":
         return HttpResponse("create_new_game(get)")
     else:
-        return HttpResponse("create_new_game(post)")
+        RANDOM_BOARD = 0
+        GAME_EXIST = 0
+        NEW_GAME_STARTED = 1
+        query = json.loads(request.body)
+        try:
+            session_id = query['session_id']
+            board_id = query['board_id']
+            force_new_game = query['force_new_game']
+
+            if not isinstance(session_id, str) or not isinstance(board_id, str) or not isinstance(force_new_game, bool):
+                return HttpResponseBadRequest("invalid type.")
+
+            session = await async_get_from_db(
+                model_class=Session,
+                label=f"session_id {session_id}",
+                select_related=['current_game'],
+                session_id=session_id,
+            )
+
+            if session.board_data is not None:
+                game = session.current_game
+                if not force_new_game:
+                    response_data = {
+                        "response": GAME_EXIST,
+                        "gameplay_id": game.gameplay_id
+                    }
+                    return JsonResponse(response_data)
+
+                # TODO: 비동기 task queue를 사용해서 업데이트하는 로직으로 변경
+                coroutine = []
+
+                async for history in History.objects.filter(current_session=session):
+                    history.current_session=None
+                    coroutine.append(history.asave())
+
+                await asyncio.gather(*coroutine)
+
+            if board_id == RANDOM_BOARD:
+                number_of_board = await NonogramBoard.objects.acount()
+                random_pk = random.randint(1, number_of_board)
+                board_data = await NonogramBoard.objects.aget(pk=random_pk)
+                board_id = str(board_data.board_id)
+            else:
+                board_data = await NonogramBoard.objects.aget(board_id=board_id)
+
+            session.board_data = board_data
+            session.board = serialize_gameboard(
+                [
+                    [GameBoardCellState.NOT_SELECTED for _ in board_data.num_column]
+                    for _ in board_data.num_row
+                ]
+            )
+            session.current_game = None
+
+            await session.asave()
+
+            response_data = {
+                "response": NEW_GAME_STARTED,
+                "board_id": board_id,
+            }
+            return JsonResponse(response_data)
+
+        except KeyError as error:
+            return HttpResponseBadRequest(f"{error} is missing.")
+        except ObjectDoesNotExist as error:
+            return HttpResponseNotFound(f"{error} not found.")
+        except ValidationError as error:
+            return HttpResponseBadRequest(f"'{error.message}' is not valid id.")
