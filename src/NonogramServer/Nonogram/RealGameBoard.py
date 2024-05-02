@@ -5,12 +5,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from typing import List
 from typing import Union
 from typing import Optional
+from uuid import UUID
 
 
 class RealGameBoard:
     def __init__(
         self,
-        board_id: int,
+        board_id: UUID,
         board: Optional[List[List[Union[RealBoardCellState, int]]]] = None,
     ):
         self.board_id = board_id
