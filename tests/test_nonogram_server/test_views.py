@@ -325,8 +325,9 @@ async def test_set_cell_state(
     assert response.content.decode() == f"session_id {SESSION_ID_UNUSED_FOR_TEST} not found."
 
 
-@pytest.mark.django_db
-def test_create_new_session(mock_request: RequestFactory):
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_create_new_session(mock_request: RequestFactory):
     url = '/create_new_session/'
     query_dict = {"session_id": 0}
     query = json.dumps(query_dict)
@@ -335,12 +336,13 @@ def test_create_new_session(mock_request: RequestFactory):
         data=query,
         content_type="Application/json",
     )
-    response = create_new_session(request)
+    response = await create_new_session(request)
     assert response.content == b"create_new_session(post)"
 
 
-@pytest.mark.django_db
-def test_create_new_game(mock_request: RequestFactory):
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_create_new_game(mock_request: RequestFactory):
     url = '/create_new_game/'
     query_dict = {"session_id": 0}
     query = json.dumps(query_dict)
@@ -349,5 +351,5 @@ def test_create_new_game(mock_request: RequestFactory):
         data=query,
         content_type="Application/json",
     )
-    response = create_new_game(request)
+    response = await create_new_game(request)
     assert response.content == b"create_new_game(post)"

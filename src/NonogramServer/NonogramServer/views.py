@@ -204,7 +204,7 @@ async def set_cell_state(request: HttpRequest):
             return HttpResponseNotFound(f"{error} not found.")
 
 
-def create_new_session(request: HttpRequest):
+async def create_new_session(request: HttpRequest):
     '''
     새로운 세션을 생성하는 메서드.
     Args:
@@ -219,7 +219,7 @@ def create_new_session(request: HttpRequest):
         return HttpResponse("create_new_session(post)")
 
 
-def create_new_game(request: HttpRequest):
+async def create_new_game(request: HttpRequest):
     '''
     특정 세션에서 새 게임을 시작하는 메서드.
     Args:
