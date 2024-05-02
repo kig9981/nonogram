@@ -251,7 +251,7 @@ async def test_session_for_set_cell_state(
         session_id = test_session["session_id"]
         board_id = test_session["board_id"]
 
-        board_data = await NonogramBoard.objects.aget(pk=uuid.UUID(board_id))
+        board_data = await NonogramBoard.objects.aget(pk=board_id)
 
         real_board = RealGameBoard(
             board_id=board_id,
@@ -262,7 +262,7 @@ async def test_session_for_set_cell_state(
             board_id=board_id,
             board=real_board,
         )
-        session = await Session.objects.aget(pk=uuid.UUID(session_id))
+        session = await Session.objects.aget(pk=session_id)
         play.playboard = deserialize_gameplay(session.board)
 
         for x in range(play.num_row):
