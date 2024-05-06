@@ -495,6 +495,7 @@ async def test_create_new_game(
         assert response_data["response"] == NEW_GAME_STARTED
         assert response_data["board_id"] == board_id
 
+
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 async def test_create_new_game_with_new_session(
