@@ -272,6 +272,8 @@ async def create_new_game(request: HttpRequest):
                 session_id=session_id,
             )
 
+            coroutine = []
+
             if session.board_data is not None:
                 if not force_new_game:
                     response_data = {
@@ -280,13 +282,10 @@ async def create_new_game(request: HttpRequest):
                     return JsonResponse(response_data)
 
                 # TODO: 비동기 task queue를 사용해서 업데이트하는 로직으로 변경
-                coroutine = []
 
                 async for history in History.objects.filter(current_session=session):
                     history.current_session = None
-                    coroutine.append(history.asave())
-
-                await asyncio.gather(*coroutine)
+                    coroutine.append(asyncio.create_task(history.asave()))
 
             if board_id == RANDOM_BOARD:
                 # TODO: 더 빠르게 랜덤셀렉트하는걸로 바꾸기
@@ -308,12 +307,15 @@ async def create_new_game(request: HttpRequest):
             )
             session.current_game = None
 
-            await session.asave()
+            coroutine.append(asyncio.create_task(session.asave()))
 
             response_data = {
                 "response": NEW_GAME_STARTED,
                 "board_id": board_id,
             }
+
+            await asyncio.gather(*coroutine)
+
             return JsonResponse(response_data)
 
         except KeyError as error:
