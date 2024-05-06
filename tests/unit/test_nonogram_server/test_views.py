@@ -12,6 +12,7 @@ from NonogramServer.views import get_nonogram_board
 from NonogramServer.views import set_cell_state
 from NonogramServer.views import create_new_session
 from NonogramServer.views import create_new_game
+from NonogramServer.views import add_nonogram_board
 from Nonogram.utils import GameBoardCellState
 from Nonogram.utils import deserialize_gameboard
 from Nonogram.utils import deserialize_gameplay
@@ -527,3 +528,11 @@ async def test_create_new_game_with_new_session(
         response_data = json.loads(response.content)
 
         assert response_data["response"] == NEW_GAME_STARTED
+
+
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_add_nonogram_board(
+    mock_request: RequestFactory,
+):
+    pass
