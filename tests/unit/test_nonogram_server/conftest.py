@@ -46,20 +46,12 @@ def test_histories():
 
 
 @pytest.fixture
-def add_test_data(
+def add_board_test_data(
     django_db_setup,
     django_db_blocker,
     test_boards,
-    test_sessions,
-    test_histories,
 ):
     from NonogramServer.models import NonogramBoard
-    from NonogramServer.models import Session
-    from NonogramServer.models import History
-    from Nonogram.NonogramBoard import NonogramGameplay
-    from Nonogram.RealGameBoard import RealGameBoard
-    from Nonogram.utils import deserialize_gameboard
-    from Nonogram.utils import serialize_gameplay
 
     for test_board in test_boards:
         nonogram_board = NonogramBoard(
@@ -71,6 +63,20 @@ def add_test_data(
         )
         with django_db_blocker.unblock():
             nonogram_board.save()
+
+
+@pytest.fixture
+def add_session_test_data(
+    django_db_setup,
+    django_db_blocker,
+    test_sessions,
+):
+    from NonogramServer.models import NonogramBoard
+    from NonogramServer.models import Session
+    from Nonogram.NonogramBoard import NonogramGameplay
+    from Nonogram.RealGameBoard import RealGameBoard
+    from Nonogram.utils import deserialize_gameboard
+    from Nonogram.utils import serialize_gameplay
 
     for test_session in test_sessions:
         board_id = test_session['board_id']
@@ -92,6 +98,36 @@ def add_test_data(
         )
         with django_db_blocker.unblock():
             session.save()
+
+
+@pytest.fixture
+def add_new_session_test_data(
+    django_db_setup,
+    django_db_blocker,
+    test_sessions,
+):
+    from NonogramServer.models import Session
+
+    for test_session in test_sessions:
+        session = Session(
+            session_id=test_session['session_id'],
+            board_data=None,
+            board=None,
+        )
+        with django_db_blocker.unblock():
+            session.save()
+
+
+@pytest.fixture
+def add_history_test_data(
+    django_db_setup,
+    django_db_blocker,
+    test_histories,
+):
+    from NonogramServer.models import Session
+    from NonogramServer.models import History
+    from Nonogram.NonogramBoard import NonogramGameplay
+    from Nonogram.utils import serialize_gameplay
 
     for test_history in test_histories:
         with django_db_blocker.unblock():
@@ -117,3 +153,14 @@ def add_test_data(
                 session_data.current_game = history
                 session_data.board = serialize_gameplay(board.get_int_board())
                 session_data.save()
+
+
+@pytest.fixture
+def add_test_data(
+    django_db_setup,
+    django_db_blocker,
+    add_board_test_data,
+    add_session_test_data,
+    add_history_test_data
+):
+    pass
