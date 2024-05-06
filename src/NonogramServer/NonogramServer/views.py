@@ -242,9 +242,7 @@ async def create_new_game(request: HttpRequest):
         force_new_game (bool): 이미 진행중인 게임을 강제로 종료 후 시작할지 여부
     Returns:
         요청한 사항에 대한 응답을 json형식으로 리턴.
-        session_id: 생성에 성공한 경우 해당 session_id, 실패한 경우 0을 반환
 
-        성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
         response (int): 적용 여부에 따라 응답 코드를 반환.
                         0=GAME_EXIST
                         1=NEW_GAME_STARTED
@@ -324,3 +322,17 @@ async def create_new_game(request: HttpRequest):
             return HttpResponseNotFound(f"{error} not found.")
         except ValidationError as error:
             return HttpResponseBadRequest(f"'{error.message}' is not valid id.")
+
+
+async def add_nonogram_board(request: HttpRequest):
+    '''
+    새 노노그램 보드를 db에 추가하는 메서드
+    Args:
+        Application/json으로 요청을 받는 것을 전제로 한다.
+        board (str): 이미지의 base64 데이터
+        theme (str, optional): 이미지의 테마.
+    Returns:
+        요청한 사항에 대한 응답을 json형식으로 리턴.
+        board_id (str): 생성한 board_id의 uuid를 리턴, 실패시 빈 문자열을 리턴.
+    '''
+    pass
