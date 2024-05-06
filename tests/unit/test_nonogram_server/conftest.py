@@ -101,6 +101,24 @@ def add_session_test_data(
 
 
 @pytest.fixture
+def add_new_session_test_data(
+    django_db_setup,
+    django_db_blocker,
+    test_sessions,
+):
+    from NonogramServer.models import Session
+
+    for test_session in test_sessions:
+        session = Session(
+            session_id=test_session['session_id'],
+            board_data=None,
+            board=None,
+        )
+        with django_db_blocker.unblock():
+            session.save()
+
+
+@pytest.fixture
 def add_history_test_data(
     django_db_setup,
     django_db_blocker,

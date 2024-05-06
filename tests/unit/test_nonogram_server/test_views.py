@@ -29,6 +29,9 @@ SESSION_ID_UNUSED_FOR_TEST = str(uuid.uuid4())
 INCORRECT_ID = "xxxxxxx"
 BOARD_QUERY = 0
 GAME_NOT_START = 0
+RANDOM_BOARD = 0
+GAME_EXIST = 0
+NEW_GAME_STARTED = 1
 
 
 @pytest.fixture
@@ -406,9 +409,6 @@ async def test_create_new_game(
     test_sessions: List[Dict[str, Any]],
     add_test_data,
 ):
-    RANDOM_BOARD = 0
-    GAME_EXIST = 0
-    NEW_GAME_STARTED = 1
     url = '/create_new_game/'
     query_dict = {}
     for key, value in {
@@ -494,3 +494,35 @@ async def test_create_new_game(
 
         assert response_data["response"] == NEW_GAME_STARTED
         assert response_data["board_id"] == board_id
+
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_create_new_game_with_new_session(
+    mock_request: RequestFactory,
+    test_sessions: List[Dict[str, Any]],
+    add_board_test_data,
+    add_new_session_test_data,
+):
+    url = '/create_new_game/'
+
+    for test_session in test_sessions:
+        session_id = test_session["session_id"]
+        board_id = test_session["board_id"]
+
+        query_dict = {
+            'session_id': session_id,
+            'board_id': board_id,
+            'force_new_game': False,
+        }
+
+        response = await send_test_request(
+            mock_request=mock_request,
+            request_function=create_new_game,
+            url=url,
+            query_dict=query_dict,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        response_data = json.loads(response.content)
+
+        assert response_data["response"] == NEW_GAME_STARTED
