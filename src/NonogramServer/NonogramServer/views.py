@@ -10,15 +10,20 @@ from .models import NonogramBoard
 from .models import Session
 from .models import History
 from Nonogram.utils import GameBoardCellState
+from Nonogram.utils import RealBoardCellState
 from Nonogram.utils import async_get_from_db
 from Nonogram.utils import serialize_gameboard
 from Nonogram.utils import deserialize_gameboard
 from Nonogram.utils import deserialize_gameplay
 from Nonogram.NonogramBoard import NonogramGameplay
 from Nonogram.RealGameBoard import RealGameBoard
+from PIL import Image
 import json
 import uuid
 import asyncio
+import io
+import base64
+import re
 
 
 async def process_board_query(
@@ -242,9 +247,7 @@ async def create_new_game(request: HttpRequest):
         force_new_game (bool): 이미 진행중인 게임을 강제로 종료 후 시작할지 여부
     Returns:
         요청한 사항에 대한 응답을 json형식으로 리턴.
-        session_id: 생성에 성공한 경우 해당 session_id, 실패한 경우 0을 반환
 
-        성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
         response (int): 적용 여부에 따라 응답 코드를 반환.
                         0=GAME_EXIST
                         1=NEW_GAME_STARTED
@@ -324,3 +327,67 @@ async def create_new_game(request: HttpRequest):
             return HttpResponseNotFound(f"{error} not found.")
         except ValidationError as error:
             return HttpResponseBadRequest(f"'{error.message}' is not valid id.")
+
+
+async def add_nonogram_board(request: HttpRequest):
+    '''
+    새 노노그램 보드를 db에 추가하는 메서드
+    Args:
+        Application/json으로 요청을 받는 것을 전제로 한다.
+        board (str): 이미지의 base64 데이터
+        num_row (int) : 추가하려는 노노그램 게임의 행의 수
+        num_column (int) : 추가하려는 노노그램 게임의 열의 수
+        theme (str, optional): 이미지의 테마.
+    Returns:
+        요청한 사항에 대한 응답을 json형식으로 리턴.
+        만약 valid한 base64문자열이 아니면 400에러(invalid base64 string) 리턴.
+        base64로 디코딩한 것이 PIL 이미지가 아니면 400에러(invalid image format) 리턴
+        board_id (str): 생성한 board_id의 uuid를 리턴, 실패시 빈 문자열을 리턴.
+    '''
+    if request.method == "GET":
+        return HttpResponse("add_nonogram_board(get)")
+    else:
+        BLACK_THRESHOLD = 127
+        query = json.loads(request.body)
+        try:
+            base64_board_data = query['board']
+            num_row = query['num_row']
+            num_column = query['num_column']
+            theme = query['theme'] if 'theme' in query else ''
+            if not isinstance(base64_board_data, str) or not isinstance(num_row, int) or not isinstance(num_column, int) or not isinstance(theme, str):
+                return HttpResponseBadRequest("invalid type.")
+            if not re.fullmatch('[A-Za-z0-9+/]*={0,2}', base64_board_data):
+                return HttpResponseBadRequest("invalid base64 string")
+            board_image_data = base64.b64decode(base64_board_data)
+            board_image = Image.open(io.BytesIO(board_image_data))
+            # TODO: 이미지가 invalid할때의 예외처리 추가
+            board_id = str(uuid.uuid4())
+
+            bw_board_image = board_image.convert('1')
+            resized_board_image = bw_board_image.resize((num_row, num_column))
+            pixels = resized_board_image.load()
+
+            board = [
+                [int(RealBoardCellState.BLACK) if pixels[x, y] <= BLACK_THRESHOLD else int(RealBoardCellState.WHITE) for y in range(num_column)]
+                for x in range(num_row)
+            ]
+
+            nonogram_board = NonogramBoard(
+                board_id=board_id,
+                board=board,
+                num_row=num_row,
+                num_column=num_column,
+                theme=theme,
+            )
+
+            # TODO: 비동기 task queue를 사용해서 업데이트하는 로직으로 변경
+            await nonogram_board.asave()
+
+            response_data = {
+                "board_id": board_id,
+            }
+
+            return JsonResponse(response_data)
+
+        except KeyError as error:
+            return HttpResponseBadRequest(f"{error} is missing.")

@@ -12,7 +12,7 @@ def pytest_configure():
     django.setup()
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def test_boards():
     cwd = os.path.dirname(__file__)
     test_data_path = os.path.join(cwd, 'test_data')
@@ -23,7 +23,7 @@ def test_boards():
     return test_boards
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def test_sessions():
     cwd = os.path.dirname(__file__)
     test_data_path = os.path.join(cwd, 'test_data')
@@ -34,7 +34,7 @@ def test_sessions():
     return test_sessions
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def test_histories():
     cwd = os.path.dirname(__file__)
     test_data_path = os.path.join(cwd, 'test_data')

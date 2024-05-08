@@ -24,4 +24,5 @@ urlpatterns = [
     path("set_cell_state/", views.set_cell_state, name="set_cell_state"),
     path("create_new_session/", views.create_new_session, name="create_new_session"),
     path("create_new_game/", views.create_new_game, name="create_new_game"),
+    path("add_nonogram_board/", views.add_nonogram_board, name="add_nonogram_board"),
 ]

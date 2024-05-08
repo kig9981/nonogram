@@ -5,3 +5,4 @@ db.*
 .nonogram_pgpass
 .env
 migrations/
+poetry.lock
