@@ -1,6 +1,9 @@
 import pytest
 import json
 import uuid
+import os
+import io
+import base64
 from typing import Any
 from typing import List
 from typing import Dict
@@ -12,6 +15,7 @@ from NonogramServer.views import get_nonogram_board
 from NonogramServer.views import set_cell_state
 from NonogramServer.views import create_new_session
 from NonogramServer.views import create_new_game
+from NonogramServer.views import add_nonogram_board
 from Nonogram.utils import GameBoardCellState
 from Nonogram.utils import deserialize_gameboard
 from Nonogram.utils import deserialize_gameplay
@@ -22,6 +26,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.test.client import RequestFactory
 from django.http import HttpRequest
 from django.http import HttpResponse
+from PIL import Image
 
 
 BOARD_ID_UNUSED_FOR_TEST = str(uuid.uuid4())
@@ -527,3 +532,34 @@ async def test_create_new_game_with_new_session(
         response_data = json.loads(response.content)
 
         assert response_data["response"] == NEW_GAME_STARTED
+
+
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_add_nonogram_board(
+    mock_request: RequestFactory,
+):
+    url = '/add_nonogram_board/'
+    cwd = os.path.dirname(__file__)
+    test_data_path = os.path.join(cwd, 'test_data')
+    test_image_path = os.path.join(test_data_path, 'test_board_image.jpg')
+    with Image.open(test_image_path) as img:
+        num_row, num_column = img.size
+        byte_image = io.BytesIO()
+        img.save(byte_image, format="JPEG")
+        b64_image = base64.b64encode(byte_image.getvalue()).decode()
+    
+    query_dict = {
+        'board': b64_image,
+        'num_row': num_row,
+        'num_column': num_column,
+    }
+
+    response = await send_test_request(
+        mock_request=mock_request,
+        request_function=add_nonogram_board,
+        url=url,
+        query_dict=query_dict,
+    )
+
+    assert response.status_code == HTTPStatus.OK
