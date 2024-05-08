@@ -22,7 +22,7 @@ def testdb_healthcheck(
             user=user,
             password=password,
             host=host,
-            port=port,            
+            port=port,
         )
         cursor = conn.cursor()
         cursor.execute("SELECT 1")
@@ -61,7 +61,6 @@ def pytest_configure():
     sys.path.insert(0, 'src/NonogramServer/')
     os.environ['DJANGO_SETTINGS_MODULE'] = 'NonogramServer.settings'
     django.setup()
-    
 
 
 @pytest.fixture(scope="session")
