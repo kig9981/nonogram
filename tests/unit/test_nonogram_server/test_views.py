@@ -548,7 +548,7 @@ async def test_add_nonogram_board(
         byte_image = io.BytesIO()
         img.save(byte_image, format="JPEG")
         b64_image = base64.b64encode(byte_image.getvalue()).decode()
-    
+
     query_dict = {
         'board': b64_image,
         'num_row': num_row,
