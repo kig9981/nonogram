@@ -4,12 +4,64 @@ import json
 import django
 import pytest
 import uuid
+import psycopg2
+from psycopg2 import OperationalError
+from django.conf import settings
+
+
+def testdb_healthcheck(
+    db,
+    user,
+    password,
+    host,
+    port,
+) -> bool:
+    try:
+        conn = psycopg2.connect(
+            dbname=db,
+            user=user,
+            password=password,
+            host=host,
+            port=port,            
+        )
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        cursor.close()
+        conn.close()
+        return True
+    except OperationalError:
+        return False
+
+
+@pytest.fixture(scope='session')
+def django_db_modify_db_settings(docker_ip, docker_services):
+    host = docker_ip
+    port = 5433
+    user = "testdb"
+    password = 'testdbpassword'
+    db = "testdb"
+    docker_services.wait_until_responsive(
+        timeout=30.0,
+        pause=0.1,
+        check=lambda: testdb_healthcheck(db, user, password, host, port)
+    )
+    settings.DATABASES['default']["NAME"] = db
+    settings.DATABASES['default']["USER"] = user
+    settings.DATABASES['default']["PASSWORD"] = password
+    settings.DATABASES['default']["HOST"] = host
+    settings.DATABASES['default']["PORT"] = f"{port}"
+
+
+@pytest.fixture(scope="session")
+def docker_compose_file(pytestconfig):
+    return str(pytestconfig.rootdir.join(os.path.join("tests", "test_database_docker_compose.yaml")))
 
 
 def pytest_configure():
-    os.environ['DJANGO_SETTINGS_MODULE'] = 'NonogramServer.settings'
     sys.path.insert(0, 'src/NonogramServer/')
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'NonogramServer.settings'
     django.setup()
+    
 
 
 @pytest.fixture(scope="session")
