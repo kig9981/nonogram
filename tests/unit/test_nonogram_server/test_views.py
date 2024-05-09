@@ -27,6 +27,7 @@ from django.test.client import RequestFactory
 from django.http import HttpRequest
 from django.http import HttpResponse
 from PIL import Image
+from ..util import send_test_request
 
 
 BOARD_ID_UNUSED_FOR_TEST = str(uuid.uuid4())
@@ -37,28 +38,6 @@ GAME_NOT_START = 0
 RANDOM_BOARD = 0
 GAME_EXIST = 0
 NEW_GAME_STARTED = 1
-
-
-@pytest.fixture
-def mock_request():
-    return RequestFactory()
-
-
-async def send_test_request(
-    mock_request: RequestFactory,
-    request_function: Callable[[HttpRequest], HttpResponse],
-    url: str,
-    query_dict: Dict[str, Any],
-) -> HttpResponse:
-    query = json.dumps(query_dict)
-    request = mock_request.post(
-        path=url,
-        data=query,
-        content_type="Application/json",
-    )
-    response = await request_function(request)
-
-    return response
 
 
 @pytest.mark.asyncio
