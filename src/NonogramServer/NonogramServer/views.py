@@ -18,6 +18,7 @@ from Nonogram.utils import deserialize_gameplay
 from Nonogram.NonogramBoard import NonogramGameplay
 from Nonogram.RealGameBoard import RealGameBoard
 from PIL import Image
+from PIL import UnidentifiedImageError
 import json
 import uuid
 import asyncio
@@ -360,7 +361,10 @@ async def add_nonogram_board(request: HttpRequest):
                 return HttpResponseBadRequest("invalid base64 string")
             board_image_data = base64.b64decode(base64_board_data)
             board_image = Image.open(io.BytesIO(board_image_data))
-            # TODO: 이미지가 invalid할때의 예외처리 추가
+            
+            board_image.load()
+            board_image.verify()
+
             board_id = str(uuid.uuid4())
 
             bw_board_image = board_image.convert('1')
@@ -391,3 +395,5 @@ async def add_nonogram_board(request: HttpRequest):
 
         except KeyError as error:
             return HttpResponseBadRequest(f"{error} is missing.")
+        except (ValueError, UnidentifiedImageError):
+            return HttpResponseBadRequest(f"invalid image data.")
