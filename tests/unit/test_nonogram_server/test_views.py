@@ -563,3 +563,20 @@ async def test_add_nonogram_board(
     )
 
     assert response.status_code == HTTPStatus.OK
+
+    b64_text = base64.b64encode(b"test image string").decode()
+
+    query_dict = {
+        'board': b64_text,
+        'num_row': num_row,
+        'num_column': num_column,
+    }
+
+    response = await send_test_request(
+        mock_request=mock_request,
+        request_function=add_nonogram_board,
+        url=url,
+        query_dict=query_dict,
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
