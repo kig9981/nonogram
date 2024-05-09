@@ -19,6 +19,7 @@ locust = "^2.26.0"
 pillow = "^10.3.0"
 pytest-docker = "^3.1.1"
 aiohttp = "^3.9.5"
+pytest-mock = "^3.14.0"
 
 
 [build-system]
