@@ -7,7 +7,6 @@ import base64
 from typing import Any
 from typing import List
 from typing import Dict
-from typing import Callable
 from http import HTTPStatus
 from NonogramServer.models import NonogramBoard
 from NonogramServer.models import Session
@@ -24,8 +23,6 @@ from Nonogram.NonogramBoard import NonogramGameplay
 from Nonogram.RealGameBoard import RealGameBoard
 from django.core.exceptions import ObjectDoesNotExist
 from django.test.client import RequestFactory
-from django.http import HttpRequest
-from django.http import HttpResponse
 from PIL import Image
 from ..util import send_test_request
 

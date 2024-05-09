@@ -1,4 +1,3 @@
-import pytest
 import json
 from django.test.client import RequestFactory
 from django.http import HttpRequest
