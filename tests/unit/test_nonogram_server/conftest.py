@@ -34,7 +34,11 @@ def testdb_healthcheck(
 
 
 @pytest.fixture(scope='session')
-def django_db_modify_db_settings(docker_ip, docker_services):
+def django_db_modify_db_settings(
+    docker_ip,
+    docker_services,
+    django_db_modify_db_settings_parallel_suffix,
+):
     host = docker_ip
     port = 5433
     user = "testdb"
