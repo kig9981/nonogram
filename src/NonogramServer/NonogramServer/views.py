@@ -361,7 +361,7 @@ async def add_nonogram_board(request: HttpRequest):
                 return HttpResponseBadRequest("invalid base64 string")
             board_image_data = base64.b64decode(base64_board_data)
             board_image = Image.open(io.BytesIO(board_image_data))
-            
+
             board_image.load()
             board_image.verify()
 
@@ -396,4 +396,4 @@ async def add_nonogram_board(request: HttpRequest):
         except KeyError as error:
             return HttpResponseBadRequest(f"{error} is missing.")
         except (ValueError, UnidentifiedImageError):
-            return HttpResponseBadRequest(f"invalid image data.")
+            return HttpResponseBadRequest("invalid image data.")
