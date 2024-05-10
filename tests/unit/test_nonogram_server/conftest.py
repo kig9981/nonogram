@@ -9,20 +9,21 @@ from psycopg2 import OperationalError
 from django.conf import settings
 
 
-def testdb_healthcheck(
-    db,
-    user,
-    password,
-    host,
-    port,
-) -> bool:
+DB_NAME = "testdb"
+DB_USER = "testdb"
+DB_PASSWORD = "testdbpassword"
+DB_HOST = "0.0.0.0"
+DB_PORT = 5433
+
+
+def testdb_healthcheck() -> bool:
     try:
         conn = psycopg2.connect(
-            dbname=db,
-            user=user,
-            password=password,
-            host=host,
-            port=port,
+            dbname=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            host=DB_HOST,
+            port=DB_PORT,
         )
         cursor = conn.cursor()
         cursor.execute("SELECT 1")
@@ -35,25 +36,14 @@ def testdb_healthcheck(
 
 @pytest.fixture(scope='session')
 def django_db_modify_db_settings(
-    docker_ip,
     docker_services,
     django_db_modify_db_settings_parallel_suffix,
 ):
-    host = docker_ip
-    port = 5433
-    user = "testdb"
-    password = 'testdbpassword'
-    db = "testdb"
     docker_services.wait_until_responsive(
         timeout=30.0,
         pause=0.1,
-        check=lambda: testdb_healthcheck(db, user, password, host, port)
+        check=lambda: testdb_healthcheck()
     )
-    settings.DATABASES['default']["NAME"] = db
-    settings.DATABASES['default']["USER"] = user
-    settings.DATABASES['default']["PASSWORD"] = password
-    settings.DATABASES['default']["HOST"] = host
-    settings.DATABASES['default']["PORT"] = f"{port}"
 
 
 @pytest.fixture(scope="session")
@@ -64,6 +54,12 @@ def docker_compose_file(pytestconfig):
 def pytest_configure():
     sys.path.insert(0, 'src/NonogramServer/')
     os.environ['DJANGO_SETTINGS_MODULE'] = 'NonogramServer.settings'
+    os.environ["NONOGRAM_SERVER_SECRET_KEY"] = "NONOGRAM_SERVER_SECRET_KEY"
+    os.environ["DB_NAME"] = DB_NAME
+    os.environ["DB_USER"] = DB_USER
+    os.environ["DB_PASSWORD"] = DB_PASSWORD
+    os.environ["DB_HOST"] = DB_HOST
+    os.environ["DB_PORT"] = f"{DB_PORT}"
     django.setup()
 
 
