@@ -26,9 +26,13 @@ environ.Env.read_env()
 SECRET_KEY = env("NONOGRAM_SERVER_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DEBUG")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    env("NONOGRAM_SERVER_HOST"),
+    env("API_SERVER_HOST"),
+    env("DB_HOST"),
+]
 
 
 # Application definition
