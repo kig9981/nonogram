@@ -49,9 +49,6 @@ services:
       - "${API_SERVER_PORT}:8000"
     networks:
       - nonogram_net
-    depends_on:
-      nonogramserverdb:
-        condition: service_healthy
     env_file:
       - .env
 
