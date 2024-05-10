@@ -1,0 +1,14 @@
+FROM python:3.10-slim-bullseye
+
+COPY pyproject.toml pyproject.toml
+COPY src/NonogramServer /NonogramServer
+
+RUN pip install poetry
+ENV PATH="${PATH}:/root/.local/bin"
+
+RUN poetry install
+
+WORKDIR /NonogramServer
+
+RUN chmod 777 ./run_server.sh
+ENTRYPOINT ["./run_server.sh"]
