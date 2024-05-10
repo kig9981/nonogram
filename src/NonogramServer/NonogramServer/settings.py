@@ -29,6 +29,7 @@ SECRET_KEY = env("NONOGRAM_SERVER_SECRET_KEY")
 DEBUG = env.bool("DEBUG")
 
 ALLOWED_HOSTS = [
+    "localhost",
     env("NONOGRAM_SERVER_HOST"),
     env("API_SERVER_HOST"),
     env("DB_HOST"),
