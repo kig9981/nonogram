@@ -1,0 +1,60 @@
+services:
+  nonogramserverdb:
+    image: postgres:latest
+    restart: always
+    environment:
+      PGUSER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+    ports:
+      - "${DB_PORT}:5432"
+    networks:
+      - nonogram_net
+    env_file:
+      - .env
+
+  nonogramserver:
+    image: nonogram_server
+    environment:
+      NONOGRAM_SERVER_SECRET_KEY: ${NONOGRAM_SERVER_SECRET_KEY}
+      NONOGRAM_SERVER_HOST: ${NONOGRAM_SERVER_HOST}
+      API_SERVER_HOST: ${API_SERVER_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DEBUG: ${DEBUG}
+    ports:
+      - "${NONOGRAM_SERVER_PORT}:8000"
+    networks:
+      - nonogram_net
+    depends_on:
+      nonogramserverdb:
+        condition: service_healthy
+    env_file:
+      - .env
+
+  apiserver:
+    image: api_server
+    environment:
+      API_SERVER_SECRET_KEY: ${API_SERVER_SECRET_KEY}
+      NONOGRAM_SERVER_HOST: ${NONOGRAM_SERVER_HOST}
+      API_SERVER_HOST: ${API_SERVER_HOST}
+      DEBUG: ${DEBUG}
+    ports:
+      - "${API_SERVER_PORT}:8000"
+    networks:
+      - nonogram_net
+    depends_on:
+      nonogramserverdb:
+        condition: service_healthy
+    env_file:
+      - .env
+
+networks:
+  nonogram_net:
+    driver: bridge
