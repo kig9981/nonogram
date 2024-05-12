@@ -16,7 +16,10 @@ import environ
 
 env = environ.Env()
 environ.Env.read_env()
-NONOGRAM_SERVER_URL = f"{env("NONOGRAM_SERVER_PROTOCOL")}://{env("NONOGRAM_SERVER_HOST")}:{env("NONOGRAM_SERVER_PORT")}"
+NONOGRAM_SERVER_PROTOCOL = env("NONOGRAM_SERVER_PROTOCOL")
+NONOGRAM_SERVER_HOST = env("NONOGRAM_SERVER_HOST")
+NONOGRAM_SERVER_PORT = env("NONOGRAM_SERVER_PORT")
+NONOGRAM_SERVER_URL = f"{NONOGRAM_SERVER_PROTOCOL}://{NONOGRAM_SERVER_HOST}:{NONOGRAM_SERVER_PORT}"
 
 
 async def send_request(
@@ -61,8 +64,8 @@ async def get_nonogram_board(request: HttpRequest):
     else:
         GAMEBOARD_QUERY = 0
 
-        if request.content_type != "Application/json":
-            return HttpResponseBadRequest("Must be Application/json request.")
+        if request.content_type != "application/json":
+            return HttpResponseBadRequest(f"Must be Application/json request.")
 
         query = json.loads(request.body)
 
