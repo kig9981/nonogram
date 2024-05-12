@@ -122,7 +122,42 @@ async def get_nonogram_play(request: HttpRequest):
     if request.method == "GET":
         return HttpResponse("get_nonogram_play(get)")
     else:
-        return HttpResponse("get_nonogram_play(post)")
+        LASTEST_TURN = -1
+
+        if request.content_type != "application/json":
+            return HttpResponseBadRequest("Must be Application/json request.")
+
+        query = json.loads(request.body)
+
+        if "session_id" not in query:
+            return HttpResponseBadRequest("session_id is missing.")
+
+        session_id = query["session_id"]
+
+        if not isinstance(session_id, str) or not is_uuid4(session_id):
+            return HttpResponseBadRequest(f"'{session_id}' is not valid id.")
+
+        url = f"{NONOGRAM_SERVER_URL}/get_nonogram_server"
+        query_dict = {
+            "session_id": session_id,
+            "game_turn": LASTEST_TURN,
+        }
+        response = await send_request(
+            url=url,
+            request=query_dict,
+        )
+        status_code = response["status_code"]
+
+        if status_code == HTTPStatus.OK:
+            response_data = {
+                "board": response["board"],
+            }
+            return JsonResponse(response_data)
+
+        elif status_code == HTTPStatus.NOT_FOUND:
+            return HttpResponseNotFound(response["response"])
+        else:
+            return HttpResponseServerError("unknown error")
 
 
 async def synchronize(request: HttpRequest):
