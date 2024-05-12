@@ -51,6 +51,7 @@ async def process_gameplay_query(
     query: dict,
 ) -> HttpResponse:
     GAME_NOT_START = 0
+    LASTEST_TURN = -1
     session_id = query['session_id']
     game_turn = query['game_turn']
 
@@ -78,10 +79,10 @@ async def process_gameplay_query(
     latest_turn_info = session.current_game
     latest_turn = 0 if latest_turn_info is None else latest_turn_info.current_turn
 
-    if not isinstance(game_turn, int) or not (0 <= game_turn <= latest_turn):
+    if not isinstance(game_turn, int) or not (-1 <= game_turn <= latest_turn):
         return HttpResponseBadRequest(f"invalid game_turn. must be between 0 to {latest_turn}(latest turn)")
 
-    if game_turn == latest_turn:
+    if game_turn == latest_turn or game_turn == LASTEST_TURN:
         board = deserialize_gameplay(
             serialized_string=session.board,
             return_int=True,
@@ -136,7 +137,8 @@ async def get_nonogram_board(request: HttpRequest):
         존재한다면 board_id와 game_turn을 참조해서 게임 진행 상황을 반환.
         board_id가 존재하지 않는다면 404에러(board_id not found)를 반환.
         game_turn이 0인 경우 현재 플레이어의 게임보드를 리턴. 만약 진행중인 게임이 없다면 404에러(board not found)를 반환
-        game_turn이 음수이거나 현재 진행 턴보다 큰 경우 400에러(invalid game_turn)를 반환.
+        game_turn이 -1보다 작거나 현재 진행 턴보다 큰 경우 400에러(invalid game_turn)를 반환.
+        -1은 가장 최근 턴을 반환
         이외의 경우에는 선택한 턴의 게임 진행 정보를 반환.
 
         성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
