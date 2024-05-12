@@ -8,6 +8,7 @@ from django.http import HttpResponseBadRequest
 from django.http import HttpResponseServerError
 from utils import is_uuid4
 from utils import send_request
+from utils import convert_board_to_hash
 from http import HTTPStatus
 import environ
 
@@ -93,17 +94,19 @@ async def get_nonogram_play(request: HttpRequest):
 
     Returns:
         해당 session_id가 존재하지 않는다면 404에러(session_id not found)를 반환.
+        진행중인 게임이 없으면 404에러(board not found)를 반환.
         존재한다면 게임 진행 상황을 반환.
 
         성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
         board (list[list]): 가장 최근 움직임까지 게임 진행 정보를 반영한 게임보드를 2차원 배열로 반환.
                             게임 진행중이 아니라면 빈 배열 반환.
                             각 원소의 값은 Nonogram.utils의 GameBoardCellState, RealBoardCellState 참조.
+        latest_turn (int): 가장 최근 턴 수를 반환.
     '''
     if request.method == "GET":
         return HttpResponse("get_nonogram_play(get)")
     else:
-        LASTEST_TURN = -1
+        LATEST_TURN = -1
 
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
@@ -121,7 +124,7 @@ async def get_nonogram_play(request: HttpRequest):
         url = f"{NONOGRAM_SERVER_URL}/get_nonogram_server"
         query_dict = {
             "session_id": session_id,
-            "game_turn": LASTEST_TURN,
+            "game_turn": LATEST_TURN,
         }
         response = await send_request(
             url=url,
@@ -132,6 +135,7 @@ async def get_nonogram_play(request: HttpRequest):
         if status_code == HTTPStatus.OK:
             response_data = {
                 "board": response["board"],
+                "latest_turn": response["latest_turn"],
             }
             return JsonResponse(response_data)
 
@@ -151,19 +155,17 @@ async def synchronize(request: HttpRequest):
 
     Returns:
         해당 session_id가 존재하지 않는다면 404에러(session_id not found)를 반환.
-        턴수가 다르면(invalid) 현재 턴수와 함게 게임 진행 상황 전체를 반환.
-        턴수가 같으면 
+        진행중인 게임이 없으면 404에러(board not found)를 반환.
 
         성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
-        game_turn (int): 현재 진행중인 턴수
         hash (str): invalid한 턴수인 경우에만 채워지는 필드. 게임 진행 정보를 반환.
                             각 원소의 값은 Nonogram.utils의 GameBoardCellState, RealBoardCellState 참조.
-        moves (list[tuple(int,int,int)]): 입력으로 들어온 턴 + 1 ~ 최근 턴까지의 move정보를 반환.
+        latest_turn (int): 가장 최근 턴 수를 반환.
     '''
     if request.method == "GET":
         return HttpResponse("get_nonogram_play(get)")
     else:
-        LASTEST_TURN = -1
+        LATEST_TURN = -1
 
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
@@ -181,7 +183,7 @@ async def synchronize(request: HttpRequest):
         url = f"{NONOGRAM_SERVER_URL}/get_nonogram_server"
         query_dict = {
             "session_id": session_id,
-            "game_turn": LASTEST_TURN,
+            "game_turn": LATEST_TURN,
         }
         response = await send_request(
             url=url,
@@ -191,7 +193,8 @@ async def synchronize(request: HttpRequest):
 
         if status_code == HTTPStatus.OK:
             response_data = {
-                "hash": response["board"],
+                "hash": convert_board_to_hash(response["board"]),
+                "latest_turn": response["latest_turn"],
             }
             return JsonResponse(response_data)
 
