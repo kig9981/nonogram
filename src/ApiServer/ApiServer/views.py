@@ -229,7 +229,51 @@ async def make_move(request: HttpRequest):
     if request.method == "GET":
         return HttpResponse("make_move(get)")
     else:
-        return HttpResponse("make_move(post)")
+        if request.content_type != "application/json":
+            return HttpResponseBadRequest("Must be Application/json request.")
+
+        query = json.loads(request.body)
+
+        if "session_id" not in query:
+            return HttpResponseBadRequest("session_id is missing.")
+
+        session_id = query["session_id"]
+        x = query["x"]
+        y = query["y"]
+        state = query["state"]
+
+        if not isinstance(session_id, str) or not is_uuid4(session_id):
+            return HttpResponseBadRequest(f"'{session_id}' is not valid id.")
+        if not isinstance(x, int) or not isinstance(y, int):
+            return HttpResponseBadRequest("Invalid coordinate(type must be integer)")
+        if not isinstance(state, int) or not (0 <= state <= 3):
+            return HttpResponseBadRequest("Invalid state(type must be integer)")
+
+        url = f"{NONOGRAM_SERVER_URL}/set_cell_state"
+        query_dict = {
+            "session_id": session_id,
+            "x_coord": x,
+            "y_coord": y,
+            "new_state": state,
+        }
+        response = await send_request(
+            url=url,
+            request=query_dict,
+        )
+        status_code = response["status_code"]
+
+        if status_code == HTTPStatus.OK:
+            response_data = {
+                "response": response["response"],
+            }
+            return JsonResponse(response_data)
+
+        elif status_code == HTTPStatus.BAD_REQUEST:
+            return HttpResponseBadRequest(response["response"])
+        elif status_code == HTTPStatus.NOT_FOUND:
+            return HttpResponseNotFound(response["response"])
+        else:
+            return HttpResponseServerError("unknown error")
 
 
 async def create_new_session(request: HttpRequest):
