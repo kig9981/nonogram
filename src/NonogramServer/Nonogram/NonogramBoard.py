@@ -1,6 +1,6 @@
 from Nonogram.RealGameBoard import RealGameBoard
-from Nonogram.utils import GameBoardCellState
-from Nonogram.utils import RealBoardCellState
+from src.utils import GameBoardCellState
+from src.utils import RealBoardCellState
 from typing import Optional
 from uuid import UUID
 

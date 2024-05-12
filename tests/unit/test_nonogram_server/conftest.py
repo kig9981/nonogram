@@ -7,6 +7,8 @@ import uuid
 import psycopg2
 from psycopg2 import OperationalError
 from django.conf import settings
+from src.utils import deserialize_gameboard
+from src.utils import serialize_gameplay
 
 
 DB_NAME = "testdb"
@@ -129,8 +131,6 @@ def add_session_test_data(
     from NonogramServer.models import Session
     from Nonogram.NonogramBoard import NonogramGameplay
     from Nonogram.RealGameBoard import RealGameBoard
-    from Nonogram.utils import deserialize_gameboard
-    from Nonogram.utils import serialize_gameplay
 
     for test_session in test_sessions:
         board_id = test_session['board_id']
@@ -181,7 +181,6 @@ def add_history_test_data(
     from NonogramServer.models import Session
     from NonogramServer.models import History
     from Nonogram.NonogramBoard import NonogramGameplay
-    from Nonogram.utils import serialize_gameplay
 
     for test_history in test_histories:
         with django_db_blocker.unblock():
