@@ -118,7 +118,7 @@ async def test_session_for_get_nonogram_board(
 
         query_dict = {
             "session_id": session_id,
-            "game_turn": -1,
+            "game_turn": -2,
         }
         response = await send_test_request(
             mock_request=mock_request,
