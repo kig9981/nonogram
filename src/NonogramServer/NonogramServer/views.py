@@ -64,7 +64,10 @@ async def process_gameplay_query(
     board_data = session.board_data
 
     if game_turn == GAME_NOT_START:
+        if board_data is None:
+            return HttpResponseNotFound("board not found.")
         response_data = {
+            "board_id": str(board_data.board_id),
             "board": board_data.board,
             "num_row": board_data.num_row,
             "num_column": board_data.num_column,
@@ -132,11 +135,12 @@ async def get_nonogram_board(request: HttpRequest):
         session_id가 0이 아닌경우, 해당 session_id가 존재하지 않는다면 404에러(session_id not found)를 반환.
         존재한다면 board_id와 game_turn을 참조해서 게임 진행 상황을 반환.
         board_id가 존재하지 않는다면 404에러(board_id not found)를 반환.
-        game_turn이 0인 경우 현재 플레이어의 게임보드를 리턴.
+        game_turn이 0인 경우 현재 플레이어의 게임보드를 리턴. 만약 진행중인 게임이 없다면 404에러(board not found)를 반환
         game_turn이 음수이거나 현재 진행 턴보다 큰 경우 400에러(invalid game_turn)를 반환.
         이외의 경우에는 선택한 턴의 게임 진행 정보를 반환.
 
         성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
+        board_id (str): game_turn이 0인 경우에 해당 보드의 id를 반환.
         board (list[list]): [요청한 게임보드/게임 진행 정보를 반영한 게임보드]를 2차원 배열로 반환.
                             각 원소의 값은 Nonogram.utils의 GameBoardCellState, RealBoardCellState 참조.
         num_row (int): 게임보드의 행 수
