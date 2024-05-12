@@ -1,13 +1,13 @@
 import os
 import json
-from src.NonogramServer.Nonogram.utils import validate_gameboard
-from src.NonogramServer.Nonogram.utils import deserialize_gameboard
-from src.NonogramServer.Nonogram.utils import serialize_gameboard
-from src.NonogramServer.Nonogram.utils import validate_gameplay
-from src.NonogramServer.Nonogram.utils import deserialize_gameplay
-from src.NonogramServer.Nonogram.utils import serialize_gameplay
-from src.NonogramServer.Nonogram.utils import RealBoardCellState
-from src.NonogramServer.Nonogram.utils import GameBoardCellState
+from src.utils import validate_gameboard
+from src.utils import deserialize_gameboard
+from src.utils import serialize_gameboard
+from src.utils import validate_gameplay
+from src.utils import deserialize_gameplay
+from src.utils import serialize_gameplay
+from src.utils import RealBoardCellState
+from src.utils import GameBoardCellState
 
 
 def test_validate_gameboard():

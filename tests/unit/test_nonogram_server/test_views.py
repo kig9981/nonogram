@@ -15,10 +15,10 @@ from NonogramServer.views import set_cell_state
 from NonogramServer.views import create_new_session
 from NonogramServer.views import create_new_game
 from NonogramServer.views import add_nonogram_board
-from Nonogram.utils import GameBoardCellState
-from Nonogram.utils import deserialize_gameboard
-from Nonogram.utils import deserialize_gameplay
-from Nonogram.utils import is_uuid4
+from src.utils import GameBoardCellState
+from src.utils import deserialize_gameboard
+from src.utils import deserialize_gameplay
+from src.utils import is_uuid4
 from Nonogram.NonogramBoard import NonogramGameplay
 from Nonogram.RealGameBoard import RealGameBoard
 from django.core.exceptions import ObjectDoesNotExist

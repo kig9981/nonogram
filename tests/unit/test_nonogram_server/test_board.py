@@ -1,7 +1,7 @@
 import pytest
 from Nonogram.NonogramBoard import NonogramGameplay
-from Nonogram.utils import GameBoardCellState
-from Nonogram.utils import RealBoardCellState
+from src.utils import GameBoardCellState
+from src.utils import RealBoardCellState
 
 
 @pytest.mark.django_db
