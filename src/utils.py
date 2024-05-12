@@ -1,6 +1,7 @@
 from enum import IntEnum
 import json
 import uuid
+import hashlib
 import aiohttp
 from http import HTTPStatus
 from typing import Any
@@ -205,3 +206,10 @@ async def send_request(
                     "response": await resp.text()
                 }
     return response
+
+
+def convert_board_to_hash(
+    array: List[List[Union[GameBoardCellState, int]]],
+) -> str:
+    string_list = ','.join([''.join(map(str, subarray)) for subarray in array])
+    return hashlib.md5(string_list.encode()).hexdigest()
