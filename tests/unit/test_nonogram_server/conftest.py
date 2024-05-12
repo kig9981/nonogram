@@ -6,7 +6,6 @@ import pytest
 import uuid
 import psycopg2
 from psycopg2 import OperationalError
-from django.conf import settings
 from src.utils import deserialize_gameboard
 from src.utils import serialize_gameplay
 
