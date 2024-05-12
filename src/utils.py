@@ -1,7 +1,12 @@
 from enum import IntEnum
 import json
 import uuid
+import hashlib
+import aiohttp
+from http import HTTPStatus
+from typing import Any
 from typing import List
+from typing import Dict
 from typing import Union
 from typing import Optional
 from django.db.models import Model
@@ -184,3 +189,27 @@ def is_uuid4(
     except ValueError:
         return False
     return True
+
+
+async def send_request(
+    url: str,
+    request: Dict[str, Any],
+) -> Dict[str, Any]:
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, json=request, ssl=False) as resp:
+            if resp.status == HTTPStatus.OK:
+                response = json.loads(await resp.json())
+                response["status_code"] = resp.status
+            else:
+                response = {
+                    "status_code": resp.status,
+                    "response": await resp.text()
+                }
+    return response
+
+
+def convert_board_to_hash(
+    array: List[List[Union[GameBoardCellState, int]]],
+) -> str:
+    string_list = ','.join([''.join(map(str, subarray)) for subarray in array])
+    return hashlib.md5(string_list.encode()).hexdigest()

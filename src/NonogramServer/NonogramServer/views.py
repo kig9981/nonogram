@@ -51,7 +51,7 @@ async def process_gameplay_query(
     query: dict,
 ) -> HttpResponse:
     GAME_NOT_START = 0
-    LASTEST_TURN = -1
+    LATEST_TURN = -1
     session_id = query['session_id']
     game_turn = query['game_turn']
 
@@ -82,7 +82,7 @@ async def process_gameplay_query(
     if not isinstance(game_turn, int) or not (-1 <= game_turn <= latest_turn):
         return HttpResponseBadRequest(f"invalid game_turn. must be between 0 to {latest_turn}(latest turn)")
 
-    if game_turn == latest_turn or game_turn == LASTEST_TURN:
+    if game_turn == latest_turn or game_turn == LATEST_TURN:
         if board_data is None:
             return HttpResponseNotFound("board not found.")
         board = deserialize_gameplay(
@@ -119,6 +119,7 @@ async def process_gameplay_query(
         "board": board,
         "num_row": board_data.num_row,
         "num_column": board_data.num_column,
+        "latest_turn": latest_turn,
     }
 
     return JsonResponse(response_data)
@@ -149,6 +150,7 @@ async def get_nonogram_board(request: HttpRequest):
                             각 원소의 값은 Nonogram.utils의 GameBoardCellState, RealBoardCellState 참조.
         num_row (int): 게임보드의 행 수
         num_column (int): 게임보드의 열 수
+        latest_turn (int): 게임 진행 정보를 반환할 경우만 가장 최근 턴 수를 반환.
     '''
     if request.method == "GET":
         return HttpResponse("get_nonogram_board(get)")
