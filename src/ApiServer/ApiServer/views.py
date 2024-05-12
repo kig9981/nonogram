@@ -1,9 +1,39 @@
+import json
+import aiohttp
 from django.shortcuts import render
 from django.http import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.http import HttpResponseNotFound
 from django.http import HttpResponseBadRequest
+from django.http import HttpResponseServerError
+from utils import is_uuid4
+from typing import Dict
+from typing import Any
+from http import HTTPStatus
+import environ
+
+
+env = environ.Env()
+environ.Env.read_env()
+NONOGRAM_SERVER_URL = f"{env("NONOGRAM_SERVER_PROTOCOL")}://{env("NONOGRAM_SERVER_HOST")}:{env("NONOGRAM_SERVER_PORT")}"
+
+
+async def send_request(
+    url: str,
+    request: Dict[str, Any],
+) -> Dict[str, Any]:
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, json=request, ssl=False) as resp:
+            if resp.status == HTTPStatus.OK:
+                response = json.loads(await resp.json())
+                response["status_code"] = resp.status
+            else:
+                response = {
+                    "status_code": resp.status,
+                    "response": await resp.text()
+                }
+    return response
 
 
 # Create your views here.
@@ -16,10 +46,11 @@ async def get_nonogram_board(request: HttpRequest):
 
     Returns:
         해당 session_id가 존재하지 않는다면 404에러(session_id not found)를 반환.
-        존재한다면 board_id와 게임 보드 정보를 반환.
+        존재하는데 게임 진행중이 아니라면 404에러(board not found)를 반환.
+        게임 진행중이라면 board_id와 게임 보드 정보를 반환.
 
         성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
-        board_id (str): board_id정보를 uuid형식으로 반환, 게임 진행중이 아니라면 해당 필드만 빈 문자열로 반환
+        board_id (str): board_id정보를 uuid형식으로 반환
         board (list[list]): 게임보드를 2차원 배열로 반환.
                             각 원소의 값은 Nonogram.utils의 GameBoardCellState, RealBoardCellState 참조.
         num_row (int): 게임보드의 행 수
@@ -28,7 +59,45 @@ async def get_nonogram_board(request: HttpRequest):
     if request.method == "GET":
         return HttpResponse("get_nonogram_board(get)")
     else:
-        return HttpResponse("get_nonogram_board(post)")
+        GAMEBOARD_QUERY = 0
+
+        if request.content_type != "Application/json":
+            return HttpResponseBadRequest("Must be Application/json request.")
+
+        query = json.loads(request.body)
+
+        if not "session_id" in query:
+            return HttpResponseBadRequest("session_id is missing.")
+
+        session_id = query["session_id"]
+
+        if not isinstance(session_id, str) or not is_uuid4(session_id):
+            return HttpResponseBadRequest(f"'{session_id}' is not valid id.")
+
+        url = f"{NONOGRAM_SERVER_URL}/get_nonogram_server"
+        query_dict = {
+            "session_id": session_id,
+            "game_turn": GAMEBOARD_QUERY,
+        }
+        response = await send_request(
+            url=url,
+            request=query_dict,
+        )
+        status_code = response["status_code"]
+
+        if status_code == HTTPStatus.OK:
+            response_data = {
+                "board_id": response["board_id"],
+                "board": response["board"],
+                "num_row": response["num_row"],
+                "num_column": response["num_column"],
+            }
+            return JsonResponse(response_data)
+
+        elif status_code == HTTPStatus.NOT_FOUND:
+            return HttpResponseNotFound(response["response"])
+        else:
+            return HttpResponseServerError("unknown error")
 
 
 async def get_nonogram_play(request: HttpRequest):
