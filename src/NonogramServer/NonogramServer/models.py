@@ -1,11 +1,11 @@
 import uuid
 from django.db import models
 from django.core.exceptions import ValidationError
-from Nonogram.utils import deserialize_gameboard
-from Nonogram.utils import deserialize_gameplay
-from Nonogram.utils import serialize_gameplay
-from Nonogram.utils import GameBoardCellState
-from Nonogram.utils import RealBoardCellState
+from utils import deserialize_gameboard
+from utils import deserialize_gameplay
+from utils import serialize_gameplay
+from utils import GameBoardCellState
+from utils import RealBoardCellState
 
 
 class MoveType(models.IntegerChoices):
