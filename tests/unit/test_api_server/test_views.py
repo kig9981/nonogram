@@ -45,6 +45,7 @@ async def test_get_nonogram_play(
         return_value={
             "status_code": HTTPStatus.OK,
             "board": "!!!",
+            "latest_turn": 0,
         }
     )
     response = await send_test_request(
