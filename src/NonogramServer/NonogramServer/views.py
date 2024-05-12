@@ -215,9 +215,9 @@ async def set_cell_state(request: HttpRequest):
             num_row = board_data.num_row
             num_column = board_data.num_column
             if not isinstance(x, int) or not isinstance(y, int) or not (0 <= x < num_row) or not (0 <= y < num_column):
-                return HttpResponseBadRequest("invalid coordinate.")
+                return HttpResponseBadRequest("Invalid coordinate.")
             if not isinstance(new_state, int) or not (0 <= new_state <= 3):
-                return HttpResponseBadRequest("invalid coordinate. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), or 3(MARK_QUESTION).")
+                return HttpResponseBadRequest("Invalid state. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), or 3(MARK_QUESTION).")
             changed = await session.async_mark(x, y, new_state)
             response_data = {"response": changed}
             return JsonResponse(response_data)
