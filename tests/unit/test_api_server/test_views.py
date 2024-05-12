@@ -4,6 +4,7 @@ from http import HTTPStatus
 from ApiServer.views import get_nonogram_board
 from ApiServer.views import get_nonogram_play
 from ApiServer.views import synchronize
+from ApiServer.views import make_move
 from ..util import send_test_request
 
 
@@ -81,6 +82,34 @@ async def test_synchronize(
         url=url,
         query_dict={
             "session_id": str(uuid.uuid4()),
+        },
+    )
+
+    assert response.status_code == HTTPStatus.OK
+
+
+@pytest.mark.asyncio
+async def test_make_move(
+    mock_request,
+    mocker,
+):
+    url = '/make_move/'
+    mocker.patch(
+        target="ApiServer.views.send_request",
+        return_value={
+            "status_code": HTTPStatus.OK,
+            "response": 0,
+        }
+    )
+    response = await send_test_request(
+        mock_request=mock_request,
+        request_function=make_move,
+        url=url,
+        query_dict={
+            "session_id": str(uuid.uuid4()),
+            "x": 0,
+            "y": 0,
+            "state": 0,
         },
     )
 
