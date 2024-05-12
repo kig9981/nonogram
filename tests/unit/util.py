@@ -17,7 +17,7 @@ async def send_test_request(
     request = mock_request.post(
         path=url,
         data=query,
-        content_type="Application/json",
+        content_type="application/json",
     )
     response = await request_function(request)
 
