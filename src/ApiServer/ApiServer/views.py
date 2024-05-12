@@ -65,11 +65,11 @@ async def get_nonogram_board(request: HttpRequest):
         GAMEBOARD_QUERY = 0
 
         if request.content_type != "application/json":
-            return HttpResponseBadRequest(f"Must be Application/json request.")
+            return HttpResponseBadRequest("Must be Application/json request.")
 
         query = json.loads(request.body)
 
-        if not "session_id" in query:
+        if "session_id" not in query:
             return HttpResponseBadRequest("session_id is missing.")
 
         session_id = query["session_id"]
