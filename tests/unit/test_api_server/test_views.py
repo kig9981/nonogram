@@ -3,6 +3,7 @@ import uuid
 from http import HTTPStatus
 from ApiServer.views import get_nonogram_board
 from ApiServer.views import get_nonogram_play
+from ApiServer.views import synchronize
 from ..util import send_test_request
 
 
@@ -45,11 +46,38 @@ async def test_get_nonogram_play(
         return_value={
             "status_code": HTTPStatus.OK,
             "board": "!!!",
+            "latest_turn": 0,
         }
     )
     response = await send_test_request(
         mock_request=mock_request,
         request_function=get_nonogram_play,
+        url=url,
+        query_dict={
+            "session_id": str(uuid.uuid4()),
+        },
+    )
+
+    assert response.status_code == HTTPStatus.OK
+
+
+@pytest.mark.asyncio
+async def test_synchronize(
+    mock_request,
+    mocker,
+):
+    url = '/synchronize/'
+    mocker.patch(
+        target="ApiServer.views.send_request",
+        return_value={
+            "status_code": HTTPStatus.OK,
+            "board": "!!!",
+            "latest_turn": 0,
+        }
+    )
+    response = await send_test_request(
+        mock_request=mock_request,
+        request_function=synchronize,
         url=url,
         query_dict={
             "session_id": str(uuid.uuid4()),
