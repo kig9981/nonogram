@@ -1,17 +1,33 @@
 import pytest
+import uuid
 from http import HTTPStatus
 from ApiServer.views import get_nonogram_board
 from ..util import send_test_request
 
 
 @pytest.mark.asyncio
-async def test_get_nonogram_board(mock_request):
+async def test_get_nonogram_board(
+    mock_request,
+    mocker,
+):
     url = '/get_nonogram_board/'
+    mocker.patch(
+        target="ApiServer.views.send_request",
+        return_value={
+            "status_code": HTTPStatus.OK,
+            "board_id": "!!!",
+            "board": "!!!",
+            "num_row": "!!!",
+            "num_column": "!!!",
+        }
+    )
     response = await send_test_request(
         mock_request=mock_request,
         request_function=get_nonogram_board,
         url=url,
-        query_dict={},
+        query_dict={
+            "session_id": str(uuid.uuid4()),
+        },
     )
 
     assert response.status_code == HTTPStatus.OK
