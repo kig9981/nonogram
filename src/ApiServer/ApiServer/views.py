@@ -163,7 +163,7 @@ async def synchronize(request: HttpRequest):
         latest_turn (int): 가장 최근 턴 수를 반환.
     '''
     if request.method == "GET":
-        return HttpResponse("get_nonogram_play(get)")
+        return HttpResponse("synchronize(get)")
     else:
         LATEST_TURN = -1
 
