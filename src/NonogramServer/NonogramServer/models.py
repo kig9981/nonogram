@@ -30,6 +30,7 @@ class NonogramBoard(models.Model):
     board = models.TextField(null=True)
     num_row = models.IntegerField(default=5)
     num_column = models.IntegerField(default=5)
+    black_counter = models.IntegerField()
     theme = models.CharField(max_length=20, default="")
 
     def clean(self):
