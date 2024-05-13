@@ -300,74 +300,83 @@ async def create_new_game(request: HttpRequest):
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
         query = json.loads(request.body)
+        if 'session_id' not in query:
+            return HttpResponseBadRequest("session_id is missing.")
+        if 'board_id' not in query:
+            return HttpResponseBadRequest("board_id is missing.")
+        if 'force_new_game' not in query:
+            return HttpResponseBadRequest("force_new_game is missing.")
+
+        session_id = query['session_id']
+        board_id = query['board_id']
+        force_new_game = query['force_new_game']
+
+        if not isinstance(session_id, str) or not is_uuid4(session_id):
+            return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
+        if board_id != RANDOM_BOARD and (not isinstance(board_id, str) or not is_uuid4(board_id)):
+            return HttpResponseBadRequest(f"board_id '{board_id}' is not valid id.")
+        if not isinstance(force_new_game, bool):
+            return HttpResponseBadRequest("force_new_game not valid.")
+
         try:
-            session_id = query['session_id']
-            board_id = query['board_id']
-            force_new_game = query['force_new_game']
-
-            if not isinstance(session_id, str) or (not isinstance(board_id, str) and board_id != RANDOM_BOARD) or not isinstance(force_new_game, bool):
-                return HttpResponseBadRequest("invalid type.")
-
             session = await async_get_from_db(
                 model_class=Session,
-                label=f"session_id {session_id}",
+                label=f"session_id '{session_id}'",
                 select_related=['current_game', 'board_data'],
                 session_id=session_id,
             )
-
-            coroutine = []
-
-            if session.board_data is not None:
-                if not force_new_game:
-                    response_data = {
-                        "response": GAME_EXIST,
-                    }
-                    return JsonResponse(response_data)
-
-                # TODO: 비동기 task queue를 사용해서 업데이트하는 로직으로 변경
-
-                async for history in History.objects.filter(current_session=session):
-                    history.current_session = None
-                    coroutine.append(asyncio.create_task(history.asave()))
-
-            if board_id == RANDOM_BOARD:
-                # TODO: 더 빠르게 랜덤셀렉트하는걸로 바꾸기
-                board_data = await NonogramBoard.objects.order_by('?').afirst()
-                board_id = str(board_data.board_id)
-            else:
-                board_data = await async_get_from_db(
-                    model_class=NonogramBoard,
-                    label=f"board_id {board_id}",
-                    board_id=board_id,
-                )
-
-            session.board_data = board_data
-            session.board = serialize_gameboard(
-                [
-                    [GameBoardCellState.NOT_SELECTED for _ in range(board_data.num_column)]
-                    for _ in range(board_data.num_row)
-                ]
-            )
-            session.current_game = None
-            session.unrevealed_counter = board_data.black_counter
-
-            coroutine.append(asyncio.create_task(session.asave()))
-
-            response_data = {
-                "response": NEW_GAME_STARTED,
-                "board_id": board_id,
-            }
-
-            await asyncio.gather(*coroutine)
-
-            return JsonResponse(response_data)
-
-        except KeyError as error:
-            return HttpResponseBadRequest(f"{error} is missing.")
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
-        except ValidationError as error:
-            return HttpResponseBadRequest(f"'{error.message}' is not valid id.")
+
+        coroutine = []
+
+        if session.board_data is not None:
+            if not force_new_game:
+                response_data = {
+                    "response": GAME_EXIST,
+                }
+                return JsonResponse(response_data)
+
+            # TODO: 비동기 task queue를 사용해서 업데이트하는 로직으로 변경
+
+            async for history in History.objects.filter(current_session=session):
+                history.current_session = None
+                coroutine.append(asyncio.create_task(history.asave()))
+
+        if board_id == RANDOM_BOARD:
+            # TODO: 더 빠르게 랜덤셀렉트하는걸로 바꾸기
+            board_data = await NonogramBoard.objects.order_by('?').afirst()
+            board_id = str(board_data.board_id)
+        else:
+            try:
+                board_data = await async_get_from_db(
+                    model_class=NonogramBoard,
+                    label=f"board_id '{board_id}'",
+                    board_id=board_id,
+                )
+            except ObjectDoesNotExist as error:
+                return HttpResponseNotFound(f"{error} not found.")
+
+        session.board_data = board_data
+        session.board = serialize_gameboard(
+            [
+                [GameBoardCellState.NOT_SELECTED for _ in range(board_data.num_column)]
+                for _ in range(board_data.num_row)
+            ]
+        )
+        session.current_game = None
+        session.unrevealed_counter = board_data.black_counter
+
+        coroutine.append(asyncio.create_task(session.asave()))
+
+        response_data = {
+            "response": NEW_GAME_STARTED,
+            "board_id": board_id,
+        }
+
+        await asyncio.gather(*coroutine)
+
+        return JsonResponse(response_data)
 
 
 async def add_nonogram_board(request: HttpRequest):
