@@ -156,6 +156,8 @@ async def get_nonogram_board(request: HttpRequest):
         return HttpResponse("get_nonogram_board(get)")
     else:
         BOARD_ID_QUERY = 0
+        if request.content_type != "application/json":
+            return HttpResponseBadRequest("Must be Application/json request.")
         query = json.loads(request.body)
         try:
             session_id = query['session_id']
@@ -197,6 +199,8 @@ async def set_cell_state(request: HttpRequest):
         return HttpResponse("set_cell_state(get)")
     else:
         GAME_OVER = 2
+        if request.content_type != "application/json":
+            return HttpResponseBadRequest("Must be Application/json request.")
         query = json.loads(request.body)
         try:
             session_id = query['session_id']
@@ -275,6 +279,8 @@ async def create_new_game(request: HttpRequest):
         RANDOM_BOARD = 0
         GAME_EXIST = 0
         NEW_GAME_STARTED = 1
+        if request.content_type != "application/json":
+            return HttpResponseBadRequest("Must be Application/json request.")
         query = json.loads(request.body)
         try:
             session_id = query['session_id']
@@ -365,6 +371,8 @@ async def add_nonogram_board(request: HttpRequest):
         return HttpResponse("add_nonogram_board(get)")
     else:
         BLACK_THRESHOLD = 127
+        if request.content_type != "application/json":
+            return HttpResponseBadRequest("Must be Application/json request.")
         query = json.loads(request.body)
         try:
             base64_board_data = query['board']
