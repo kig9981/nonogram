@@ -340,7 +340,7 @@ async def test_set_cell_state(
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.content.decode() == f"session_id {SESSION_ID_UNUSED_FOR_TEST} not found."
+    assert response.content.decode() == f"session_id '{SESSION_ID_UNUSED_FOR_TEST}' not found."
 
     query_dict = {
         "session_id": INCORRECT_ID,
@@ -357,7 +357,7 @@ async def test_set_cell_state(
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.content.decode() == f"'session_id {INCORRECT_ID}' is not valid id."
+    assert response.content.decode() == f"session_id '{INCORRECT_ID}' is not valid id."
 
 
 @pytest.mark.asyncio

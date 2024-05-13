@@ -183,12 +183,6 @@ async def get_nonogram_board(request: HttpRequest):
             return await process_board_query(query)
         else:
             return await process_gameplay_query(query)
-        # except KeyError as error:
-        #     return HttpResponseBadRequest(f"{error} is missing.")
-        # except ObjectDoesNotExist as error:
-        #     return HttpResponseNotFound(f"{error} not found.")
-        # except ValidationError as error:
-        #     return HttpResponseBadRequest(f"'{error.message}' is not valid id.")
 
 
 async def set_cell_state(request: HttpRequest):
@@ -220,40 +214,46 @@ async def set_cell_state(request: HttpRequest):
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
         query = json.loads(request.body)
+        if 'session_id' not in query:
+            return HttpResponseBadRequest("session_id is missing.")
+        if 'x_coord' not in query:
+            return HttpResponseBadRequest("x_coord is missing.")
+        if 'y_coord' not in query:
+            return HttpResponseBadRequest("y_coord is missing.")
+        if 'new_state' not in query:
+            return HttpResponseBadRequest("new_state is missing.")
+        session_id = query['session_id']
+        x = query['x_coord']
+        y = query['y_coord']
+        new_state = query['new_state']
+        if not isinstance(session_id, str) or not is_uuid4(session_id):
+            return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
         try:
-            session_id = query['session_id']
-            x = query['x_coord']
-            y = query['y_coord']
-            new_state = query['new_state']
             session = await async_get_from_db(
                 model_class=Session,
-                label=f"session_id {session_id}",
+                label=f"session_id '{session_id}'",
                 select_related=['current_game', 'board_data'],
                 session_id=session_id,
             )
-
-            if session.board_data is None:
-                return HttpResponseNotFound("gameplay not found.")
-
-            board_data = session.board_data
-            num_row = board_data.num_row
-            num_column = board_data.num_column
-            if not isinstance(x, int) or not isinstance(y, int) or not (0 <= x < num_row) or not (0 <= y < num_column):
-                return HttpResponseBadRequest("Invalid coordinate.")
-            if not isinstance(new_state, int) or not (0 <= new_state <= 3):
-                return HttpResponseBadRequest("Invalid state. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), or 3(MARK_QUESTION).")
-            if session.unrevealed_counter > 0:
-                changed = 1 if await session.async_mark(x, y, new_state) else 0
-            else:
-                changed = GAME_OVER
-            response_data = {"response": changed}
-            return JsonResponse(response_data)
-        except KeyError as error:
-            return HttpResponseBadRequest(f"{error} is missing.")
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
-        except ValidationError as error:
-            return HttpResponseBadRequest(f"'{error.message}' is not valid id.")
+
+        if session.board_data is None:
+            return HttpResponseNotFound("gameplay not found.")
+
+        board_data = session.board_data
+        num_row = board_data.num_row
+        num_column = board_data.num_column
+        if not isinstance(x, int) or not isinstance(y, int) or not (0 <= x < num_row) or not (0 <= y < num_column):
+            return HttpResponseBadRequest("Invalid coordinate.")
+        if not isinstance(new_state, int) or not (0 <= new_state <= 3):
+            return HttpResponseBadRequest("Invalid state. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), or 3(MARK_QUESTION).")
+        if session.unrevealed_counter > 0:
+            changed = 1 if await session.async_mark(x, y, new_state) else 0
+        else:
+            changed = GAME_OVER
+        response_data = {"response": changed}
+        return JsonResponse(response_data)
 
 
 async def create_new_session(request: HttpRequest):
