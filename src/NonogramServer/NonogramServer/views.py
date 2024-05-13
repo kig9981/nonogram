@@ -189,12 +189,14 @@ async def set_cell_state(request: HttpRequest):
 
         성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
         response (int): 적용 여부에 따라 응답 코드를 반환.
-                        0(or False)=UNCHANGED
-                        1(or True)=APPLIED
+                        0=UNCHANGED
+                        1=APPLIED
+                        2=GAME_OVER
     '''
     if request.method == "GET":
         return HttpResponse("set_cell_state(get)")
     else:
+        GAME_OVER = 2
         query = json.loads(request.body)
         try:
             session_id = query['session_id']
@@ -218,7 +220,10 @@ async def set_cell_state(request: HttpRequest):
                 return HttpResponseBadRequest("Invalid coordinate.")
             if not isinstance(new_state, int) or not (0 <= new_state <= 3):
                 return HttpResponseBadRequest("Invalid state. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), or 3(MARK_QUESTION).")
-            changed = await session.async_mark(x, y, new_state)
+            if session.unrevealed_counter > 0:
+                changed = 1 if await session.async_mark(x, y, new_state) else 0
+            else:
+                changed = GAME_OVER
             response_data = {"response": changed}
             return JsonResponse(response_data)
         except KeyError as error:
