@@ -320,6 +320,7 @@ async def create_new_game(request: HttpRequest):
                 ]
             )
             session.current_game = None
+            session.unrevealed_counter = board_data.black_counter
 
             coroutine.append(asyncio.create_task(session.asave()))
 
@@ -386,12 +387,18 @@ async def add_nonogram_board(request: HttpRequest):
                 for x in range(num_row)
             ]
 
+            black_counter = sum(
+                sum(1 for item in row if item == RealBoardCellState.BLACK)
+                for row in board
+            )
+
             nonogram_board = NonogramBoard(
                 board_id=board_id,
                 board=board,
                 num_row=num_row,
                 num_column=num_column,
                 theme=theme,
+                black_counter=black_counter,
             )
 
             # TODO: 비동기 task queue를 사용해서 업데이트하는 로직으로 변경
