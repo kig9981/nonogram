@@ -5,7 +5,6 @@ from django.http import JsonResponse
 from django.http import HttpResponseNotFound
 from django.http import HttpResponseBadRequest
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import ValidationError
 from .models import NonogramBoard
 from .models import Session
 from .models import History
