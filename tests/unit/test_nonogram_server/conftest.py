@@ -115,6 +115,7 @@ def add_board_test_data(
             num_row=test_board['num_row'],
             num_column=test_board['num_column'],
             theme="test data",
+            black_counter=test_board['black_counter'],
         )
         with django_db_blocker.unblock():
             nonogram_board.save()
