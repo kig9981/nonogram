@@ -148,6 +148,7 @@ def add_session_test_data(
             session_id=test_session['session_id'],
             board_data=board_data,
             board=board,
+            unrevealed_counter=test_session['unrevealed_counter']
         )
         with django_db_blocker.unblock():
             session.save()
