@@ -401,56 +401,59 @@ async def add_nonogram_board(request: HttpRequest):
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
         query = json.loads(request.body)
+        if 'board' not in query:
+            return HttpResponseBadRequest("board is missing.")
+        if 'num_row' not in query:
+            return HttpResponseBadRequest("num_row is missing.")
+        if 'num_column' not in query:
+            return HttpResponseBadRequest("num_column is missing.")
+        base64_board_data = query['board']
+        num_row = query['num_row']
+        num_column = query['num_column']
+        theme = query['theme'] if 'theme' in query else ''
+        if not isinstance(base64_board_data, str) or not isinstance(num_row, int) or not isinstance(num_column, int) or not isinstance(theme, str):
+            return HttpResponseBadRequest("invalid type.")
+        if not re.fullmatch('[A-Za-z0-9+/]*={0,2}', base64_board_data):
+            return HttpResponseBadRequest("invalid base64 string")
         try:
-            base64_board_data = query['board']
-            num_row = query['num_row']
-            num_column = query['num_column']
-            theme = query['theme'] if 'theme' in query else ''
-            if not isinstance(base64_board_data, str) or not isinstance(num_row, int) or not isinstance(num_column, int) or not isinstance(theme, str):
-                return HttpResponseBadRequest("invalid type.")
-            if not re.fullmatch('[A-Za-z0-9+/]*={0,2}', base64_board_data):
-                return HttpResponseBadRequest("invalid base64 string")
             board_image_data = base64.b64decode(base64_board_data)
             board_image = Image.open(io.BytesIO(board_image_data))
 
             board_image.load()
             board_image.verify()
-
-            board_id = str(uuid.uuid4())
-
-            bw_board_image = board_image.convert('1')
-            resized_board_image = bw_board_image.resize((num_row, num_column))
-            pixels = resized_board_image.load()
-
-            board = [
-                [int(RealBoardCellState.BLACK) if pixels[x, y] <= BLACK_THRESHOLD else int(RealBoardCellState.WHITE) for y in range(num_column)]
-                for x in range(num_row)
-            ]
-
-            black_counter = sum(
-                sum(1 for item in row if item == RealBoardCellState.BLACK)
-                for row in board
-            )
-
-            nonogram_board = NonogramBoard(
-                board_id=board_id,
-                board=board,
-                num_row=num_row,
-                num_column=num_column,
-                theme=theme,
-                black_counter=black_counter,
-            )
-
-            # TODO: 비동기 task queue를 사용해서 업데이트하는 로직으로 변경
-            await nonogram_board.asave()
-
-            response_data = {
-                "board_id": board_id,
-            }
-
-            return JsonResponse(response_data)
-
-        except KeyError as error:
-            return HttpResponseBadRequest(f"{error} is missing.")
         except (ValueError, UnidentifiedImageError):
             return HttpResponseBadRequest("invalid image data.")
+
+        board_id = str(uuid.uuid4())
+
+        bw_board_image = board_image.convert('1')
+        resized_board_image = bw_board_image.resize((num_row, num_column))
+        pixels = resized_board_image.load()
+
+        board = [
+            [int(RealBoardCellState.BLACK) if pixels[x, y] <= BLACK_THRESHOLD else int(RealBoardCellState.WHITE) for y in range(num_column)]
+            for x in range(num_row)
+        ]
+
+        black_counter = sum(
+            sum(1 for item in row if item == RealBoardCellState.BLACK)
+            for row in board
+        )
+
+        nonogram_board = NonogramBoard(
+            board_id=board_id,
+            board=board,
+            num_row=num_row,
+            num_column=num_column,
+            theme=theme,
+            black_counter=black_counter,
+        )
+
+        # TODO: 비동기 task queue를 사용해서 업데이트하는 로직으로 변경
+        await nonogram_board.asave()
+
+        response_data = {
+            "board_id": board_id,
+        }
+
+        return JsonResponse(response_data)
