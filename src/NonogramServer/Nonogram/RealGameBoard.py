@@ -28,3 +28,7 @@ class RealGameBoard:
 
         self.num_row = len(self.board)
         self.num_column = len(self.board[0])
+        self.black_counter = sum(
+            sum(1 for item in row if item == RealBoardCellState.BLACK)
+            for row in self.board
+        )

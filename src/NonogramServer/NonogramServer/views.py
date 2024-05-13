@@ -189,12 +189,14 @@ async def set_cell_state(request: HttpRequest):
 
         성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
         response (int): 적용 여부에 따라 응답 코드를 반환.
-                        0(or False)=UNCHANGED
-                        1(or True)=APPLIED
+                        0=UNCHANGED
+                        1=APPLIED
+                        2=GAME_OVER
     '''
     if request.method == "GET":
         return HttpResponse("set_cell_state(get)")
     else:
+        GAME_OVER = 2
         query = json.loads(request.body)
         try:
             session_id = query['session_id']
@@ -218,7 +220,10 @@ async def set_cell_state(request: HttpRequest):
                 return HttpResponseBadRequest("Invalid coordinate.")
             if not isinstance(new_state, int) or not (0 <= new_state <= 3):
                 return HttpResponseBadRequest("Invalid state. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), or 3(MARK_QUESTION).")
-            changed = await session.async_mark(x, y, new_state)
+            if session.unrevealed_counter > 0:
+                changed = 1 if await session.async_mark(x, y, new_state) else 0
+            else:
+                changed = GAME_OVER
             response_data = {"response": changed}
             return JsonResponse(response_data)
         except KeyError as error:
@@ -320,6 +325,7 @@ async def create_new_game(request: HttpRequest):
                 ]
             )
             session.current_game = None
+            session.unrevealed_counter = board_data.black_counter
 
             coroutine.append(asyncio.create_task(session.asave()))
 
@@ -386,12 +392,18 @@ async def add_nonogram_board(request: HttpRequest):
                 for x in range(num_row)
             ]
 
+            black_counter = sum(
+                sum(1 for item in row if item == RealBoardCellState.BLACK)
+                for row in board
+            )
+
             nonogram_board = NonogramBoard(
                 board_id=board_id,
                 board=board,
                 num_row=num_row,
                 num_column=num_column,
                 theme=theme,
+                black_counter=black_counter,
             )
 
             # TODO: 비동기 task queue를 사용해서 업데이트하는 로직으로 변경
