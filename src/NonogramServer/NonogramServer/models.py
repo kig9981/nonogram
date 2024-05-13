@@ -30,6 +30,7 @@ class NonogramBoard(models.Model):
     board = models.TextField(null=True)
     num_row = models.IntegerField(default=5)
     num_column = models.IntegerField(default=5)
+    black_counter = models.IntegerField()
     theme = models.CharField(max_length=20, default="")
 
     def clean(self):
@@ -66,6 +67,7 @@ class Session(models.Model):
     current_game = models.ForeignKey("History", on_delete=models.SET_DEFAULT, null=True, default=None)
     board_data = models.ForeignKey("NonogramBoard", on_delete=models.SET_DEFAULT, null=True, default=None)
     board = models.TextField(null=True, default=None)
+    unrevealed_counter = models.IntegerField(default=0)
 
     def mark(
         self,
@@ -76,7 +78,7 @@ class Session(models.Model):
         board_data = self.board_data
         current_game = self.current_game
 
-        if current_game is None or board_data is None:
+        if board_data is None or self.unrevealed_counter == 0:
             return False
 
         num_row = board_data.num_row
@@ -102,6 +104,8 @@ class Session(models.Model):
 
         if changed:
             play[x][y] = new_state
+            if new_state == GameBoardCellState.REVEALED:
+                self.unrevealed_counter -= 1
             if current_game is None:
                 gameplay_id = uuid.uuid4()
                 current_turn = 1
@@ -131,7 +135,7 @@ class Session(models.Model):
         board_data = self.board_data
         current_game = self.current_game
 
-        if board_data is None:
+        if board_data is None or self.unrevealed_counter == 0:
             return False
 
         num_row = board_data.num_row
@@ -157,6 +161,8 @@ class Session(models.Model):
 
         if changed:
             play[x][y] = new_state
+            if new_state == GameBoardCellState.REVEALED:
+                self.unrevealed_counter -= 1
             if current_game is None:
                 gameplay_id = uuid.uuid4()
                 current_turn = 1
