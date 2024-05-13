@@ -15,6 +15,7 @@ from utils import async_get_from_db
 from utils import serialize_gameboard
 from utils import deserialize_gameboard
 from utils import deserialize_gameplay
+from utils import is_uuid4
 from Nonogram.NonogramBoard import NonogramGameplay
 from Nonogram.RealGameBoard import RealGameBoard
 from PIL import Image
@@ -30,13 +31,22 @@ import re
 async def process_board_query(
     query: dict,
 ) -> HttpResponse:
+    if 'board_id' not in query:
+        return HttpResponseBadRequest("board_id is missing.")
+
     board_id = query['board_id']
 
-    board_data = await async_get_from_db(
-        model_class=NonogramBoard,
-        label=f"board_id {board_id}",
-        board_id=board_id,
-    )
+    if not isinstance(board_id, str) or not is_uuid4(board_id):
+        return HttpResponseBadRequest(f"board_id '{board_id}' is not valid id.")
+
+    try:
+        board_data = await async_get_from_db(
+            model_class=NonogramBoard,
+            label=f"board_id '{board_id}'",
+            board_id=board_id,
+        )
+    except ObjectDoesNotExist as error:
+        return HttpResponseNotFound(f"{error} not found.")
 
     response_data = {
         "board": deserialize_gameboard(board_data.board),
@@ -52,15 +62,22 @@ async def process_gameplay_query(
 ) -> HttpResponse:
     GAME_NOT_START = 0
     LATEST_TURN = -1
+    if 'game_turn' not in query:
+        return HttpResponseBadRequest("game_turn is missing.")
     session_id = query['session_id']
     game_turn = query['game_turn']
+    if not isinstance(session_id, str) or not is_uuid4(session_id):
+        return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
 
-    session = await async_get_from_db(
-        model_class=Session,
-        label=f"session_id {session_id}",
-        select_related=['board_data', 'current_game'],
-        session_id=session_id,
-    )
+    try:
+        session = await async_get_from_db(
+            model_class=Session,
+            label=f"session_id '{session_id}'",
+            select_related=['board_data', 'current_game'],
+            session_id=session_id,
+        )
+    except ObjectDoesNotExist as error:
+        return HttpResponseNotFound(f"{error} not found.")
 
     board_data = session.board_data
 
@@ -159,18 +176,19 @@ async def get_nonogram_board(request: HttpRequest):
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
         query = json.loads(request.body)
-        try:
-            session_id = query['session_id']
-            if session_id == BOARD_ID_QUERY:
-                return await process_board_query(query)
-            else:
-                return await process_gameplay_query(query)
-        except KeyError as error:
-            return HttpResponseBadRequest(f"{error} is missing.")
-        except ObjectDoesNotExist as error:
-            return HttpResponseNotFound(f"{error} not found.")
-        except ValidationError as error:
-            return HttpResponseBadRequest(f"'{error.message}' is not valid id.")
+        if 'session_id' not in query:
+            return HttpResponseBadRequest("session_id is missing.")
+        session_id = query['session_id']
+        if session_id == BOARD_ID_QUERY:
+            return await process_board_query(query)
+        else:
+            return await process_gameplay_query(query)
+        # except KeyError as error:
+        #     return HttpResponseBadRequest(f"{error} is missing.")
+        # except ObjectDoesNotExist as error:
+        #     return HttpResponseNotFound(f"{error} not found.")
+        # except ValidationError as error:
+        #     return HttpResponseBadRequest(f"'{error.message}' is not valid id.")
 
 
 async def set_cell_state(request: HttpRequest):

@@ -92,7 +92,7 @@ async def test_session_for_get_nonogram_board(
         )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.content.decode() == "'game_turn' is missing."
+        assert response.content.decode() == "game_turn is missing."
 
         query_dict = {
             "session_id": session_id,
@@ -182,7 +182,7 @@ async def test_get_nonogram_board(
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.content.decode() == "'session_id' is missing."
+    assert response.content.decode() == "session_id is missing."
 
     query_dict = {
         "session_id": BOARD_QUERY,
@@ -196,7 +196,7 @@ async def test_get_nonogram_board(
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.content.decode() == "'board_id' is missing."
+    assert response.content.decode() == "board_id is missing."
 
     query_dict = {
         "session_id": BOARD_QUERY,
@@ -211,7 +211,7 @@ async def test_get_nonogram_board(
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.content.decode() == f"board_id {BOARD_ID_UNUSED_FOR_TEST} not found."
+    assert response.content.decode() == f"board_id '{BOARD_ID_UNUSED_FOR_TEST}' not found."
 
     query_dict = {
         "session_id": BOARD_QUERY,
@@ -226,7 +226,7 @@ async def test_get_nonogram_board(
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.content.decode() == f"'board_id {INCORRECT_ID}' is not valid id."
+    assert response.content.decode() == f"board_id '{INCORRECT_ID}' is not valid id."
 
     query_dict = {
         "session_id": INCORRECT_ID,
@@ -241,7 +241,7 @@ async def test_get_nonogram_board(
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.content.decode() == f"'session_id {INCORRECT_ID}' is not valid id."
+    assert response.content.decode() == f"session_id '{INCORRECT_ID}' is not valid id."
 
 
 @pytest.mark.asyncio
@@ -323,7 +323,7 @@ async def test_set_cell_state(
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.content.decode() == "'session_id' is missing."
+    assert response.content.decode() == "session_id is missing."
 
     query_dict = {
         "session_id": SESSION_ID_UNUSED_FOR_TEST,
@@ -404,7 +404,7 @@ async def test_create_new_game(
             query_dict=query_dict,
         )
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.content.decode() == f"'{key}' is missing."
+        assert response.content.decode() == f"{key} is missing."
         query_dict[key] = value
 
     response = await send_test_request(
