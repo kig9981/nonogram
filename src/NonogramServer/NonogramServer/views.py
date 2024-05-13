@@ -5,7 +5,6 @@ from django.http import JsonResponse
 from django.http import HttpResponseNotFound
 from django.http import HttpResponseBadRequest
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import ValidationError
 from .models import NonogramBoard
 from .models import Session
 from .models import History
@@ -15,6 +14,7 @@ from utils import async_get_from_db
 from utils import serialize_gameboard
 from utils import deserialize_gameboard
 from utils import deserialize_gameplay
+from utils import is_uuid4
 from Nonogram.NonogramBoard import NonogramGameplay
 from Nonogram.RealGameBoard import RealGameBoard
 from PIL import Image
@@ -30,13 +30,22 @@ import re
 async def process_board_query(
     query: dict,
 ) -> HttpResponse:
+    if 'board_id' not in query:
+        return HttpResponseBadRequest("board_id is missing.")
+
     board_id = query['board_id']
 
-    board_data = await async_get_from_db(
-        model_class=NonogramBoard,
-        label=f"board_id {board_id}",
-        board_id=board_id,
-    )
+    if not isinstance(board_id, str) or not is_uuid4(board_id):
+        return HttpResponseBadRequest(f"board_id '{board_id}' is not valid id.")
+
+    try:
+        board_data = await async_get_from_db(
+            model_class=NonogramBoard,
+            label=f"board_id '{board_id}'",
+            board_id=board_id,
+        )
+    except ObjectDoesNotExist as error:
+        return HttpResponseNotFound(f"{error} not found.")
 
     response_data = {
         "board": deserialize_gameboard(board_data.board),
@@ -52,15 +61,22 @@ async def process_gameplay_query(
 ) -> HttpResponse:
     GAME_NOT_START = 0
     LATEST_TURN = -1
+    if 'game_turn' not in query:
+        return HttpResponseBadRequest("game_turn is missing.")
     session_id = query['session_id']
     game_turn = query['game_turn']
+    if not isinstance(session_id, str) or not is_uuid4(session_id):
+        return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
 
-    session = await async_get_from_db(
-        model_class=Session,
-        label=f"session_id {session_id}",
-        select_related=['board_data', 'current_game'],
-        session_id=session_id,
-    )
+    try:
+        session = await async_get_from_db(
+            model_class=Session,
+            label=f"session_id '{session_id}'",
+            select_related=['board_data', 'current_game'],
+            session_id=session_id,
+        )
+    except ObjectDoesNotExist as error:
+        return HttpResponseNotFound(f"{error} not found.")
 
     board_data = session.board_data
 
@@ -159,18 +175,13 @@ async def get_nonogram_board(request: HttpRequest):
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
         query = json.loads(request.body)
-        try:
-            session_id = query['session_id']
-            if session_id == BOARD_ID_QUERY:
-                return await process_board_query(query)
-            else:
-                return await process_gameplay_query(query)
-        except KeyError as error:
-            return HttpResponseBadRequest(f"{error} is missing.")
-        except ObjectDoesNotExist as error:
-            return HttpResponseNotFound(f"{error} not found.")
-        except ValidationError as error:
-            return HttpResponseBadRequest(f"'{error.message}' is not valid id.")
+        if 'session_id' not in query:
+            return HttpResponseBadRequest("session_id is missing.")
+        session_id = query['session_id']
+        if session_id == BOARD_ID_QUERY:
+            return await process_board_query(query)
+        else:
+            return await process_gameplay_query(query)
 
 
 async def set_cell_state(request: HttpRequest):
@@ -202,40 +213,46 @@ async def set_cell_state(request: HttpRequest):
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
         query = json.loads(request.body)
+        if 'session_id' not in query:
+            return HttpResponseBadRequest("session_id is missing.")
+        if 'x_coord' not in query:
+            return HttpResponseBadRequest("x_coord is missing.")
+        if 'y_coord' not in query:
+            return HttpResponseBadRequest("y_coord is missing.")
+        if 'new_state' not in query:
+            return HttpResponseBadRequest("new_state is missing.")
+        session_id = query['session_id']
+        x = query['x_coord']
+        y = query['y_coord']
+        new_state = query['new_state']
+        if not isinstance(session_id, str) or not is_uuid4(session_id):
+            return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
         try:
-            session_id = query['session_id']
-            x = query['x_coord']
-            y = query['y_coord']
-            new_state = query['new_state']
             session = await async_get_from_db(
                 model_class=Session,
-                label=f"session_id {session_id}",
+                label=f"session_id '{session_id}'",
                 select_related=['current_game', 'board_data'],
                 session_id=session_id,
             )
-
-            if session.board_data is None:
-                return HttpResponseNotFound("gameplay not found.")
-
-            board_data = session.board_data
-            num_row = board_data.num_row
-            num_column = board_data.num_column
-            if not isinstance(x, int) or not isinstance(y, int) or not (0 <= x < num_row) or not (0 <= y < num_column):
-                return HttpResponseBadRequest("Invalid coordinate.")
-            if not isinstance(new_state, int) or not (0 <= new_state <= 3):
-                return HttpResponseBadRequest("Invalid state. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), or 3(MARK_QUESTION).")
-            if session.unrevealed_counter > 0:
-                changed = 1 if await session.async_mark(x, y, new_state) else 0
-            else:
-                changed = GAME_OVER
-            response_data = {"response": changed}
-            return JsonResponse(response_data)
-        except KeyError as error:
-            return HttpResponseBadRequest(f"{error} is missing.")
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
-        except ValidationError as error:
-            return HttpResponseBadRequest(f"'{error.message}' is not valid id.")
+
+        if session.board_data is None:
+            return HttpResponseNotFound("gameplay not found.")
+
+        board_data = session.board_data
+        num_row = board_data.num_row
+        num_column = board_data.num_column
+        if not isinstance(x, int) or not isinstance(y, int) or not (0 <= x < num_row) or not (0 <= y < num_column):
+            return HttpResponseBadRequest("Invalid coordinate.")
+        if not isinstance(new_state, int) or not (0 <= new_state <= 3):
+            return HttpResponseBadRequest("Invalid state. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), or 3(MARK_QUESTION).")
+        if session.unrevealed_counter > 0:
+            changed = 1 if await session.async_mark(x, y, new_state) else 0
+        else:
+            changed = GAME_OVER
+        response_data = {"response": changed}
+        return JsonResponse(response_data)
 
 
 async def create_new_session(request: HttpRequest):
@@ -282,74 +299,83 @@ async def create_new_game(request: HttpRequest):
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
         query = json.loads(request.body)
+        if 'session_id' not in query:
+            return HttpResponseBadRequest("session_id is missing.")
+        if 'board_id' not in query:
+            return HttpResponseBadRequest("board_id is missing.")
+        if 'force_new_game' not in query:
+            return HttpResponseBadRequest("force_new_game is missing.")
+
+        session_id = query['session_id']
+        board_id = query['board_id']
+        force_new_game = query['force_new_game']
+
+        if not isinstance(session_id, str) or not is_uuid4(session_id):
+            return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
+        if board_id != RANDOM_BOARD and (not isinstance(board_id, str) or not is_uuid4(board_id)):
+            return HttpResponseBadRequest(f"board_id '{board_id}' is not valid id.")
+        if not isinstance(force_new_game, bool):
+            return HttpResponseBadRequest("force_new_game not valid.")
+
         try:
-            session_id = query['session_id']
-            board_id = query['board_id']
-            force_new_game = query['force_new_game']
-
-            if not isinstance(session_id, str) or (not isinstance(board_id, str) and board_id != RANDOM_BOARD) or not isinstance(force_new_game, bool):
-                return HttpResponseBadRequest("invalid type.")
-
             session = await async_get_from_db(
                 model_class=Session,
-                label=f"session_id {session_id}",
+                label=f"session_id '{session_id}'",
                 select_related=['current_game', 'board_data'],
                 session_id=session_id,
             )
-
-            coroutine = []
-
-            if session.board_data is not None:
-                if not force_new_game:
-                    response_data = {
-                        "response": GAME_EXIST,
-                    }
-                    return JsonResponse(response_data)
-
-                # TODO: 비동기 task queue를 사용해서 업데이트하는 로직으로 변경
-
-                async for history in History.objects.filter(current_session=session):
-                    history.current_session = None
-                    coroutine.append(asyncio.create_task(history.asave()))
-
-            if board_id == RANDOM_BOARD:
-                # TODO: 더 빠르게 랜덤셀렉트하는걸로 바꾸기
-                board_data = await NonogramBoard.objects.order_by('?').afirst()
-                board_id = str(board_data.board_id)
-            else:
-                board_data = await async_get_from_db(
-                    model_class=NonogramBoard,
-                    label=f"board_id {board_id}",
-                    board_id=board_id,
-                )
-
-            session.board_data = board_data
-            session.board = serialize_gameboard(
-                [
-                    [GameBoardCellState.NOT_SELECTED for _ in range(board_data.num_column)]
-                    for _ in range(board_data.num_row)
-                ]
-            )
-            session.current_game = None
-            session.unrevealed_counter = board_data.black_counter
-
-            coroutine.append(asyncio.create_task(session.asave()))
-
-            response_data = {
-                "response": NEW_GAME_STARTED,
-                "board_id": board_id,
-            }
-
-            await asyncio.gather(*coroutine)
-
-            return JsonResponse(response_data)
-
-        except KeyError as error:
-            return HttpResponseBadRequest(f"{error} is missing.")
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
-        except ValidationError as error:
-            return HttpResponseBadRequest(f"'{error.message}' is not valid id.")
+
+        coroutine = []
+
+        if session.board_data is not None:
+            if not force_new_game:
+                response_data = {
+                    "response": GAME_EXIST,
+                }
+                return JsonResponse(response_data)
+
+            # TODO: 비동기 task queue를 사용해서 업데이트하는 로직으로 변경
+
+            async for history in History.objects.filter(current_session=session):
+                history.current_session = None
+                coroutine.append(asyncio.create_task(history.asave()))
+
+        if board_id == RANDOM_BOARD:
+            # TODO: 더 빠르게 랜덤셀렉트하는걸로 바꾸기
+            board_data = await NonogramBoard.objects.order_by('?').afirst()
+            board_id = str(board_data.board_id)
+        else:
+            try:
+                board_data = await async_get_from_db(
+                    model_class=NonogramBoard,
+                    label=f"board_id '{board_id}'",
+                    board_id=board_id,
+                )
+            except ObjectDoesNotExist as error:
+                return HttpResponseNotFound(f"{error} not found.")
+
+        session.board_data = board_data
+        session.board = serialize_gameboard(
+            [
+                [GameBoardCellState.NOT_SELECTED for _ in range(board_data.num_column)]
+                for _ in range(board_data.num_row)
+            ]
+        )
+        session.current_game = None
+        session.unrevealed_counter = board_data.black_counter
+
+        coroutine.append(asyncio.create_task(session.asave()))
+
+        response_data = {
+            "response": NEW_GAME_STARTED,
+            "board_id": board_id,
+        }
+
+        await asyncio.gather(*coroutine)
+
+        return JsonResponse(response_data)
 
 
 async def add_nonogram_board(request: HttpRequest):
@@ -374,56 +400,59 @@ async def add_nonogram_board(request: HttpRequest):
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
         query = json.loads(request.body)
+        if 'board' not in query:
+            return HttpResponseBadRequest("board is missing.")
+        if 'num_row' not in query:
+            return HttpResponseBadRequest("num_row is missing.")
+        if 'num_column' not in query:
+            return HttpResponseBadRequest("num_column is missing.")
+        base64_board_data = query['board']
+        num_row = query['num_row']
+        num_column = query['num_column']
+        theme = query['theme'] if 'theme' in query else ''
+        if not isinstance(base64_board_data, str) or not isinstance(num_row, int) or not isinstance(num_column, int) or not isinstance(theme, str):
+            return HttpResponseBadRequest("invalid type.")
+        if not re.fullmatch('[A-Za-z0-9+/]*={0,2}', base64_board_data):
+            return HttpResponseBadRequest("invalid base64 string")
         try:
-            base64_board_data = query['board']
-            num_row = query['num_row']
-            num_column = query['num_column']
-            theme = query['theme'] if 'theme' in query else ''
-            if not isinstance(base64_board_data, str) or not isinstance(num_row, int) or not isinstance(num_column, int) or not isinstance(theme, str):
-                return HttpResponseBadRequest("invalid type.")
-            if not re.fullmatch('[A-Za-z0-9+/]*={0,2}', base64_board_data):
-                return HttpResponseBadRequest("invalid base64 string")
             board_image_data = base64.b64decode(base64_board_data)
             board_image = Image.open(io.BytesIO(board_image_data))
 
             board_image.load()
             board_image.verify()
-
-            board_id = str(uuid.uuid4())
-
-            bw_board_image = board_image.convert('1')
-            resized_board_image = bw_board_image.resize((num_row, num_column))
-            pixels = resized_board_image.load()
-
-            board = [
-                [int(RealBoardCellState.BLACK) if pixels[x, y] <= BLACK_THRESHOLD else int(RealBoardCellState.WHITE) for y in range(num_column)]
-                for x in range(num_row)
-            ]
-
-            black_counter = sum(
-                sum(1 for item in row if item == RealBoardCellState.BLACK)
-                for row in board
-            )
-
-            nonogram_board = NonogramBoard(
-                board_id=board_id,
-                board=board,
-                num_row=num_row,
-                num_column=num_column,
-                theme=theme,
-                black_counter=black_counter,
-            )
-
-            # TODO: 비동기 task queue를 사용해서 업데이트하는 로직으로 변경
-            await nonogram_board.asave()
-
-            response_data = {
-                "board_id": board_id,
-            }
-
-            return JsonResponse(response_data)
-
-        except KeyError as error:
-            return HttpResponseBadRequest(f"{error} is missing.")
         except (ValueError, UnidentifiedImageError):
             return HttpResponseBadRequest("invalid image data.")
+
+        board_id = str(uuid.uuid4())
+
+        bw_board_image = board_image.convert('1')
+        resized_board_image = bw_board_image.resize((num_row, num_column))
+        pixels = resized_board_image.load()
+
+        board = [
+            [int(RealBoardCellState.BLACK) if pixels[x, y] <= BLACK_THRESHOLD else int(RealBoardCellState.WHITE) for y in range(num_column)]
+            for x in range(num_row)
+        ]
+
+        black_counter = sum(
+            sum(1 for item in row if item == RealBoardCellState.BLACK)
+            for row in board
+        )
+
+        nonogram_board = NonogramBoard(
+            board_id=board_id,
+            board=board,
+            num_row=num_row,
+            num_column=num_column,
+            theme=theme,
+            black_counter=black_counter,
+        )
+
+        # TODO: 비동기 task queue를 사용해서 업데이트하는 로직으로 변경
+        await nonogram_board.asave()
+
+        response_data = {
+            "board_id": board_id,
+        }
+
+        return JsonResponse(response_data)
