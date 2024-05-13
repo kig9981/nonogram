@@ -5,6 +5,7 @@ from ApiServer.views import get_nonogram_board
 from ApiServer.views import get_nonogram_play
 from ApiServer.views import synchronize
 from ApiServer.views import make_move
+from ApiServer.views import create_new_session
 from ..util import send_test_request
 
 
@@ -111,6 +112,29 @@ async def test_make_move(
             "y": 0,
             "state": 0,
         },
+    )
+
+    assert response.status_code == HTTPStatus.OK
+
+
+@pytest.mark.asyncio
+async def test_create_new_session(
+    mock_request,
+    mocker,
+):
+    url = '/create_new_session/'
+    mocker.patch(
+        target="ApiServer.views.send_request",
+        return_value={
+            "status_code": HTTPStatus.OK,
+            "session_id": "!!!",
+        }
+    )
+    response = await send_test_request(
+        mock_request=mock_request,
+        request_function=create_new_session,
+        url=url,
+        query_dict={},
     )
 
     assert response.status_code == HTTPStatus.OK
