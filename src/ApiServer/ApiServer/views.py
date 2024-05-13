@@ -236,6 +236,12 @@ async def make_move(request: HttpRequest):
 
         if "session_id" not in query:
             return HttpResponseBadRequest("session_id is missing.")
+        if "x" not in query:
+            return HttpResponseBadRequest("x is missing.")
+        if "y" not in query:
+            return HttpResponseBadRequest("y is missing.")
+        if "state" not in query:
+            return HttpResponseBadRequest("state is missing.")
 
         session_id = query["session_id"]
         x = query["x"]
@@ -290,7 +296,21 @@ async def create_new_session(request: HttpRequest):
     if request.method == "GET":
         return HttpResponse("create_new_session(get)")
     else:
-        return HttpResponse("create_new_session(post)")
+        # TODO: 비정상적인 쿼리에 대한 거부(같은 ip에 대해서 쿨타임 설정)
+        url = f"{NONOGRAM_SERVER_URL}/create_new_session"
+        response = await send_request(
+            url=url,
+            request={},
+        )
+        status_code = response["status_code"]
+
+        if status_code == HTTPStatus.OK:
+            response_data = {
+                "session_id": response["session_id"],
+            }
+            return JsonResponse(response_data)
+        else:
+            return HttpResponseServerError("unknown error")
 
 
 async def create_new_game(request: HttpRequest):
