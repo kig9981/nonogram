@@ -20,6 +20,7 @@ from .views.GetNonogramBoard import GetNonogramBoard
 from .views.GetNonogramPlay import GetNonogramPlay
 from .views.Synchronize import Synchronize
 from .views.MakeMove import MakeMove
+from .views.CreateNewSession import CreateNewSession
 from . import view
 
 urlpatterns = [
@@ -28,6 +29,6 @@ urlpatterns = [
     path("get_nonogram_play/", GetNonogramPlay.as_view(), name="get_nonogram_play"),
     path("synchronize/", Synchronize.as_view(), name="synchronize"),
     path("make_move/", MakeMove.as_view(), name="make_move"),
-    path("create_new_session/", view.create_new_session, name="create_new_session"),
+    path("create_new_session/", CreateNewSession.as_view(), name="create_new_session"),
     path("create_new_game/", view.create_new_game, name="create_new_game"),
 ]
