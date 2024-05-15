@@ -5,7 +5,7 @@ from ApiServer.views.GetNonogramBoard import GetNonogramBoard
 from ApiServer.views.GetNonogramPlay import GetNonogramPlay
 from ApiServer.views.Synchronize import Synchronize
 from ApiServer.views.MakeMove import MakeMove
-from ApiServer.view import create_new_session
+from ApiServer.views.CreateNewSession import CreateNewSession
 from ApiServer.view import create_new_game
 from ..util import send_test_request
 
@@ -14,6 +14,7 @@ get_nonogram_board = GetNonogramBoard.as_view()
 get_nonogram_play = GetNonogramPlay.as_view()
 synchronize = Synchronize.as_view()
 make_move = MakeMove.as_view()
+create_new_session = CreateNewSession.as_view()
 
 
 @pytest.mark.asyncio
@@ -131,7 +132,7 @@ async def test_create_new_session(
 ):
     url = '/create_new_session/'
     mocker.patch(
-        target="ApiServer.view.send_request",
+        target="ApiServer.views.CreateNewSession.send_request",
         return_value={
             "status_code": HTTPStatus.OK,
             "session_id": "!!!",

@@ -22,37 +22,6 @@ NONOGRAM_SERVER_PORT = env("NONOGRAM_SERVER_PORT")
 NONOGRAM_SERVER_URL = f"{NONOGRAM_SERVER_PROTOCOL}://{NONOGRAM_SERVER_HOST}:{NONOGRAM_SERVER_PORT}"
 
 
-async def create_new_session(request: HttpRequest):
-    '''
-    새 세션을 생성하는 메서드.
-    Args:
-
-    Returns:
-        만들어진 session id를 반환
-
-        성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
-        session_id (str): session_id를 uuid형식으로 반환.
-    '''
-    if request.method == "GET":
-        return HttpResponse("create_new_session(get)")
-    else:
-        # TODO: 비정상적인 쿼리에 대한 거부(같은 ip에 대해서 쿨타임 설정)
-        url = f"{NONOGRAM_SERVER_URL}/create_new_session"
-        response = await send_request(
-            url=url,
-            request={},
-        )
-        status_code = response["status_code"]
-
-        if status_code == HTTPStatus.OK:
-            response_data = {
-                "session_id": response["session_id"],
-            }
-            return JsonResponse(response_data)
-        else:
-            return HttpResponseServerError("unknown error")
-
-
 async def create_new_game(request: HttpRequest):
     '''
     세션에서 새 게임을 시작하는 메서드.
