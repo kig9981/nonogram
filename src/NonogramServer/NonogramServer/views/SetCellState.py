@@ -35,13 +35,13 @@ class SetCellState(View):
     '''
     async def get(
         self,
-        request: HttpRequest
+        request: HttpRequest,
     ) -> HttpResponse:
         return HttpResponse("set_cell_state(get)")
 
     async def post(
         self,
-        request: HttpRequest
+        request: HttpRequest,
     ) -> HttpResponse:
         GAME_OVER = 2
         if request.content_type != "application/json":
