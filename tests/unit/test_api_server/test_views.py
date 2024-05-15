@@ -1,13 +1,16 @@
 import pytest
 import uuid
 from http import HTTPStatus
-from ApiServer.view import get_nonogram_board
+from ApiServer.views.GetNonogramBoard import GetNonogramBoard
 from ApiServer.view import get_nonogram_play
 from ApiServer.view import synchronize
 from ApiServer.view import make_move
 from ApiServer.view import create_new_session
 from ApiServer.view import create_new_game
 from ..util import send_test_request
+
+
+get_nonogram_board = GetNonogramBoard.as_view()
 
 
 @pytest.mark.asyncio
@@ -17,7 +20,7 @@ async def test_get_nonogram_board(
 ):
     url = '/get_nonogram_board/'
     mocker.patch(
-        target="ApiServer.view.send_request",
+        target="ApiServer.views.GetNonogramBoard.send_request",
         return_value={
             "status_code": HTTPStatus.OK,
             "board_id": "!!!",
