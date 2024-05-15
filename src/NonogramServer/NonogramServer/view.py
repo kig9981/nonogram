@@ -27,25 +27,6 @@ import base64
 import re
 
 
-async def create_new_session(request: HttpRequest):
-    '''
-    새로운 세션을 생성하는 메서드.
-    Args:
-        None
-    Returns:
-        요청한 사항에 대한 응답을 json형식으로 리턴.
-        session_id: 생성에 성공한 경우 해당 session_id, 실패한 경우 0을 반환
-    '''
-    if request.method == "GET":
-        return HttpResponse("create_new_session(get)")
-    else:
-        session_id = str(uuid.uuid4())
-        session = Session(session_id=session_id)
-        await session.asave()
-        response_data = {"session_id": session_id}
-        return JsonResponse(response_data)
-
-
 async def create_new_game(request: HttpRequest):
     '''
     특정 세션에서 새 게임을 시작하는 메서드.
