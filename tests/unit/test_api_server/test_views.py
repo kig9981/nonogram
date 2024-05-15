@@ -4,7 +4,7 @@ from http import HTTPStatus
 from ApiServer.views.GetNonogramBoard import GetNonogramBoard
 from ApiServer.views.GetNonogramPlay import GetNonogramPlay
 from ApiServer.views.Synchronize import Synchronize
-from ApiServer.view import make_move
+from ApiServer.views.MakeMove import MakeMove
 from ApiServer.view import create_new_session
 from ApiServer.view import create_new_game
 from ..util import send_test_request
@@ -13,6 +13,7 @@ from ..util import send_test_request
 get_nonogram_board = GetNonogramBoard.as_view()
 get_nonogram_play = GetNonogramPlay.as_view()
 synchronize = Synchronize.as_view()
+make_move = MakeMove.as_view()
 
 
 @pytest.mark.asyncio
@@ -102,7 +103,7 @@ async def test_make_move(
 ):
     url = '/make_move/'
     mocker.patch(
-        target="ApiServer.view.send_request",
+        target="ApiServer.views.MakeMove.send_request",
         return_value={
             "status_code": HTTPStatus.OK,
             "response": 0,

@@ -19,6 +19,7 @@ from django.urls import path
 from .views.GetNonogramBoard import GetNonogramBoard
 from .views.GetNonogramPlay import GetNonogramPlay
 from .views.Synchronize import Synchronize
+from .views.MakeMove import MakeMove
 from . import view
 
 urlpatterns = [
@@ -26,7 +27,7 @@ urlpatterns = [
     path("get_nonogram_board/", GetNonogramBoard.as_view(), name="get_nonogram_board"),
     path("get_nonogram_play/", GetNonogramPlay.as_view(), name="get_nonogram_play"),
     path("synchronize/", Synchronize.as_view(), name="synchronize"),
-    path("make_move/", view.make_move, name="make_move"),
+    path("make_move/", MakeMove.as_view(), name="make_move"),
     path("create_new_session/", view.create_new_session, name="create_new_session"),
     path("create_new_game/", view.create_new_game, name="create_new_game"),
 ]
