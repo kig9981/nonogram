@@ -35,13 +35,13 @@ class CreateNewGame(View):
     async def get(
         self,
         request: HttpRequest,
-    ):
+    ) -> HttpResponse:
         return HttpResponse("create_new_game(get)")
 
     async def post(
         self,
         request: HttpRequest,
-    ):
+    ) -> HttpResponse:
         RANDOM_BOARD = 0
         GAME_EXIST = 0
         NEW_GAME_STARTED = 1

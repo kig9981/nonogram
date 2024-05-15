@@ -14,7 +14,7 @@ from NonogramServer.views.GetNonogramBoard import GetNonogramBoard
 from NonogramServer.views.SetCellState import SetCellState
 from NonogramServer.views.CreateNewSession import CreateNewSession
 from NonogramServer.views.CreateNewGame import CreateNewGame
-from NonogramServer.view import add_nonogram_board
+from NonogramServer.views.AddNonogramBoard import AddNonogramBoard
 from src.utils import GameBoardCellState
 from src.utils import deserialize_gameboard
 from src.utils import deserialize_gameplay
@@ -40,6 +40,7 @@ get_nonogram_board = GetNonogramBoard.as_view()
 set_cell_state = SetCellState.as_view()
 create_new_session = CreateNewSession.as_view()
 create_new_game = CreateNewGame.as_view()
+add_nonogram_board = AddNonogramBoard.as_view()
 
 
 @pytest.mark.asyncio
