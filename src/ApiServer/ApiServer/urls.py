@@ -21,7 +21,7 @@ from .views.GetNonogramPlay import GetNonogramPlay
 from .views.Synchronize import Synchronize
 from .views.MakeMove import MakeMove
 from .views.CreateNewSession import CreateNewSession
-from . import view
+from .views.CreateNewGame import CreateNewGame
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,5 +30,5 @@ urlpatterns = [
     path("synchronize/", Synchronize.as_view(), name="synchronize"),
     path("make_move/", MakeMove.as_view(), name="make_move"),
     path("create_new_session/", CreateNewSession.as_view(), name="create_new_session"),
-    path("create_new_game/", view.create_new_game, name="create_new_game"),
+    path("create_new_game/", CreateNewGame.as_view(), name="create_new_game"),
 ]
