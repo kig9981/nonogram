@@ -48,7 +48,7 @@ class GetNonogramBoard(View):
         request: HttpRequest,
     ) -> HttpResponse:
         return HttpResponse("get_nonogram_board(get)")
-    
+
     async def post(
         self,
         request: HttpRequest,
