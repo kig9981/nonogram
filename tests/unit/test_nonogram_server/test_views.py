@@ -10,11 +10,11 @@ from typing import Dict
 from http import HTTPStatus
 from NonogramServer.models import NonogramBoard
 from NonogramServer.models import Session
-from NonogramServer.views import get_nonogram_board
-from NonogramServer.views import set_cell_state
-from NonogramServer.views import create_new_session
-from NonogramServer.views import create_new_game
-from NonogramServer.views import add_nonogram_board
+from NonogramServer.views.GetNonogramBoard import GetNonogramBoard
+from NonogramServer.view import set_cell_state
+from NonogramServer.view import create_new_session
+from NonogramServer.view import create_new_game
+from NonogramServer.view import add_nonogram_board
 from src.utils import GameBoardCellState
 from src.utils import deserialize_gameboard
 from src.utils import deserialize_gameplay
@@ -35,6 +35,8 @@ GAME_NOT_START = 0
 RANDOM_BOARD = 0
 GAME_EXIST = 0
 NEW_GAME_STARTED = 1
+
+get_nonogram_board = GetNonogramBoard.as_view()
 
 
 @pytest.mark.asyncio
