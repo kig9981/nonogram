@@ -17,13 +17,13 @@ class CreateNewSession(View):
     '''
     async def get(
         self,
-        request: HttpRequest
+        request: HttpRequest,
     ) -> HttpResponse:
         return HttpResponse("create_new_session(get)")
 
     async def post(
         self,
-        request: HttpRequest
+        request: HttpRequest,
     ) -> HttpResponse:
         session_id = str(uuid.uuid4())
         session = Session(session_id=session_id)
