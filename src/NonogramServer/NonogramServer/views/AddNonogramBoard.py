@@ -1,33 +1,20 @@
-from django.shortcuts import render
-from django.http import HttpRequest
-from django.http import HttpResponse
-from django.http import JsonResponse
-from django.http import HttpResponseNotFound
-from django.http import HttpResponseBadRequest
-from django.core.exceptions import ObjectDoesNotExist
-from .models import NonogramBoard
-from .models import Session
-from .models import History
-from utils import GameBoardCellState
-from utils import RealBoardCellState
-from utils import async_get_from_db
-from utils import serialize_gameboard
-from utils import deserialize_gameboard
-from utils import deserialize_gameplay
-from utils import is_uuid4
-from Nonogram.NonogramBoard import NonogramGameplay
-from Nonogram.RealGameBoard import RealGameBoard
-from PIL import Image
-from PIL import UnidentifiedImageError
 import json
 import uuid
-import asyncio
 import io
 import base64
 import re
+from django.views import View
+from django.http import HttpRequest
+from django.http import HttpResponse
+from django.http import JsonResponse
+from django.http import HttpResponseBadRequest
+from ..models import NonogramBoard
+from utils import RealBoardCellState
+from PIL import Image
+from PIL import UnidentifiedImageError
 
 
-async def add_nonogram_board(request: HttpRequest):
+class AddNonogramBoard(View):
     '''
     새 노노그램 보드를 db에 추가하는 메서드
     Args:
@@ -42,9 +29,16 @@ async def add_nonogram_board(request: HttpRequest):
         base64로 디코딩한 것이 PIL 이미지가 아니면 400에러(invalid image format) 리턴
         board_id (str): 생성한 board_id의 uuid를 리턴, 실패시 빈 문자열을 리턴.
     '''
-    if request.method == "GET":
+    async def get(
+        self,
+        request: HttpRequest,
+    ) -> HttpResponse:
         return HttpResponse("add_nonogram_board(get)")
-    else:
+
+    async def post(
+        self,
+        request: HttpRequest,
+    ) -> HttpResponse:
         BLACK_THRESHOLD = 127
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
