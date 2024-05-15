@@ -11,7 +11,7 @@ from http import HTTPStatus
 from NonogramServer.models import NonogramBoard
 from NonogramServer.models import Session
 from NonogramServer.views.GetNonogramBoard import GetNonogramBoard
-from NonogramServer.view import set_cell_state
+from NonogramServer.views.SetCellState import SetCellState
 from NonogramServer.view import create_new_session
 from NonogramServer.view import create_new_game
 from NonogramServer.view import add_nonogram_board
@@ -37,6 +37,7 @@ GAME_EXIST = 0
 NEW_GAME_STARTED = 1
 
 get_nonogram_board = GetNonogramBoard.as_view()
+set_cell_state = SetCellState.as_view()
 
 
 @pytest.mark.asyncio
