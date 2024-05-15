@@ -16,11 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from .views.GetNonogramBoard import GetNonogramBoard
 from . import view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("get_nonogram_board/", view.get_nonogram_board, name="get_nonogram_board"),
+    path("get_nonogram_board/", GetNonogramBoard.as_view(), name="get_nonogram_board"),
     path("get_nonogram_play/", view.get_nonogram_play, name="get_nonogram_play"),
     path("synchronize/", view.synchronize, name="synchronize"),
     path("make_move/", view.make_move, name="make_move"),
