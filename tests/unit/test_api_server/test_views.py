@@ -3,7 +3,7 @@ import uuid
 from http import HTTPStatus
 from ApiServer.views.GetNonogramBoard import GetNonogramBoard
 from ApiServer.views.GetNonogramPlay import GetNonogramPlay
-from ApiServer.view import synchronize
+from ApiServer.views.Synchronize import Synchronize
 from ApiServer.view import make_move
 from ApiServer.view import create_new_session
 from ApiServer.view import create_new_game
@@ -12,6 +12,7 @@ from ..util import send_test_request
 
 get_nonogram_board = GetNonogramBoard.as_view()
 get_nonogram_play = GetNonogramPlay.as_view()
+synchronize = Synchronize.as_view()
 
 
 @pytest.mark.asyncio
@@ -75,7 +76,7 @@ async def test_synchronize(
 ):
     url = '/synchronize/'
     mocker.patch(
-        target="ApiServer.view.send_request",
+        target="ApiServer.views.Synchronize.send_request",
         return_value={
             "status_code": HTTPStatus.OK,
             "board": "!!!",
