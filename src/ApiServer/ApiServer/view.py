@@ -22,66 +22,6 @@ NONOGRAM_SERVER_PORT = env("NONOGRAM_SERVER_PORT")
 NONOGRAM_SERVER_URL = f"{NONOGRAM_SERVER_PROTOCOL}://{NONOGRAM_SERVER_HOST}:{NONOGRAM_SERVER_PORT}"
 
 
-async def get_nonogram_play(request: HttpRequest):
-    '''
-    진행중인 세션의 노노그램 보드 게임 현황에 대한 정보를 반환하는 메서드.
-    Args:
-        Application/json으로 요청을 받는 것을 전제로 한다.
-        session_id (str): 유저의 세션 id
-
-    Returns:
-        해당 session_id가 존재하지 않는다면 404에러(session_id not found)를 반환.
-        진행중인 게임이 없으면 404에러(board not found)를 반환.
-        존재한다면 게임 진행 상황을 반환.
-
-        성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
-        board (list[list]): 가장 최근 움직임까지 게임 진행 정보를 반영한 게임보드를 2차원 배열로 반환.
-                            게임 진행중이 아니라면 빈 배열 반환.
-                            각 원소의 값은 Nonogram.utils의 GameBoardCellState, RealBoardCellState 참조.
-        latest_turn (int): 가장 최근 턴 수를 반환.
-    '''
-    if request.method == "GET":
-        return HttpResponse("get_nonogram_play(get)")
-    else:
-        LATEST_TURN = -1
-
-        if request.content_type != "application/json":
-            return HttpResponseBadRequest("Must be Application/json request.")
-
-        query = json.loads(request.body)
-
-        if "session_id" not in query:
-            return HttpResponseBadRequest("session_id is missing.")
-
-        session_id = query["session_id"]
-
-        if not isinstance(session_id, str) or not is_uuid4(session_id):
-            return HttpResponseBadRequest(f"'{session_id}' is not valid id.")
-
-        url = f"{NONOGRAM_SERVER_URL}/get_nonogram_server"
-        query_dict = {
-            "session_id": session_id,
-            "game_turn": LATEST_TURN,
-        }
-        response = await send_request(
-            url=url,
-            request=query_dict,
-        )
-        status_code = response["status_code"]
-
-        if status_code == HTTPStatus.OK:
-            response_data = {
-                "board": response["board"],
-                "latest_turn": response["latest_turn"],
-            }
-            return JsonResponse(response_data)
-
-        elif status_code == HTTPStatus.NOT_FOUND:
-            return HttpResponseNotFound(response["response"])
-        else:
-            return HttpResponseServerError("unknown error")
-
-
 async def synchronize(request: HttpRequest):
     '''
     진행중인 세션의 노노그램 보드 게임 진행을 동기화하기 위한 메서드. 진행중인 턴을 바탕으로 동기화한다.
