@@ -2,7 +2,6 @@ import json
 import uuid
 import io
 import base64
-import re
 from django.views import View
 from django.http import HttpRequest
 from django.http import HttpResponse
@@ -10,6 +9,7 @@ from django.http import JsonResponse
 from django.http import HttpResponseBadRequest
 from ..models import NonogramBoard
 from utils import RealBoardCellState
+from utils import is_base64
 from PIL import Image
 from PIL import UnidentifiedImageError
 
@@ -55,7 +55,7 @@ class AddNonogramBoard(View):
         theme = query['theme'] if 'theme' in query else ''
         if not isinstance(base64_board_data, str) or not isinstance(num_row, int) or not isinstance(num_column, int) or not isinstance(theme, str):
             return HttpResponseBadRequest("invalid type.")
-        if not re.fullmatch('[A-Za-z0-9+/]*={0,2}', base64_board_data):
+        if not is_base64(base64_board_data):
             return HttpResponseBadRequest("invalid base64 string")
         try:
             board_image_data = base64.b64decode(base64_board_data)
@@ -91,7 +91,6 @@ class AddNonogramBoard(View):
             black_counter=black_counter,
         )
 
-        # TODO: 비동기 task queue를 사용해서 업데이트하는 로직으로 변경
         await nonogram_board.asave()
 
         response_data = {

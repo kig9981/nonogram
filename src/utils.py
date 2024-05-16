@@ -1,6 +1,7 @@
 from enum import IntEnum
 import json
 import uuid
+import base64
 import hashlib
 import aiohttp
 from http import HTTPStatus
@@ -213,3 +214,16 @@ def convert_board_to_hash(
 ) -> str:
     string_list = ','.join([''.join(map(str, subarray)) for subarray in array])
     return hashlib.md5(string_list.encode()).hexdigest()
+
+
+def is_base64(
+    base64_to_test: object
+) -> bool:
+    try:
+        if isinstance(base64_to_test, str):
+            base64_to_test = bytes(base64_to_test)
+        elif not isinstance(base64_to_test, bytes):
+            return False
+        return base64.b64encode(base64.b64decode(base64_to_test)) == base64_to_test
+    except Exception:
+        return False
