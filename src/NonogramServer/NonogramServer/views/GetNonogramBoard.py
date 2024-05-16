@@ -14,7 +14,6 @@ from utils import deserialize_gameboard
 from utils import deserialize_gameplay
 from utils import is_uuid4
 from Nonogram.NonogramBoard import NonogramGameplay
-from Nonogram.RealGameBoard import RealGameBoard
 
 
 class GetNonogramBoard(View):
@@ -145,20 +144,12 @@ class GetNonogramBoard(View):
                 return_int=True,
             )
         else:
-            board_id = session.board_data.board_id
-            board = deserialize_gameboard(session.board_data.board)
-            real_board = RealGameBoard(
-                board_id=board_id,
-                board=board,
-            )
-
             gameplay = NonogramGameplay(
-                board_id=board_id,
-                board=real_board,
+                data=board_data,
+                db_sync=False,
             )
 
             async for move in History.objects.filter(
-                current_session=session,
                 gameplay_id=latest_turn_info.gameplay_id,
                 current_turn__lte=game_turn,
             ).order_by("current_turn"):
@@ -168,7 +159,7 @@ class GetNonogramBoard(View):
                     new_state=move.type_of_move,
                 )
 
-            board = gameplay.get_int_board()
+            board = gameplay.playboard
 
         response_data = {
             "board": board,
