@@ -1,5 +1,4 @@
 import json
-import asyncio
 from django.views import View
 from django.http import HttpRequest
 from django.http import HttpResponse
@@ -9,11 +8,8 @@ from django.http import HttpResponseBadRequest
 from django.core.exceptions import ObjectDoesNotExist
 from ..models import NonogramBoard
 from ..models import Session
-from ..models import History
 from Nonogram.NonogramBoard import NonogramGameplay
-from utils import GameBoardCellState
 from utils import async_get_from_db
-from utils import serialize_gameboard
 from utils import is_uuid4
 
 
