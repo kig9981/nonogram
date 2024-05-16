@@ -13,9 +13,11 @@ from typing import Optional
 import uuid
 import asyncio
 
+
 UNCHANGED = 0
 APPLIED = 1
 GAME_OVER = 2
+
 
 class NonogramGameplay:
     def __init__(
@@ -33,8 +35,8 @@ class NonogramGameplay:
             board_data = data
             self.unrevealed_counter = data.black_counter
             self.playboard = [
-                [int(GameBoardCellState.NOT_SELECTED) for y in range(data.num_column)]
-                for x in range(data.num_row)
+                [int(GameBoardCellState.NOT_SELECTED) for _ in range(data.num_column)]
+                for _ in range(data.num_row)
             ]
             if session_id is None or not is_uuid4(session_id):
                 session_id = str(uuid.uuid4())

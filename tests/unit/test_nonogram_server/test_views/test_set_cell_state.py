@@ -5,15 +5,11 @@ from typing import Any
 from typing import List
 from typing import Dict
 from http import HTTPStatus
-from NonogramServer.models import NonogramBoard
 from NonogramServer.models import Session
 from NonogramServer.views.SetCellState import SetCellState
 from src.utils import async_get_from_db
 from src.utils import GameBoardCellState
-from src.utils import deserialize_gameboard
-from src.utils import deserialize_gameplay
 from Nonogram.NonogramBoard import NonogramGameplay
-from Nonogram.RealGameBoard import RealGameBoard
 from django.test.client import RequestFactory
 from ...util import send_test_request
 
@@ -44,7 +40,6 @@ async def test_session_for_set_cell_state(
 
     for test_session in test_sessions:
         session_id = test_session["session_id"]
-        board_id = test_session["board_id"]
 
         session = await async_get_from_db(
             model_class=Session,

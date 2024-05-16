@@ -1,6 +1,5 @@
 import pytest
 from Nonogram.NonogramBoard import NonogramGameplay
-from Nonogram.NonogramBoard import NonogramGameplay
 from NonogramServer.models import NonogramBoard
 from src.utils import GameBoardCellState
 from src.utils import RealBoardCellState
