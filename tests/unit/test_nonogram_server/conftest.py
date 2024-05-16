@@ -3,11 +3,8 @@ import sys
 import json
 import django
 import pytest
-import uuid
 import psycopg2
 from psycopg2 import OperationalError
-from src.utils import deserialize_gameboard
-from src.utils import serialize_gameplay
 
 
 DB_NAME = "testdb"
