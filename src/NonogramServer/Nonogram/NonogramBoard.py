@@ -1,7 +1,10 @@
+from __future__ import annotations
 from Nonogram.RealGameBoard import RealGameBoard
 from utils import GameBoardCellState
 from utils import RealBoardCellState
 from typing import Optional
+from typing import List
+from typing import Union
 from uuid import UUID
 
 
@@ -46,3 +49,11 @@ class NonogramGameplay:
             [int(self.playboard[x][y]) for y in range(self.board.num_column)]
             for x in range(self.board.num_row)
         ]
+
+    @classmethod
+    def create_board(
+        cls,
+        board_id: UUID,
+        board: List[List[Union[RealBoardCellState, int]]],
+    ) -> NonogramGameplay:
+        return cls(board_id, RealGameBoard(board_id, board))
