@@ -10,6 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from ..models import NonogramBoard
 from ..models import Session
 from ..models import History
+from Nonogram.NonogramBoard import NonogramGameplay
 from utils import GameBoardCellState
 from utils import async_get_from_db
 from utils import serialize_gameboard
@@ -67,7 +68,7 @@ class CreateNewGame(View):
             return HttpResponseBadRequest("force_new_game not valid.")
 
         try:
-            session = await async_get_from_db(
+            session_data = await async_get_from_db(
                 model_class=Session,
                 label=f"session_id '{session_id}'",
                 select_related=['current_game', 'board_data'],
@@ -76,20 +77,15 @@ class CreateNewGame(View):
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
 
-        coroutine = []
-
-        if session.board_data is not None:
+        if session_data.board_data is not None:
             if not force_new_game:
                 response_data = {
                     "response": GAME_EXIST,
                 }
                 return JsonResponse(response_data)
 
-            # TODO: 비동기 task queue를 사용해서 업데이트하는 로직으로 변경
-
-            async for history in History.objects.filter(current_session=session):
-                history.current_session = None
-                coroutine.append(asyncio.create_task(history.asave()))
+            session = NonogramGameplay(session_data)
+            await session.async_reset()
 
         if board_id == RANDOM_BOARD:
             # TODO: 더 빠르게 랜덤셀렉트하는걸로 바꾸기
@@ -105,23 +101,17 @@ class CreateNewGame(View):
             except ObjectDoesNotExist as error:
                 return HttpResponseNotFound(f"{error} not found.")
 
-        session.board_data = board_data
-        session.board = serialize_gameboard(
-            [
-                [GameBoardCellState.NOT_SELECTED for _ in range(board_data.num_column)]
-                for _ in range(board_data.num_row)
-            ]
+        session = NonogramGameplay(
+            data=board_data,
+            session_id=session_id,
+            delayed_save=True
         )
-        session.current_game = None
-        session.unrevealed_counter = board_data.black_counter
 
-        coroutine.append(asyncio.create_task(session.asave()))
+        await session.asave()
 
         response_data = {
             "response": NEW_GAME_STARTED,
             "board_id": board_id,
         }
-
-        await asyncio.gather(*coroutine)
 
         return JsonResponse(response_data)

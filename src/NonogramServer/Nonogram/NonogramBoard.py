@@ -25,6 +25,7 @@ class NonogramGameplay:
         data: Union[NonogramBoard, Session],
         db_sync: bool = True,
         session_id: Optional[uuid.UUID] = None,
+        delayed_save: bool = False,
     ):
         if isinstance(data, Session):
             board_data = data.board_data
@@ -47,7 +48,8 @@ class NonogramGameplay:
                 unrevealed_counter=self.unrevealed_counter,
             )
             if db_sync:
-                self.session.save()
+                if not delayed_save:
+                    self.session.save()
         else:
             raise TypeError("invalid model type.")
         self.board_data = board_data
