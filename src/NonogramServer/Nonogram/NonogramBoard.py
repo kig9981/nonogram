@@ -4,6 +4,7 @@ from NonogramServer.models import Session
 from NonogramServer.models import History
 from utils import GameBoardCellState
 from utils import RealBoardCellState
+from utils import deserialize_gameboard
 from utils import serialize_gameplay
 from utils import deserialize_gameplay
 from typing import Union
@@ -22,7 +23,7 @@ class NonogramGameplay:
             self.unrevealed_counter = data.unrevealed_counter
             self.playboard = deserialize_gameplay(data.board)
             self.session = data
-        else:
+        elif isinstance(data, NonogramBoard):
             board_data = data
             self.unrevealed_counter = data.black_counter
             self.playboard = [
@@ -35,9 +36,11 @@ class NonogramGameplay:
                 board=serialize_gameplay(self.playboard),
                 unrevealed_counter=self.unrevealed_counter,
             )
+        else:
+            raise TypeError("invalid model type.")
         self.board_data = board_data
         self.board_id = board_data.board_id
-        self.board = board_data.board
+        self.board = deserialize_gameboard(board_data.board)
         self.num_row = board_data.num_row
         self.num_column = board_data.num_column
         self.black_counter = board_data.black_counter
