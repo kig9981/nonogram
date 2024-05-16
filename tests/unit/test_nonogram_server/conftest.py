@@ -125,25 +125,20 @@ def add_board_test_data(
 def add_session_test_data(
     django_db_setup,
     django_db_blocker,
+    add_board_test_data,
     test_sessions,
 ):
     from NonogramServer.models import NonogramBoard
-    from NonogramServer.models import Session
     from Nonogram.NonogramBoard import NonogramGameplay
 
     for test_session in test_sessions:
         board_id = test_session['board_id']
         with django_db_blocker.unblock():
             board_data = NonogramBoard.objects.get(board_id=board_id)
-        board = NonogramGameplay(board_data).playboard
-        session = Session(
-            session_id=test_session['session_id'],
-            board_data=board_data,
-            board=board,
-            unrevealed_counter=test_session['unrevealed_counter']
-        )
-        with django_db_blocker.unblock():
-            session.save()
+            NonogramGameplay(
+                data=board_data,
+                session_id=test_session['session_id']
+            )
 
 
 @pytest.fixture
