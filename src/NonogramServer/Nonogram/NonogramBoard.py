@@ -55,6 +55,8 @@ class NonogramGameplay:
         if save_db and self.db_sync:
             self.session.current_game.save()
             self.session.save()
+        else:
+            self.db_sync = False
         return True
 
     async def async_mark(
@@ -69,6 +71,8 @@ class NonogramGameplay:
         if save_db and self.db_sync:
             await self.session.current_game.asave()
             await self.session.asave()
+        else:
+            self.db_sync = False
         return True
 
     def _mark(
