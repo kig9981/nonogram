@@ -221,7 +221,7 @@ def is_base64(
 ) -> bool:
     try:
         if isinstance(base64_to_test, str):
-            base64_to_test = bytes(base64_to_test)
+            base64_to_test = base64_to_test.encode()
         elif not isinstance(base64_to_test, bytes):
             return False
         return base64.b64encode(base64.b64decode(base64_to_test)) == base64_to_test
