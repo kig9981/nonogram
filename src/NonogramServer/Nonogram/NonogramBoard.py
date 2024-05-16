@@ -1,67 +1,127 @@
 from __future__ import annotations
-from Nonogram.RealGameBoard import RealGameBoard
-from ..NonogramServer.models import Session
-from ..NonogramServer.models import History
+from NonogramServer.models import NonogramBoard
+from NonogramServer.models import Session
+from NonogramServer.models import History
 from utils import GameBoardCellState
 from utils import RealBoardCellState
-from typing import Optional
-from typing import List
+from utils import serialize_gameplay
+from utils import deserialize_gameplay
 from typing import Union
-from uuid import UUID
+import uuid
 
 
 class NonogramGameplay:
     def __init__(
         self,
-        board_id: UUID,
-        board: Optional[RealGameBoard] = None,
+        data: Union[NonogramBoard, Session],
     ):
-        self.board_size = None
-        self.board_id = board_id
-        self.board = board if board is not None else RealGameBoard(board_id)
-        self.num_row = self.board.num_row
-        self.num_column = self.board.num_column
-        self.playboard = [
-            [GameBoardCellState.NOT_SELECTED for _ in range(self.num_column)]
-            for _ in range(self.num_row)
-        ]
+        if isinstance(data, Session):
+            self.session = data
+            self.board_data = data.board_data
+            self.board_id = data.board_data.board_id
+            self.board = data.board_data.board
+            self.num_row = data.board_data.num_row
+            self.num_column = data.board_data.num_column
+            self.black_counter = data.board_data.black_counter
+            self.unrevealed_counter = data.unrevealed_counter
+            self.playboard = deserialize_gameplay(data.board)
+        else:
+            self.board_data = data
+            self.board_id = data.board_id
+            self.board = data.board
+            self.num_row = data.num_row
+            self.num_column = data.num_column
+            self.black_counter = data.black_counter
+            self.unrevealed_counter = data.black_counter
+            self.playboard = [
+                [int(GameBoardCellState.NOT_SELECTED) for y in range(self.num_column)]
+                for x in range(self.num_row)
+            ]
+            self.session = Session(
+                session_id=str(uuid.uuid4()),
+                board_data=data,
+                board=serialize_gameplay(self.playboard),
+                unrevealed_counter=self.unrevealed_counter,
+            )
 
     def mark(
         self,
         x: int,
         y: int,
         new_state: GameBoardCellState,
+        save_db: bool = False,
+
+    ) -> bool:
+        if not self._markable(x, y, new_state):
+            return False
+        self.playboard[x][y] = new_state
+        if new_state == GameBoardCellState.REVEALED:
+            self.unrevealed_counter -= 1
+        self.session.board = serialize_gameplay(self.playboard)
+        self.session.unrevealed_counter = self.unrevealed_counter
+        self.session.current_game = self._create_history(x, y, new_state)
+        if save_db:
+            self.session.current_game.save()
+            self.session.save()
+        return True
+
+    async def async_mark(
+        self,
+        x: int,
+        y: int,
+        new_state: GameBoardCellState,
+        save_db: bool = True,
+
+    ) -> bool:
+        if not self.mark(x, y, new_state):
+            return False
+        if save_db:
+            await self.session.current_game.asave()
+            await self.session.asave()
+        return True
+
+    def _create_history(
+        self,
+        x: int,
+        y: int,
+        new_state: GameBoardCellState,
+    ) -> History:
+        current_game = self.session.current_game
+        if current_game is None:
+            gameplay_id = str(uuid.uuid4())
+            new_turn = 0
+        else:
+            gameplay_id = current_game.gameplay_id
+            new_turn = current_game.current_turn + 1
+        return History(
+            current_session=self.session,
+            gameplay_id=gameplay_id,
+            current_turn=new_turn,
+            type_of_move=new_state,
+            x_coord=x,
+            y_coord=y,
+        )
+
+    def _markable(
+        self,
+        x: int,
+        y: int,
+        new_state: GameBoardCellState,
     ) -> bool:
         if not (0 <= x < self.num_row) or not (0 <= y < self.num_column):
-            raise ValueError("incorrect coordinate")
+            return False
         current_cell_state = self.playboard[x][y]
-        current_cell = self.board.board[x][y]
+        current_cell = self.board[x][y]
         if current_cell_state == GameBoardCellState.REVEALED:
             return False
         if new_state == GameBoardCellState.REVEALED:
             if current_cell == RealBoardCellState.BLACK:
-                self.playboard[x][y] = new_state
                 return True
             return False
-        self.playboard[x][y] = new_state
         return current_cell_state != new_state
 
-    def get_int_board(self):
-        return [
-            [int(self.playboard[x][y]) for y in range(self.board.num_column)]
-            for x in range(self.board.num_row)
-        ]
+    def save(self) -> None:
+        self.session.save()
 
-    @classmethod
-    def create_board(
-        cls,
-        board_id: UUID,
-        board: List[List[Union[RealBoardCellState, int]]],
-    ) -> NonogramGameplay:
-        return cls(board_id, RealGameBoard(board_id, board))
-    
-    def save() -> None:
-        pass
-
-    async def asave() -> None:
-        pass
+    async def asave(self) -> None:
+        await self.session.asave()
