@@ -11,6 +11,9 @@ from typing import Union
 import uuid
 import asyncio
 
+UNCHANGED = 0
+APPLIED = 1
+GAME_OVER = 2
 
 class NonogramGameplay:
     def __init__(
@@ -50,49 +53,53 @@ class NonogramGameplay:
         self,
         x: int,
         y: int,
-        new_state: GameBoardCellState,
+        new_state: Union[GameBoardCellState, int],
         save_db: bool = True,
-    ) -> bool:
-        if not self._mark(x, y, new_state):
-            return False
+    ) -> int:
+        mark_result = self._mark(x, y, new_state)
+        if mark_result != APPLIED:
+            return mark_result
         if save_db and self.db_sync:
             self.session.current_game.save()
             self.session.save()
         else:
             self.db_sync = False
-        return True
+        return mark_result
 
     async def async_mark(
         self,
         x: int,
         y: int,
-        new_state: GameBoardCellState,
+        new_state: Union[GameBoardCellState, int],
         save_db: bool = True,
-    ) -> bool:
-        if not self._mark(x, y, new_state):
-            return False
+    ) -> int:
+        mark_result = self._mark(x, y, new_state)
+        if mark_result != APPLIED:
+            return mark_result
         if save_db and self.db_sync:
             await self.session.current_game.asave()
             await self.session.asave()
         else:
             self.db_sync = False
-        return True
+        return mark_result
 
     def _mark(
         self,
         x: int,
         y: int,
-        new_state: GameBoardCellState,
-    ) -> bool:
+        new_state: Union[GameBoardCellState, int],
+    ) -> int:
+        if self.unrevealed_counter == 0:
+            return GAME_OVER
         if not self._markable(x, y, new_state):
-            return False
+            return UNCHANGED
         self.playboard[x][y] = new_state
         if new_state == GameBoardCellState.REVEALED:
             self.unrevealed_counter -= 1
         self.session.board = serialize_gameplay(self.playboard)
         self.session.unrevealed_counter = self.unrevealed_counter
         self.session.current_game = self._create_history(x, y, new_state)
-        return True
+        return APPLIED
 
     def _create_history(
         self,
