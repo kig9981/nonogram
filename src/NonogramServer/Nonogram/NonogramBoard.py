@@ -7,7 +7,9 @@ from utils import RealBoardCellState
 from utils import deserialize_gameboard
 from utils import serialize_gameplay
 from utils import deserialize_gameplay
+from utils import is_uuid4
 from typing import Union
+from typing import Optional
 import uuid
 import asyncio
 
@@ -20,6 +22,7 @@ class NonogramGameplay:
         self,
         data: Union[NonogramBoard, Session],
         db_sync: bool = True,
+        session_id: Optional[uuid.UUID] = None,
     ):
         if isinstance(data, Session):
             board_data = data.board_data
@@ -33,8 +36,10 @@ class NonogramGameplay:
                 [int(GameBoardCellState.NOT_SELECTED) for y in range(data.num_column)]
                 for x in range(data.num_row)
             ]
+            if session_id is None or not is_uuid4(session_id):
+                session_id = str(uuid.uuid4())
             self.session = Session(
-                session_id=str(uuid.uuid4()),
+                session_id=session_id,
                 board_data=data,
                 board=serialize_gameplay(self.playboard),
                 unrevealed_counter=self.unrevealed_counter,
