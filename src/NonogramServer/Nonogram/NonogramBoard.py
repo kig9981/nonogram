@@ -89,7 +89,7 @@ class NonogramGameplay:
         current_game = self.session.current_game
         if current_game is None:
             gameplay_id = str(uuid.uuid4())
-            new_turn = 0
+            new_turn = 1
         else:
             gameplay_id = current_game.gameplay_id
             new_turn = current_game.current_turn + 1
