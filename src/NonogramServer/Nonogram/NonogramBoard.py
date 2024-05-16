@@ -39,8 +39,10 @@ class NonogramGameplay:
                 [int(GameBoardCellState.NOT_SELECTED) for _ in range(data.num_column)]
                 for _ in range(data.num_row)
             ]
-            if session_id is None or not is_uuid4(session_id):
+            if session_id is None:
                 session_id = str(uuid.uuid4())
+            elif not is_uuid4(session_id):
+                raise ValueError("Not uuid4 format")
             self.session = Session(
                 session_id=session_id,
                 board_data=data,
