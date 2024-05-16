@@ -4,11 +4,8 @@ from django.http import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.http import HttpResponseServerError
-from utils import is_uuid4
 from utils import send_request
-from utils import convert_board_to_hash
 from http import HTTPStatus
-import environ
 
 
 class CreateNewSession(View):
