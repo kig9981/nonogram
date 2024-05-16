@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.http import HttpResponseNotFound
 from django.http import HttpResponseBadRequest
 from django.core.exceptions import ObjectDoesNotExist
+from Nonogram.NonogramBoard import NonogramGameplay
 from ..models import Session
 from utils import async_get_from_db
 from utils import is_uuid4
@@ -43,7 +44,6 @@ class SetCellState(View):
         self,
         request: HttpRequest,
     ) -> HttpResponse:
-        GAME_OVER = 2
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
         query = json.loads(request.body)
@@ -74,16 +74,13 @@ class SetCellState(View):
         if session.board_data is None:
             return HttpResponseNotFound("gameplay not found.")
 
-        board_data = session.board_data
-        num_row = board_data.num_row
-        num_column = board_data.num_column
+        gameplay = NonogramGameplay(session)
+        num_row = gameplay.num_row
+        num_column = gameplay.num_column
         if not isinstance(x, int) or not isinstance(y, int) or not (0 <= x < num_row) or not (0 <= y < num_column):
             return HttpResponseBadRequest("Invalid coordinate.")
         if not isinstance(new_state, int) or not (0 <= new_state <= 3):
             return HttpResponseBadRequest("Invalid state. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), or 3(MARK_QUESTION).")
-        if session.unrevealed_counter > 0:
-            changed = 1 if await session.async_mark(x, y, new_state) else 0
-        else:
-            changed = GAME_OVER
+        changed = await gameplay.async_mark(x, y, new_state)
         response_data = {"response": changed}
         return JsonResponse(response_data)
