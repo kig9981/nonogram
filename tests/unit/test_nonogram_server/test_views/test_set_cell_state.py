@@ -8,6 +8,7 @@ from http import HTTPStatus
 from NonogramServer.models import NonogramBoard
 from NonogramServer.models import Session
 from NonogramServer.views.SetCellState import SetCellState
+from src.utils import async_get_from_db
 from src.utils import GameBoardCellState
 from src.utils import deserialize_gameboard
 from src.utils import deserialize_gameplay
@@ -45,19 +46,16 @@ async def test_session_for_set_cell_state(
         session_id = test_session["session_id"]
         board_id = test_session["board_id"]
 
-        board_data = await NonogramBoard.objects.aget(board_id=board_id)
-
-        real_board = RealGameBoard(
-            board_id=board_id,
-            board=deserialize_gameboard(board_data.board)
+        session = await async_get_from_db(
+            model_class=Session,
+            label=f"session_id '{session_id}'",
+            select_related=['board_data', 'current_game'],
+            session_id=session_id,
         )
-
         play = NonogramGameplay(
-            board_id=board_id,
-            board=real_board,
+            data=session,
+            db_sync=False,
         )
-        session = await Session.objects.aget(pk=session_id)
-        play.playboard = deserialize_gameplay(session.board)
 
         for x in range(play.num_row):
             for y in range(play.num_column):
