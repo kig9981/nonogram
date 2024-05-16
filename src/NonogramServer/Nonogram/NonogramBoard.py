@@ -1,5 +1,7 @@
 from __future__ import annotations
 from Nonogram.RealGameBoard import RealGameBoard
+from ..NonogramServer.models import Session
+from ..NonogramServer.models import History
 from utils import GameBoardCellState
 from utils import RealBoardCellState
 from typing import Optional
@@ -57,3 +59,9 @@ class NonogramGameplay:
         board: List[List[Union[RealBoardCellState, int]]],
     ) -> NonogramGameplay:
         return cls(board_id, RealGameBoard(board_id, board))
+    
+    def save() -> None:
+        pass
+
+    async def asave() -> None:
+        pass
