@@ -44,6 +44,8 @@ class NonogramGameplay:
                 board=serialize_gameplay(self.playboard),
                 unrevealed_counter=self.unrevealed_counter,
             )
+            if db_sync:
+                self.session.save()
         else:
             raise TypeError("invalid model type.")
         self.board_data = board_data
