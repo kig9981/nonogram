@@ -17,7 +17,7 @@ services:
       - .env
 
   nonogramserver:
-    image: nonogram_server
+    image: nonogram_server:${NONOGRAM_SERVER_VERSION:-latest}
     environment:
       NONOGRAM_SERVER_SECRET_KEY: ${NONOGRAM_SERVER_SECRET_KEY}
       NONOGRAM_SERVER_HOST: ${NONOGRAM_SERVER_HOST}
@@ -39,7 +39,7 @@ services:
       - .env
 
   apiserver:
-    image: api_server
+    image: api_server:${API_SERVER_VERSION:-latest}
     environment:
       API_SERVER_SECRET_KEY: ${API_SERVER_SECRET_KEY}
       NONOGRAM_SERVER_HOST: ${NONOGRAM_SERVER_HOST}
