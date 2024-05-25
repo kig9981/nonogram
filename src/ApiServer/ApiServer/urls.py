@@ -22,9 +22,11 @@ from .views.Synchronize import Synchronize
 from .views.MakeMove import MakeMove
 from .views.CreateNewSession import CreateNewSession
 from .views.CreateNewGame import CreateNewGame
+from .views.Healthcheck import HealthCheck
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('healthcheck/', HealthCheck.as_view(), name="healthcheck"),
     path("get_nonogram_board/", GetNonogramBoard.as_view(), name="get_nonogram_board"),
     path("get_nonogram_play/", GetNonogramPlay.as_view(), name="get_nonogram_play"),
     path("synchronize/", Synchronize.as_view(), name="synchronize"),
