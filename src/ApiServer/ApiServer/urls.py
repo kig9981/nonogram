@@ -16,14 +16,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from . import views
+from .views.GetNonogramBoard import GetNonogramBoard
+from .views.GetNonogramPlay import GetNonogramPlay
+from .views.Synchronize import Synchronize
+from .views.MakeMove import MakeMove
+from .views.CreateNewSession import CreateNewSession
+from .views.CreateNewGame import CreateNewGame
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("get_nonogram_board/", views.get_nonogram_board, name="get_nonogram_board"),
-    path("get_nonogram_play/", views.get_nonogram_play, name="get_nonogram_play"),
-    path("synchronize/", views.synchronize, name="synchronize"),
-    path("make_move/", views.make_move, name="make_move"),
-    path("create_new_session/", views.create_new_session, name="create_new_session"),
-    path("create_new_game/", views.create_new_game, name="create_new_game"),
+    path("get_nonogram_board/", GetNonogramBoard.as_view(), name="get_nonogram_board"),
+    path("get_nonogram_play/", GetNonogramPlay.as_view(), name="get_nonogram_play"),
+    path("synchronize/", Synchronize.as_view(), name="synchronize"),
+    path("make_move/", MakeMove.as_view(), name="make_move"),
+    path("create_new_session/", CreateNewSession.as_view(), name="create_new_session"),
+    path("create_new_game/", CreateNewGame.as_view(), name="create_new_game"),
 ]
