@@ -1,5 +1,7 @@
 FROM python:3.10-slim-bullseye
 
+RUN apt-get update && apt-get install -y curl
+
 COPY pyproject.toml pyproject.toml
 COPY src/NonogramServer /src/NonogramServer
 COPY src/utils.py /src/utils.py
