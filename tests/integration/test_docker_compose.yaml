@@ -1,0 +1,69 @@
+services:
+  testnonogramserverdb:
+    image: postgres:latest
+    restart: always
+    environment:
+      PGUSER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+    ports:
+      - "${DB_PORT}:5432"
+    networks:
+      - test_nonogram_net
+    env_file:
+      - .env
+
+  testnonogramserver:
+    image: nonogram_server:${NONOGRAM_SERVER_VERSION:-latest}
+    environment:
+      NONOGRAM_SERVER_SECRET_KEY: ${NONOGRAM_SERVER_SECRET_KEY}
+      NONOGRAM_SERVER_HOST: ${NONOGRAM_SERVER_HOST}
+      API_SERVER_HOST: ${API_SERVER_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DEBUG: ${DEBUG}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    ports:
+      - "${NONOGRAM_SERVER_PORT}:8000"
+    networks:
+      - test_nonogram_net
+    depends_on:
+      testnonogramserverdb:
+        condition: service_healthy
+    env_file:
+      - .env
+
+  testapiserver:
+    image: api_server:${API_SERVER_VERSION:-latest}
+    environment:
+      API_SERVER_SECRET_KEY: ${API_SERVER_SECRET_KEY}
+      NONOGRAM_SERVER_HOST: ${NONOGRAM_SERVER_HOST}
+      API_SERVER_HOST: ${API_SERVER_HOST}
+      DEBUG: ${DEBUG}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    ports:
+      - "${API_SERVER_PORT}:8000"
+    networks:
+      - test_nonogram_net
+    env_file:
+      - .env
+
+networks:
+  test_nonogram_net:
+    driver: bridge
