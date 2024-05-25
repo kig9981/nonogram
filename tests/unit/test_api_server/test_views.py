@@ -1,13 +1,21 @@
 import pytest
 import uuid
 from http import HTTPStatus
-from ApiServer.views import get_nonogram_board
-from ApiServer.views import get_nonogram_play
-from ApiServer.views import synchronize
-from ApiServer.views import make_move
-from ApiServer.views import create_new_session
-from ApiServer.views import create_new_game
+from ApiServer.views.GetNonogramBoard import GetNonogramBoard
+from ApiServer.views.GetNonogramPlay import GetNonogramPlay
+from ApiServer.views.Synchronize import Synchronize
+from ApiServer.views.MakeMove import MakeMove
+from ApiServer.views.CreateNewSession import CreateNewSession
+from ApiServer.views.CreateNewGame import CreateNewGame
 from ..util import send_test_request
+
+
+get_nonogram_board = GetNonogramBoard.as_view()
+get_nonogram_play = GetNonogramPlay.as_view()
+synchronize = Synchronize.as_view()
+make_move = MakeMove.as_view()
+create_new_session = CreateNewSession.as_view()
+create_new_game = CreateNewGame.as_view()
 
 
 @pytest.mark.asyncio
@@ -17,7 +25,7 @@ async def test_get_nonogram_board(
 ):
     url = '/get_nonogram_board/'
     mocker.patch(
-        target="ApiServer.views.send_request",
+        target="ApiServer.views.GetNonogramBoard.send_request",
         return_value={
             "status_code": HTTPStatus.OK,
             "board_id": "!!!",
@@ -45,7 +53,7 @@ async def test_get_nonogram_play(
 ):
     url = '/get_nonogram_play/'
     mocker.patch(
-        target="ApiServer.views.send_request",
+        target="ApiServer.views.GetNonogramPlay.send_request",
         return_value={
             "status_code": HTTPStatus.OK,
             "board": "!!!",
@@ -71,7 +79,7 @@ async def test_synchronize(
 ):
     url = '/synchronize/'
     mocker.patch(
-        target="ApiServer.views.send_request",
+        target="ApiServer.views.Synchronize.send_request",
         return_value={
             "status_code": HTTPStatus.OK,
             "board": "!!!",
@@ -97,7 +105,7 @@ async def test_make_move(
 ):
     url = '/make_move/'
     mocker.patch(
-        target="ApiServer.views.send_request",
+        target="ApiServer.views.MakeMove.send_request",
         return_value={
             "status_code": HTTPStatus.OK,
             "response": 0,
@@ -125,7 +133,7 @@ async def test_create_new_session(
 ):
     url = '/create_new_session/'
     mocker.patch(
-        target="ApiServer.views.send_request",
+        target="ApiServer.views.CreateNewSession.send_request",
         return_value={
             "status_code": HTTPStatus.OK,
             "session_id": "!!!",
@@ -148,7 +156,7 @@ async def test_create_new_game(
 ):
     url = '/create_new_game/'
     mocker.patch(
-        target="ApiServer.views.send_request",
+        target="ApiServer.views.CreateNewGame.send_request",
         return_value={
             "status_code": HTTPStatus.OK,
             "response": 0,
