@@ -4,13 +4,13 @@ from django.http import HttpResponse
 
 
 class HealthCheck(AsyncAPIView):
-    def get(
+    async def get(
         self,
         request: HttpRequest,
     ) -> HttpResponse:
         return HttpResponse("Healthcheck OK")
 
-    def post(
+    async def post(
         self,
         request: HttpRequest,
     ) -> HttpResponse:
