@@ -1,6 +1,6 @@
 import json
 from .configure import NONOGRAM_SERVER_URL
-from django.views import View
+from drfasyncview import AsyncAPIView
 from django.http import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -12,7 +12,7 @@ from utils import send_request
 from http import HTTPStatus
 
 
-class GetNonogramPlay(View):
+class GetNonogramPlay(AsyncAPIView):
     '''
     진행중인 세션의 노노그램 보드 게임 현황에 대한 정보를 반환하는 메서드.
     Args:
