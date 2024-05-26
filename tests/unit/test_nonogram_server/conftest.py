@@ -10,7 +10,7 @@ from psycopg2 import OperationalError
 DB_NAME = "testdb"
 DB_USER = "testdb"
 DB_PASSWORD = "testdbpassword"
-DB_HOST = "0.0.0.0"
+DB_HOST = "localhost"
 DB_PORT = 5433
 
 
