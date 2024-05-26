@@ -1,5 +1,5 @@
 import json
-from django.views import View
+from drfasyncview import AsyncAPIView
 from django.http import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -12,7 +12,7 @@ from utils import async_get_from_db
 from utils import is_uuid4
 
 
-class SetCellState(View):
+class SetCellState(AsyncAPIView):
     '''
     진행중인 게임의 특정 cell의 상태를 변화시키는 메서드.
     Args:

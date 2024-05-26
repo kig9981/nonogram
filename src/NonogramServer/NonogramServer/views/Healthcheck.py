@@ -1,9 +1,9 @@
-from django.views import View
+from drfasyncview import AsyncAPIView
 from django.http import HttpRequest
 from django.http import HttpResponse
 
 
-class HealthCheck(View):
+class HealthCheck(AsyncAPIView):
     def get(
         self,
         request: HttpRequest,
