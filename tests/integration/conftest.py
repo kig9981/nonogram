@@ -180,6 +180,13 @@ def load_servers(
     client = docker.from_env()
 
     nonogram_server = client.containers.get(nonogram_server_host)
+    nonogram_server.exec_run(
+        "python src/NonogramServer/manage.py makemigrations"
+    )
+
+    nonogram_server.exec_run(
+        "python src/NonogramServer/manage.py migrate"
+    )
 
 
 @pytest.fixture(scope="session")
