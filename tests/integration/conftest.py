@@ -1,5 +1,4 @@
 import os
-import environ
 import pytest
 import requests
 import docker
@@ -10,9 +9,6 @@ from psycopg2 import OperationalError
 
 cwd = os.path.dirname(__file__)
 env_path = os.path.join(cwd, '.env')
-
-env = environ.Env()
-environ.Env.read_env(env_path)
 
 
 @pytest.fixture(scope='session')
@@ -26,35 +22,43 @@ def load_env():
 
 
 @pytest.fixture(scope="session")
-def db_name(load_env): return os.environ["DB_NAME"]
+def db_name(load_env):
+    return os.environ["DB_NAME"]
 
 
 @pytest.fixture(scope="session")
-def db_user(load_env): return os.environ["DB_USER"]
+def db_user(load_env):
+    return os.environ["DB_USER"]
 
 
 @pytest.fixture(scope="session")
-def db_password(load_env): return os.environ["DB_PASSWORD"]
+def db_password(load_env):
+    return os.environ["DB_PASSWORD"]
 
 
 @pytest.fixture(scope="session")
-def db_host(load_env): return os.environ["DB_HOST"]
+def db_host(load_env):
+    return os.environ["DB_HOST"]
 
 
 @pytest.fixture(scope="session")
-def db_port(load_env): return os.environ["DB_PORT"]
+def db_port(load_env):
+    return os.environ["DB_PORT"]
 
 
 @pytest.fixture(scope="session")
-def api_server_protocol(load_env): return os.environ["API_SERVER_PROTOCOL"]
+def api_server_protocol(load_env):
+    return os.environ["API_SERVER_PROTOCOL"]
 
 
 @pytest.fixture(scope="session")
-def api_server_port(load_env): return os.environ["API_SERVER_PORT"]
+def api_server_port(load_env):
+    return os.environ["API_SERVER_PORT"]
 
 
 @pytest.fixture(scope="session")
-def api_server_host(load_env): return  os.environ["API_SERVER_HOST"]
+def api_server_host(load_env):
+    return os.environ["API_SERVER_HOST"]
 
 
 @pytest.fixture(scope="session")
@@ -66,15 +70,18 @@ def api_server_url(
 
 
 @pytest.fixture(scope="session")
-def nonogram_server_protocol(load_env): return os.environ["NONOGRAM_SERVER_PROTOCOL"]
+def nonogram_server_protocol(load_env):
+    return os.environ["NONOGRAM_SERVER_PROTOCOL"]
 
 
 @pytest.fixture(scope="session")
-def nonogram_server_port(load_env): return os.environ["NONOGRAM_SERVER_PORT"]
+def nonogram_server_port(load_env):
+    return os.environ["NONOGRAM_SERVER_PORT"]
 
 
 @pytest.fixture(scope="session")
-def nonogram_server_host(load_env): return os.environ["NONOGRAM_SERVER_HOST"]
+def nonogram_server_host(load_env):
+    return os.environ["NONOGRAM_SERVER_HOST"]
 
 
 @pytest.fixture(scope="session")
@@ -106,12 +113,11 @@ def testdb_healthcheck(
         return True
     except OperationalError:
         return False
-    
+
 
 def testapiserver_healthcheck(
     api_server_url: str,
 ) -> bool:
-    
     apiserver_healthcheck_url = f"{api_server_url}/healthcheck/"
 
     try:
@@ -125,7 +131,6 @@ def testapiserver_healthcheck(
 def testnonogramserver_healthcheck(
     nonogram_server_url: str,
 ) -> bool:
-    
     nonogramserver_healthcheck_url = f"{nonogram_server_url}/healthcheck/"
 
     try:
@@ -133,8 +138,7 @@ def testnonogramserver_healthcheck(
 
         return response.status_code == HTTPStatus.OK
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-            return False
-
+        return False
 
 
 @pytest.fixture(scope='session')
