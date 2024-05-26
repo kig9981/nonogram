@@ -26,14 +26,14 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
+      DB_PORT: 5432
       DEBUG: ${DEBUG}
     healthcheck:
       test: curl --fail http://localhost:8000/healthcheck || exit 1
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 10s
+      retries: 5
+      start_period: 30s
     ports:
       - "${NONOGRAM_SERVER_PORT}:8000"
     networks:

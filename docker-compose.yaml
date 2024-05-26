@@ -26,7 +26,7 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
+      DB_PORT: 5432
       DEBUG: ${DEBUG}
     healthcheck:
       test: curl --fail http://localhost:8000/healthcheck/ || exit 1
