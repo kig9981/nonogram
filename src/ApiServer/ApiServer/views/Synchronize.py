@@ -1,6 +1,6 @@
 import json
 from .configure import NONOGRAM_SERVER_URL
-from django.views import View
+from drfasyncview import AsyncAPIView
 from django.http import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -13,7 +13,7 @@ from utils import convert_board_to_hash
 from http import HTTPStatus
 
 
-class Synchronize(View):
+class Synchronize(AsyncAPIView):
     '''
     진행중인 세션의 노노그램 보드 게임 진행을 동기화하기 위한 메서드. 진행중인 턴을 바탕으로 동기화한다.
     Args:

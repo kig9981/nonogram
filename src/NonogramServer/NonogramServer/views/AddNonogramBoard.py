@@ -2,7 +2,7 @@ import json
 import uuid
 import io
 import base64
-from django.views import View
+from drfasyncview import AsyncAPIView
 from django.http import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -14,7 +14,7 @@ from PIL import Image
 from PIL import UnidentifiedImageError
 
 
-class AddNonogramBoard(View):
+class AddNonogramBoard(AsyncAPIView):
     '''
     새 노노그램 보드를 db에 추가하는 메서드
     Args:

@@ -1,5 +1,5 @@
 import json
-from django.views import View
+from drfasyncview import AsyncAPIView
 from django.http import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -16,7 +16,7 @@ from utils import is_uuid4
 from Nonogram.NonogramBoard import NonogramGameplay
 
 
-class GetNonogramBoard(View):
+class GetNonogramBoard(AsyncAPIView):
     '''
     노노그램 보드에 대한 정보를 반환하는 메서드.
     Args:

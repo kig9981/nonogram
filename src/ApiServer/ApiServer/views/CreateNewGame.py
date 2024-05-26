@@ -1,6 +1,6 @@
 import json
 from .configure import NONOGRAM_SERVER_URL
-from django.views import View
+from drfasyncview import AsyncAPIView
 from django.http import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -12,7 +12,7 @@ from utils import send_request
 from http import HTTPStatus
 
 
-class CreateNewGame(View):
+class CreateNewGame(AsyncAPIView):
     '''
     세션에서 새 게임을 시작하는 메서드.
     Args:

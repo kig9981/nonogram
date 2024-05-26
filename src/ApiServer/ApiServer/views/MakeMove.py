@@ -1,6 +1,6 @@
 import json
 from .configure import NONOGRAM_SERVER_URL
-from django.views import View
+from drfasyncview import AsyncAPIView
 from django.http import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -12,7 +12,7 @@ from utils import send_request
 from http import HTTPStatus
 
 
-class MakeMove(View):
+class MakeMove(AsyncAPIView):
     '''
     게임이 진행중인 세션에서 노노그램 보드에 입력을 처리하는 메서드.
     Args:
