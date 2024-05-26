@@ -1,12 +1,12 @@
 import uuid
-from django.views import View
+from drfasyncview import AsyncAPIView
 from django.http import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
 from ..models import Session
 
 
-class CreateNewSession(View):
+class CreateNewSession(AsyncAPIView):
     '''
     새로운 세션을 생성하는 메서드.
     Args:
