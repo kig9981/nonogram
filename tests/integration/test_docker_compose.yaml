@@ -1,6 +1,7 @@
 services:
   testnonogramserverdb:
     image: postgres:latest
+    container_name: ${DB_NAME}
     restart: always
     environment:
       PGUSER: ${DB_USER}
@@ -18,6 +19,7 @@ services:
 
   testnonogramserver:
     image: nonogram_server:${NONOGRAM_SERVER_VERSION:-latest}
+    container_name: ${NONOGRAM_SERVER_HOST}
     environment:
       NONOGRAM_SERVER_SECRET_KEY: ${NONOGRAM_SERVER_SECRET_KEY}
       NONOGRAM_SERVER_HOST: ${NONOGRAM_SERVER_HOST}
@@ -46,6 +48,7 @@ services:
 
   testapiserver:
     image: api_server:${API_SERVER_VERSION:-latest}
+    container_name: ${API_SERVER_HOST}
     environment:
       API_SERVER_SECRET_KEY: ${API_SERVER_SECRET_KEY}
       NONOGRAM_SERVER_HOST: ${NONOGRAM_SERVER_HOST}
