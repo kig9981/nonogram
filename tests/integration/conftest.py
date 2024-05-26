@@ -38,7 +38,7 @@ def db_password(load_env): return os.environ["DB_PASSWORD"]
 
 
 @pytest.fixture(scope="session")
-def db_host(load_env): return os.environ["DB_HOST"]
+def db_host(): return "localhost"
 
 
 @pytest.fixture(scope="session")
@@ -173,7 +173,7 @@ def load_servers(
     )
 
     docker_services.wait_until_responsive(
-        timeout=30.0,
+        timeout=60.0,
         pause=0.1,
         check=lambda: testnonogramserver_healthcheck(
             nonogram_server_url,
