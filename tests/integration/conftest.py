@@ -25,20 +25,82 @@ def load_env():
                     os.environ[key] = value
 
 
+@pytest.fixture(scope="session")
+def db_name(load_env): return os.environ["DB_NAME"]
 
-def testdb_healthcheck() -> bool:
-    DB_NAME = os.environ["DB_NAME"]
-    DB_USER = os.environ["DB_USER"]
-    DB_PASSWORD = os.environ["DB_PASSWORD"]
-    DB_HOST = "localhost"
-    DB_PORT = os.environ["DB_PORT"]
+
+@pytest.fixture(scope="session")
+def db_user(load_env): return os.environ["DB_USER"]
+
+
+@pytest.fixture(scope="session")
+def db_password(load_env): return os.environ["DB_PASSWORD"]
+
+
+@pytest.fixture(scope="session")
+def db_host(load_env): return os.environ["DB_HOST"]
+
+
+@pytest.fixture(scope="session")
+def db_port(load_env): return os.environ["DB_PORT"]
+
+
+@pytest.fixture(scope="session")
+def api_server_protocol(load_env): return os.environ["API_SERVER_PROTOCOL"]
+
+
+@pytest.fixture(scope="session")
+def api_server_port(load_env): return os.environ["API_SERVER_PORT"]
+
+
+@pytest.fixture(scope="session")
+def api_server_host(): return "localhost"
+
+
+@pytest.fixture(scope="session")
+def api_server_url(
+    api_server_protocol: str,
+    api_server_host: str,
+    api_server_port: str,
+):
+    return f"{api_server_protocol}://{api_server_host}:{api_server_port}"
+
+
+@pytest.fixture(scope="session")
+def nonogram_server_protocol(load_env): return os.environ["NONOGRAM_SERVER_PROTOCOL"]
+
+
+@pytest.fixture(scope="session")
+def nonogram_server_port(load_env): return os.environ["NONOGRAM_SERVER_PORT"]
+
+
+@pytest.fixture(scope="session")
+def nonogram_server_host(): return "localhost"
+
+
+@pytest.fixture(scope="session")
+def nonogram_server_url(
+    nonogram_server_protocol: str,
+    nonogram_server_host: str,
+    nonogram_server_port: str,
+):
+    return f"{nonogram_server_protocol}://{nonogram_server_host}:{nonogram_server_port}"
+
+
+def testdb_healthcheck(
+    db_name: str,
+    db_user: str,
+    db_password: str,
+    db_host: str,
+    db_port: str,
+) -> bool:
     try:
         conn = psycopg2.connect(
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            host=DB_HOST,
-            port=DB_PORT,
+            dbname=db_name,
+            user=db_user,
+            password=db_password,
+            host=db_host,
+            port=db_port,
         )
         cursor = conn.cursor()
         cursor.execute("SELECT 1")
@@ -49,13 +111,11 @@ def testdb_healthcheck() -> bool:
         return False
     
 
-def testapiserver_healthcheck() -> bool:
-    API_SERVER_PROTOCOL = os.environ["API_SERVER_PROTOCOL"]
-    API_SERVER_PORT = os.environ["API_SERVER_PORT"]
-    API_SERVER_HOST = "localhost"
-
-    API_SERVER_URL = f"{API_SERVER_PROTOCOL}://{API_SERVER_HOST}:{API_SERVER_PORT}"
-    apiserver_healthcheck_url = f"{API_SERVER_URL}/healthcheck/"
+def testapiserver_healthcheck(
+    api_server_url: str,
+) -> bool:
+    
+    apiserver_healthcheck_url = f"{api_server_url}/healthcheck/"
 
     try:
         response = requests.get(apiserver_healthcheck_url)
@@ -65,13 +125,11 @@ def testapiserver_healthcheck() -> bool:
         return False
 
 
-def testnonogramserver_healthcheck() -> bool:
-    NONOGRAM_SERVER_PROTOCOL = os.environ["NONOGRAM_SERVER_PROTOCOL"]
-    NONOGRAM_SERVER_PORT = os.environ["NONOGRAM_SERVER_PORT"]
-    NONOGRAM_SERVER_HOST = "localhost"
-
-    NONOGRAM_SERVER_URL = f"{NONOGRAM_SERVER_PROTOCOL}://{NONOGRAM_SERVER_HOST}:{NONOGRAM_SERVER_PORT}"
-    nonogramserver_healthcheck_url = f"{NONOGRAM_SERVER_URL}/healthcheck/"
+def testnonogramserver_healthcheck(
+    nonogram_server_url: str,
+) -> bool:
+    
+    nonogramserver_healthcheck_url = f"{nonogram_server_url}/healthcheck/"
 
     try:
         response = requests.get(nonogramserver_healthcheck_url)
@@ -86,23 +144,40 @@ def testnonogramserver_healthcheck() -> bool:
 def load_servers(
     load_env,
     docker_services,
+    db_name: str,
+    db_user: str,
+    db_password: str,
+    db_host: str,
+    db_port: str,
+    api_server_url: str,
+    nonogram_server_url: str,
 ):
     docker_services.wait_until_responsive(
         timeout=30.0,
         pause=0.1,
-        check=lambda: testdb_healthcheck()
+        check=lambda: testdb_healthcheck(
+            db_name,
+            db_user,
+            db_password,
+            db_host,
+            db_port,
+        ),
     )
 
     docker_services.wait_until_responsive(
         timeout=30.0,
         pause=0.1,
-        check=lambda: testapiserver_healthcheck()
+        check=lambda: testapiserver_healthcheck(
+            api_server_url,
+        ),
     )
 
     docker_services.wait_until_responsive(
         timeout=30.0,
         pause=0.1,
-        check=lambda: testnonogramserver_healthcheck()
+        check=lambda: testnonogramserver_healthcheck(
+            nonogram_server_url,
+        ),
     )
 
 
