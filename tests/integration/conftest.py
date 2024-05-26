@@ -38,7 +38,7 @@ def db_password(load_env): return os.environ["DB_PASSWORD"]
 
 
 @pytest.fixture(scope="session")
-def db_host(): return "localhost"
+def db_host(load_env): return os.environ["DB_HOST"]
 
 
 @pytest.fixture(scope="session")
@@ -54,16 +54,15 @@ def api_server_port(load_env): return os.environ["API_SERVER_PORT"]
 
 
 @pytest.fixture(scope="session")
-def api_server_host(): return "localhost"
+def api_server_host(load_env): return  os.environ["API_SERVER_HOST"]
 
 
 @pytest.fixture(scope="session")
 def api_server_url(
     api_server_protocol: str,
-    api_server_host: str,
     api_server_port: str,
 ):
-    return f"{api_server_protocol}://{api_server_host}:{api_server_port}"
+    return f"{api_server_protocol}://localhost:{api_server_port}"
 
 
 @pytest.fixture(scope="session")
@@ -75,23 +74,21 @@ def nonogram_server_port(load_env): return os.environ["NONOGRAM_SERVER_PORT"]
 
 
 @pytest.fixture(scope="session")
-def nonogram_server_host(): return "localhost"
+def nonogram_server_host(load_env): return os.environ["NONOGRAM_SERVER_HOST"]
 
 
 @pytest.fixture(scope="session")
 def nonogram_server_url(
     nonogram_server_protocol: str,
-    nonogram_server_host: str,
     nonogram_server_port: str,
 ):
-    return f"{nonogram_server_protocol}://{nonogram_server_host}:{nonogram_server_port}"
+    return f"{nonogram_server_protocol}://localhost:{nonogram_server_port}"
 
 
 def testdb_healthcheck(
     db_name: str,
     db_user: str,
     db_password: str,
-    db_host: str,
     db_port: str,
 ) -> bool:
     try:
@@ -99,7 +96,7 @@ def testdb_healthcheck(
             dbname=db_name,
             user=db_user,
             password=db_password,
-            host=db_host,
+            host="localhost",
             port=db_port,
         )
         cursor = conn.cursor()
@@ -150,6 +147,7 @@ def load_servers(
     db_host: str,
     db_port: str,
     api_server_url: str,
+    nonogram_server_host: str,
     nonogram_server_url: str,
 ):
     docker_services.wait_until_responsive(
@@ -159,7 +157,6 @@ def load_servers(
             db_name,
             db_user,
             db_password,
-            db_host,
             db_port,
         ),
     )
@@ -179,6 +176,10 @@ def load_servers(
             nonogram_server_url,
         ),
     )
+
+    client = docker.from_env()
+
+    nonogram_server = client.containers.get(nonogram_server_host)
 
 
 @pytest.fixture(scope="session")
