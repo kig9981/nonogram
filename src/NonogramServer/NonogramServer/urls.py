@@ -21,9 +21,11 @@ from .views.SetCellState import SetCellState
 from .views.CreateNewSession import CreateNewSession
 from .views.CreateNewGame import CreateNewGame
 from .views.AddNonogramBoard import AddNonogramBoard
+from .views.Healthcheck import HealthCheck
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('healthcheck/', HealthCheck.as_view(), name="healthcheck"),
     path("get_nonogram_board/", GetNonogramBoard.as_view(), name="get_nonogram_board"),
     path("set_cell_state/", SetCellState.as_view(), name="set_cell_state"),
     path("create_new_session/", CreateNewSession.as_view(), name="create_new_session"),

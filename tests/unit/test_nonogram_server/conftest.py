@@ -10,7 +10,7 @@ from psycopg2 import OperationalError
 DB_NAME = "testdb"
 DB_USER = "testdb"
 DB_PASSWORD = "testdbpassword"
-DB_HOST = "0.0.0.0"
+DB_HOST = "localhost"
 DB_PORT = 5433
 
 
@@ -46,7 +46,7 @@ def django_db_modify_db_settings(
 
 @pytest.fixture(scope="session")
 def docker_compose_file(pytestconfig):
-    return str(pytestconfig.rootdir.join(os.path.join("tests", "test_database_docker_compose.yaml")))
+    return str(pytestconfig.rootdir.join(os.path.join("tests", "unit", "test_nonogram_server", "test_database_docker_compose.yaml")))
 
 
 def pytest_configure():
