@@ -1,0 +1,39 @@
+.game-board {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .game-row {
+    display: flex;
+  }
+  
+  .game-cell {
+    width: 30px;
+    height: 30px;
+    border: 1px solid black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none; /* 드래그 방지 */
+    position: relative; /* 자식 요소 배치 */
+  }
+  
+  .game-cell.marked {
+    background-color: black;
+  }
+  
+  .cell-content.x {
+    font-size: 24px; /* 칸을 가득 채우는 X */
+    line-height: 30px; /* 높이를 셀 높이에 맞춤 */
+  }
+  
+  .cell-content.question {
+    font-size: 20px; /* 큰 ? */
+    color: blue;
+  }
+  
+  .cell-content {
+    position: absolute; /* 셀 중앙에 위치 */
+  }
+  
