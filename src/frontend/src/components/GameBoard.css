@@ -1,4 +1,52 @@
-.game-board {
+.game-board-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .hints-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 5px;
+  }
+  
+  .hint-placeholder {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .hint-col {
+    width: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  
+  .hint-num {
+    font-size: 12px;
+    line-height: 12px;
+  }
+  
+  .hints-column-and-board {
+    display: flex;
+  }
+  
+  .hints-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-right: 5px;
+  }
+  
+  .hint-row {
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  
+  .game-board {
     display: flex;
     flex-direction: column;
   }
@@ -15,8 +63,8 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    user-select: none; /* 드래그 방지 */
-    position: relative; /* 자식 요소 배치 */
+    user-select: none;
+    position: relative;
   }
   
   .game-cell.marked {
@@ -24,16 +72,16 @@
   }
   
   .cell-content.x {
-    font-size: 24px; /* 칸을 가득 채우는 X */
-    line-height: 30px; /* 높이를 셀 높이에 맞춤 */
+    font-size: 24px;
+    line-height: 30px;
   }
   
   .cell-content.question {
-    font-size: 20px; /* 큰 ? */
+    font-size: 20px;
     color: blue;
   }
   
   .cell-content {
-    position: absolute; /* 셀 중앙에 위치 */
+    position: absolute;
   }
   
