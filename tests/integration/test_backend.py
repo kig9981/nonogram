@@ -38,15 +38,28 @@ def test(
             f"{nonogram_server_url}/add_nonogram_board/",
             json={
                 "board": b64_image,
-                "num_row": 10,
-                "num_column": 10,
+                "num_row": 20,
+                "num_column": 20,
                 "theme": "test data"
             }
         )
 
-        # csrf 에러 발생
         assert response.status_code == HTTPStatus.OK
 
         response = response.json()
 
-        board_id_list.append(response["board_id"])
+        board_id = response["board_id"]
+
+        board_id_list.append(board_id)
+
+        response = requests.post(
+            f"{nonogram_server_url}/get_nonogram_board/",
+            json={
+                "session_id": 0,
+                "board_id": board_id,
+            }
+        )
+
+        assert response.status_code == HTTPStatus.OK
+
+        response = response.json()
