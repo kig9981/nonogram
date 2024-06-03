@@ -2,17 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 
-function Home() {
+const Home: React.FC = () => {
   const navigate = useNavigate();
 
   const createSession = async () => {
-    // const response = await fetch('/session', {
-    //   method: 'POST',
-    // });
-    // const data = await response.json();
-    // navigate(`/${data.sessionId}`);
-    // 임시로 1로 이동
-    navigate('/1')
+    // 임시로 세션 ID를 1로 설정하여 이동
+    navigate('/1');
   };
 
   return (
