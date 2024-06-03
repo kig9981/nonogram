@@ -1,3 +1,7 @@
+:root{
+  --cell_size: 20px
+}
+
 .game-board-container {
   display: grid;
   gap: 10px;
@@ -18,7 +22,7 @@
 }
 
 .hint-col {
-  width: 20px;
+  width: var(--cell_size);
   display: flex;
   gap: 3px;
   flex-direction: column-reverse;
@@ -27,8 +31,8 @@
 }
 
 .hint-num {
-  font-size: 14px;
-  line-height: 12px;
+  font-size: calc(var(--cell_size) * 7 / 10);
+  line-height: calc(var(--cell_size) * 3 / 5);
 }
 
 .hints-column {
@@ -38,7 +42,7 @@
 }
 
 .hint-row {
-  height: 20px;
+  height: var(--cell_size);
   display: flex;
   gap: 3px;
   justify-content: flex-start;
@@ -47,8 +51,8 @@
 }
 
 .hint-row .hint-num {
-  font-size: 14px;
-  line-height: 12px;
+  font-size: calc(var(--cell_size) * 7 / 10);
+  line-height: calc(var(--cell_size) * 3 / 5);
 }
 
 .game-board {
@@ -61,8 +65,8 @@
 }
 
 .game-cell {
-  width: 20px;
-  height: 20px;
+  width: var(--cell_size);
+  height: var(--cell_size);
   border: 1px solid black;
   display: flex;
   align-items: center;
@@ -77,12 +81,12 @@
 }
 
 .cell-content.x {
-  font-size: 16px;
-  line-height: 20px;
+  font-size: calc(var(--cell_size) * 4 / 5);
+  line-height: var(--cell_size);
 }
 
 .cell-content.question {
-  font-size: 12px;
+  font-size: calc(var(--cell_size) * 3 / 5);
   color: blue;
 }
 
