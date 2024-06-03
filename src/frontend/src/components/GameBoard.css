@@ -1,87 +1,91 @@
-.game-board-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .hints-row {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 5px;
-  }
-  
-  .hint-placeholder {
-    width: 30px;
-    height: 30px;
-  }
-  
-  .hint-col {
-    width: 30px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-  }
-  
-  .hint-num {
-    font-size: 12px;
-    line-height: 12px;
-  }
-  
-  .hints-column-and-board {
-    display: flex;
-  }
-  
-  .hints-column {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    margin-right: 5px;
-  }
-  
-  .hint-row {
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-  }
-  
-  .game-board {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .game-row {
-    display: flex;
-  }
-  
-  .game-cell {
-    width: 30px;
-    height: 30px;
-    border: 1px solid black;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    user-select: none;
-    position: relative;
-  }
-  
-  .game-cell.marked {
-    background-color: black;
-  }
-  
-  .cell-content.x {
-    font-size: 24px;
-    line-height: 30px;
-  }
-  
-  .cell-content.question {
-    font-size: 20px;
-    color: blue;
-  }
-  
-  .cell-content {
-    position: absolute;
-  }
-  
+.game-board-container {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr auto; /* 첫 번째 열은 자동 크기, 두 번째 열은 가변 크기 */
+  grid-template-rows: 1fr auto; /* 첫 번째 행은 자동 크기, 두 번째 행은 가변 크기 */
+  align-content: stretch;
+  justify-content: stretch;
+}
+
+.unused {
+  background-color: transparent; /* 배경색 없음 */
+  border: none; /* 테두리 없음 */
+}
+
+.hints-row {
+  display: flex;
+  justify-content: space-around;
+}
+
+.hint-col {
+  width: 20px;
+  display: flex;
+  gap: 3px;
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.hint-num {
+  font-size: 14px;
+  line-height: 12px;
+}
+
+.hints-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.hint-row {
+  height: 20px;
+  display: flex;
+  gap: 3px;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: row-reverse;
+}
+
+.hint-row .hint-num {
+  font-size: 14px;
+  line-height: 12px;
+}
+
+.game-board {
+  display: flex;
+  flex-direction: column;
+}
+
+.game-row {
+  display: flex;
+}
+
+.game-cell {
+  width: 20px;
+  height: 20px;
+  border: 1px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.game-cell.marked {
+  background-color: black;
+}
+
+.cell-content.x {
+  font-size: 16px;
+  line-height: 20px;
+}
+
+.cell-content.question {
+  font-size: 12px;
+  color: blue;
+}
+
+.cell-content {
+  position: absolute;
+}

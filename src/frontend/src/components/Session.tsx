@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import GameBoard from './GameBoard';
-import './Session.css'; // CSS 파일을 임포트합니다.
+import './Session.css';
 
-function Session() {
-  const { sessionId } = useParams();
-  const [gameKey, setGameKey] = useState(0); // 새로운 상태 추가
+const Session: React.FC = () => {
+  const { sessionId } = useParams<{ sessionId: string }>();
+  const [gameKey, setGameKey] = useState(0);
 
   const startNewGame = async () => {
     await fetch(`/session/${sessionId}/new-game`, {
@@ -20,7 +20,7 @@ function Session() {
         새 게임하기
       </button>
       <div className="gameboard-container">
-        <GameBoard key={gameKey} /> {/* key 속성을 이용하여 리셋 */}
+        <GameBoard key={gameKey} />
       </div>
     </div>
   );
