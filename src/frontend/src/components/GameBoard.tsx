@@ -1,16 +1,27 @@
 import React, { useState, useEffect, MouseEvent } from 'react';
 import './GameBoard.css';
 
+const NOT_SELECTED = 0;
+const REVEALED = 1;
+const MARK_X = 2;
+const MARK_QUESTION = 3;
+
 // TypeScript types
-type CellState = 'marked' | 'x' | '?' | null;
+type CellState = 0 | 1 | 2 | 3;
 type BoardState = CellState[][];
 
-const initialBoard: BoardState = Array(30).fill(null).map(() => Array(10).fill(null));
+interface GameBoardProps {
+  numRow: number;
+  numCol: number;
+}
 
-const GameBoard: React.FC = () => {
+const GameBoard: React.FC<GameBoardProps> = ({ numRow, numCol }) => {
+  const initialBoard: BoardState = Array(numRow).fill(null).map(() => Array(numCol).fill(null));
   const [board, setBoard] = useState<BoardState>(initialBoard);
   const [rowHints, setRowHints] = useState<number[][]>([]);
   const [colHints, setColHints] = useState<number[][]>([]);
+
+  
 
   useEffect(() => {
     setRowHints(generateHints(initialBoard, 'row'));
@@ -24,7 +35,7 @@ const GameBoard: React.FC = () => {
         const hint: number[] = [];
         let count = 0;
         for (let cell of row) {
-          if (cell === 'marked') {
+          if (cell === REVEALED) {
             count++;
           } else if (count > 0) {
             hint.push(count);
@@ -39,7 +50,7 @@ const GameBoard: React.FC = () => {
         const hint: number[] = [];
         let count = 0;
         for (let row = 0; row < board.length; row++) {
-          if (board[row][col] === 'marked') {
+          if (board[row][col] === REVEALED) {
             count++;
           } else if (count > 0) {
             hint.push(count);
@@ -57,7 +68,7 @@ const GameBoard: React.FC = () => {
     const newBoard = board.map((r, rowIndex) =>
       r.map((c, colIndex) => {
         if (rowIndex === row && colIndex === col) {
-          return c === 'marked' ? null : 'marked';
+          return c = REVEALED;
         }
         return c;
       })
@@ -72,12 +83,12 @@ const GameBoard: React.FC = () => {
     const newBoard = board.map((r, rowIndex) =>
       r.map((c, colIndex) => {
         if (rowIndex === row && colIndex === col) {
-          if (c === 'x') {
-            return '?';
-          } else if (c === '?') {
-            return null;
-          } else {
-            return 'x';
+          if (c === MARK_X) {
+            return MARK_QUESTION;
+          } else if (c === MARK_QUESTION) {
+            return NOT_SELECTED;
+          } else if (c === NOT_SELECTED) {
+            return MARK_X;
           }
         }
         return c;
@@ -119,9 +130,9 @@ const GameBoard: React.FC = () => {
                 onContextMenu={(e) => handleRightClick(rowIndex, colIndex, e)}
                 className={`game-cell ${cell}`}
               >
-                {cell !== 'marked' && cell !== null && (
+                {cell !== REVEALED && cell !== NOT_SELECTED && (
                   <span className={`cell-content ${cell}`}>
-                    {cell === 'x' ? 'X' : cell === '?' ? '?' : ''}
+                    {cell === MARK_X ? 'X' : cell === MARK_QUESTION ? '?' : ''}
                   </span>
                 )}
               </div>
