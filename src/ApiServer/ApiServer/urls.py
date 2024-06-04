@@ -25,12 +25,12 @@ from .views.CreateNewGame import CreateNewGame
 from .views.Healthcheck import HealthCheck
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('healthcheck/', HealthCheck.as_view(), name="healthcheck"),
-    path("sessions/<str:session_id>/board/", GetNonogramBoard.as_view(), name="get_nonogram_board"),
-    path("sessions/<str:session_id>/play/", GetNonogramPlay.as_view(), name="get_nonogram_play"),
+    path('admin', admin.site.urls),
+    path('healthcheck', HealthCheck.as_view(), name="healthcheck"),
+    path("sessions/<str:session_id>/board", GetNonogramBoard.as_view(), name="get_nonogram_board"),
+    path("sessions/<str:session_id>/play", GetNonogramPlay.as_view(), name="get_nonogram_play"),
     path("sessions/<str:session_id>/sync/<int:game_turn>", Synchronize.as_view(), name="synchronize"),
-    path("sessions/<str:session_id>/move/", MakeMove.as_view(), name="make_move"),
-    path("sessions/", CreateNewSession.as_view(), name="create_new_session"),
-    path("sessions/<str:session_id>/", CreateNewGame.as_view(), name="create_new_game"),
+    path("sessions/<str:session_id>/move", MakeMove.as_view(), name="make_move"),
+    path("sessions", CreateNewSession.as_view(), name="create_new_session"),
+    path("sessions/<str:session_id>", CreateNewGame.as_view(), name="create_new_game"),
 ]
