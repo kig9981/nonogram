@@ -19,6 +19,9 @@ INVALID_GAME_TURN = -2
 
 get_nonogram_board = GetNonogramBoard.as_view()
 
+def get_url(board_id):
+    return f"/nonogram/{board_id}/"
+
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
@@ -27,18 +30,16 @@ async def test_board_for_get_nonogram_board(
     test_boards: List[Dict[str, Any]],
     add_test_data,
 ):
-    url = '/get_nonogram_board/'
-
     for test_board in test_boards:
         query_dict = {
-            "session_id": BOARD_QUERY,
             "board_id": test_board['board_id'],
         }
         response = await send_test_request(
+            method_type="GET",
             mock_request=mock_request,
             request_function=get_nonogram_board,
-            url=url,
-            query_dict=query_dict,
+            url=get_url(**query_dict),
+            **query_dict,
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -56,59 +57,31 @@ async def test_get_nonogram_board(
     mock_request: RequestFactory,
     add_test_data,
 ):
-    url = '/get_nonogram_board/'
-
-    query_dict = {}
-
-    response = await send_test_request(
-        mock_request=mock_request,
-        request_function=get_nonogram_board,
-        url=url,
-        query_dict=query_dict,
-    )
-
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.content.decode() == "session_id is missing."
-
     query_dict = {
-        "session_id": BOARD_QUERY,
-    }
-
-    response = await send_test_request(
-        mock_request=mock_request,
-        request_function=get_nonogram_board,
-        url=url,
-        query_dict=query_dict,
-    )
-
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.content.decode() == "board_id is missing."
-
-    query_dict = {
-        "session_id": BOARD_QUERY,
         "board_id": BOARD_ID_UNUSED_FOR_TEST,
     }
 
     response = await send_test_request(
+        method_type="GET",
         mock_request=mock_request,
         request_function=get_nonogram_board,
-        url=url,
-        query_dict=query_dict,
+        url=get_url(**query_dict),
+        **query_dict,
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.content.decode() == f"board_id '{BOARD_ID_UNUSED_FOR_TEST}' not found."
 
     query_dict = {
-        "session_id": BOARD_QUERY,
         "board_id": INCORRECT_ID,
     }
 
     response = await send_test_request(
+        method_type="GET",
         mock_request=mock_request,
         request_function=get_nonogram_board,
-        url=url,
-        query_dict=query_dict,
+        url=get_url(**query_dict),
+        **query_dict,
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
