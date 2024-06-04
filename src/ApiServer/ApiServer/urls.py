@@ -32,5 +32,5 @@ urlpatterns = [
     path("sessions/<str:session_id>/sync/<int:game_turn>", Synchronize.as_view(), name="synchronize"),
     path("sessions/<str:session_id>/move/", MakeMove.as_view(), name="make_move"),
     path("sessions/", CreateNewSession.as_view(), name="create_new_session"),
-    path("sessions/<str:session_id>/game/", CreateNewGame.as_view(), name="create_new_game"),
+    path("sessions/<str:session_id>/", CreateNewGame.as_view(), name="create_new_game"),
 ]
