@@ -23,7 +23,7 @@ async def test_get_nonogram_board(
     mock_request,
     mocker,
 ):
-    url = '/get_nonogram_board/'
+    url = f'/sessions/{str(uuid.uuid4())}/board/'
     mocker.patch(
         target="ApiServer.views.GetNonogramBoard.send_request",
         return_value={
@@ -35,12 +35,10 @@ async def test_get_nonogram_board(
         }
     )
     response = await send_test_request(
+        method_type="GET",
         mock_request=mock_request,
         request_function=get_nonogram_board,
         url=url,
-        query_dict={
-            "session_id": str(uuid.uuid4()),
-        },
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -51,7 +49,7 @@ async def test_get_nonogram_play(
     mock_request,
     mocker,
 ):
-    url = '/get_nonogram_play/'
+    url = f'sessions/{str(uuid.uuid4())}/play/'
     mocker.patch(
         target="ApiServer.views.GetNonogramPlay.send_request",
         return_value={
@@ -61,12 +59,10 @@ async def test_get_nonogram_play(
         }
     )
     response = await send_test_request(
+        method_type="GET",
         mock_request=mock_request,
         request_function=get_nonogram_play,
         url=url,
-        query_dict={
-            "session_id": str(uuid.uuid4()),
-        },
     )
 
     assert response.status_code == HTTPStatus.OK
