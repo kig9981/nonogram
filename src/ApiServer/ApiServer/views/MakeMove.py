@@ -37,8 +37,7 @@ class MakeMove(AsyncAPIView):
     async def post(
         self,
         request: HttpRequest,
-        *args,
-        **kwargs,
+        session_id: str,
     ) -> HttpResponse:
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
@@ -52,7 +51,6 @@ class MakeMove(AsyncAPIView):
         if "state" not in query:
             return HttpResponseBadRequest("state is missing.")
 
-        session_id = kwargs["session_id"]
         x = query["x"]
         y = query["y"]
         state = query["state"]
