@@ -33,13 +33,10 @@ class Synchronize(AsyncAPIView):
     async def get(
         self,
         request: HttpRequest,
-        *args,
-        **kwargs,
+        session_id: str,
+        game_turn: int,
     ) -> HttpResponse:
         LATEST_TURN = -1
-
-        session_id = kwargs["session_id"]
-        game_turn = kwargs["game_turn"]
 
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return HttpResponseBadRequest(f"'{session_id}' is not valid id.")

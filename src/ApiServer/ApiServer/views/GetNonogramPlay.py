@@ -33,12 +33,9 @@ class GetNonogramPlay(AsyncAPIView):
     async def get(
         self,
         request: HttpRequest,
-        *args,
-        **kwargs,
+        session_id: str,
     ) -> HttpResponse:
         LATEST_TURN = -1
-
-        session_id = kwargs["session_id"]
 
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return HttpResponseBadRequest(f"'{session_id}' is not valid id.")
