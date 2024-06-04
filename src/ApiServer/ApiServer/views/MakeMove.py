@@ -62,14 +62,14 @@ class MakeMove(AsyncAPIView):
         if not isinstance(state, int) or not (0 <= state <= 3):
             return HttpResponseBadRequest("Invalid state(type must be integer)")
 
-        url = f"{NONOGRAM_SERVER_URL}/set_cell_state"
+        url = f"{NONOGRAM_SERVER_URL}/sessions/{session_id}/move"
         query_dict = {
-            "session_id": session_id,
             "x_coord": x,
             "y_coord": y,
             "new_state": state,
         }
         response = await send_request(
+            method_type="POST",
             url=url,
             request=query_dict,
         )
