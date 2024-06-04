@@ -14,7 +14,7 @@ create_new_session = CreateNewSession.as_view()
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 async def test_create_new_session(mock_request: RequestFactory):
-    url = '/create_new_session/'
+    url = '/sessions/'
     query_dict = {}
     response = await send_test_request(
         method_type="POST",
