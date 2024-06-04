@@ -72,13 +72,12 @@ class CreateNewGame(AsyncAPIView):
         if board_id != RANDOM_BOARD and (not isinstance(board_id, str) or not is_uuid4(board_id)):
             return HttpResponseBadRequest(f"board_id '{board_id}' is not valid id.")
 
-        url = f"{NONOGRAM_SERVER_URL}/create_new_game"
+        url = f"{NONOGRAM_SERVER_URL}/sessions/{session_id}"
         query_dict = {
-            "session_id": session_id,
             "board_id": board_id,
-            "force_new_game": force_new_game,
         }
         response = await send_request(
+            method_type="PUT" if force_new_game else "POST",
             url=url,
             request=query_dict,
         )

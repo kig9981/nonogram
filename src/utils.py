@@ -228,6 +228,8 @@ async def send_request(
                         "status_code": resp.status,
                         "response": await resp.text()
                     }
+        else:
+            raise Exception("invalid method type")
     return response
 
 
