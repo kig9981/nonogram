@@ -13,7 +13,7 @@ from utils import async_get_from_db
 from utils import is_uuid4
 
 
-class CreateNewGame(AsyncAPIView):
+class HandleGame(AsyncAPIView):
     '''
     특정 세션에서 새 게임을 시작하는 메서드.
     Args:
