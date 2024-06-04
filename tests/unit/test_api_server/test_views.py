@@ -97,7 +97,7 @@ async def test_make_move(
     mock_request,
     mocker,
 ):
-    url = '/make_move/'
+    url = f'/sessions/{str(uuid.uuid4())}/move/'
     mocker.patch(
         target="ApiServer.views.MakeMove.send_request",
         return_value={
@@ -106,11 +106,11 @@ async def test_make_move(
         }
     )
     response = await send_test_request(
+        method_type="POST",
         mock_request=mock_request,
         request_function=make_move,
         url=url,
         query_dict={
-            "session_id": str(uuid.uuid4()),
             "x": 0,
             "y": 0,
             "state": 0,
