@@ -16,7 +16,7 @@ from utils import is_uuid4
 from Nonogram.NonogramBoard import NonogramGameplay
 
 
-class GetNonogramBoard(AsyncAPIView):
+class GetNonogramPlay(AsyncAPIView):
     '''
     노노그램 보드에 대한 정보를 반환하는 메서드.
     Args:
@@ -45,24 +45,63 @@ class GetNonogramBoard(AsyncAPIView):
     async def get(
         self,
         request: HttpRequest,
-        board_id: str,
+        session_id: str,
+        game_turn: int,
     ) -> HttpResponse:
-        if not isinstance(board_id, str) or not is_uuid4(board_id):
-            return HttpResponseBadRequest(f"board_id '{board_id}' is not valid id.")
+        GAME_NOT_START = 0
+        LATEST_TURN = -1
+
+        if not isinstance(session_id, str) or not is_uuid4(session_id):
+            return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
 
         try:
-            board_data = await async_get_from_db(
-                model_class=NonogramBoard,
-                label=f"board_id '{board_id}'",
-                board_id=board_id,
+            session = await async_get_from_db(
+                model_class=Session,
+                label=f"session_id '{session_id}'",
+                select_related=['board_data', 'current_game'],
+                session_id=session_id,
             )
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
 
+        board_data = session.board_data
+
+        latest_turn_info = session.current_game
+        latest_turn = GAME_NOT_START if latest_turn_info is None else latest_turn_info.current_turn
+
+        if not isinstance(game_turn, int) or not (-1 <= game_turn <= latest_turn):
+            return HttpResponseBadRequest(f"invalid game_turn. must be between 0 to {latest_turn}(latest turn)")
+
+        if game_turn == latest_turn or game_turn == LATEST_TURN:
+            if board_data is None:
+                return HttpResponseNotFound("board not found.")
+            board = deserialize_gameplay(
+                serialized_string=session.board,
+                return_int=True,
+            )
+        else:
+            gameplay = NonogramGameplay(
+                data=board_data,
+                db_sync=False,
+            )
+
+            async for move in History.objects.filter(
+                gameplay_id=latest_turn_info.gameplay_id,
+                current_turn__lte=game_turn,
+            ).order_by("current_turn"):
+                gameplay.mark(
+                    x=move.x_coord,
+                    y=move.y_coord,
+                    new_state=move.type_of_move,
+                )
+
+            board = gameplay.playboard
+
         response_data = {
-            "board": deserialize_gameboard(board_data.board),
+            "board": board,
             "num_row": board_data.num_row,
             "num_column": board_data.num_column,
+            "latest_turn": latest_turn,
         }
 
         return JsonResponse(response_data)

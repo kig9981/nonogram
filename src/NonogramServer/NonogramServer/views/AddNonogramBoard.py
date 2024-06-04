@@ -29,12 +29,6 @@ class AddNonogramBoard(AsyncAPIView):
         base64로 디코딩한 것이 PIL 이미지가 아니면 400에러(invalid image format) 리턴
         board_id (str): 생성한 board_id의 uuid를 리턴, 실패시 빈 문자열을 리턴.
     '''
-    async def get(
-        self,
-        request: HttpRequest,
-    ) -> HttpResponse:
-        return HttpResponse("add_nonogram_board(get)")
-
     async def post(
         self,
         request: HttpRequest,

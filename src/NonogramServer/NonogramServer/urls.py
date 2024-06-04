@@ -17,18 +17,20 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from .views.GetNonogramBoard import GetNonogramBoard
+from .views.GetNonogramPlay import GetNonogramPlay
 from .views.SetCellState import SetCellState
 from .views.CreateNewSession import CreateNewSession
-from .views.CreateNewGame import CreateNewGame
+from .views.HandleGame import HandleGame
 from .views.AddNonogramBoard import AddNonogramBoard
 from .views.Healthcheck import HealthCheck
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('healthcheck/', HealthCheck.as_view(), name="healthcheck"),
-    path("get_nonogram_board/", GetNonogramBoard.as_view(), name="get_nonogram_board"),
-    path("set_cell_state/", SetCellState.as_view(), name="set_cell_state"),
-    path("create_new_session/", CreateNewSession.as_view(), name="create_new_session"),
-    path("create_new_game/", CreateNewGame.as_view(), name="create_new_game"),
-    path("add_nonogram_board/", AddNonogramBoard.as_view(), name="add_nonogram_board"),
+    path("sessions/", CreateNewSession.as_view(), name="create_new_session"),
+    path("sessions/<str:session_id>/", HandleGame.as_view(), name="create_new_game/get_session_board"),
+    path("sessions/<str:session_id>/turn/<int:game_turn>", GetNonogramPlay.as_view(), name="get_nonogram_play"),
+    path("sessions/<str:session_id>/move/", SetCellState.as_view(), name="set_cell_state"),
+    path("nonogram/", AddNonogramBoard.as_view(), name="add_nonogram_board"),
+    path("nonogram/<str:board_id>/", GetNonogramBoard.as_view(), name="get_nonogram_board"),
 ]

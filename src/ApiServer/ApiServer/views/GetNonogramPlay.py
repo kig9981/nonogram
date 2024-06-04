@@ -33,36 +33,17 @@ class GetNonogramPlay(AsyncAPIView):
     async def get(
         self,
         request: HttpRequest,
-    ) -> HttpResponse:
-        return HttpResponse("get_nonogram_play(get)")
-
-    async def post(
-        self,
-        request: HttpRequest,
+        session_id: str,
     ) -> HttpResponse:
         LATEST_TURN = -1
-
-        if request.content_type != "application/json":
-            return HttpResponseBadRequest("Must be Application/json request.")
-
-        query = json.loads(request.body)
-
-        if "session_id" not in query:
-            return HttpResponseBadRequest("session_id is missing.")
-
-        session_id = query["session_id"]
 
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return HttpResponseBadRequest(f"'{session_id}' is not valid id.")
 
-        url = f"{NONOGRAM_SERVER_URL}/get_nonogram_server"
-        query_dict = {
-            "session_id": session_id,
-            "game_turn": LATEST_TURN,
-        }
+        url = f"{NONOGRAM_SERVER_URL}/sessions/{session_id}/turn/{LATEST_TURN}"
         response = await send_request(
+            method_type="GET",
             url=url,
-            request=query_dict,
         )
         status_code = response["status_code"]
 

@@ -4,7 +4,7 @@ from typing import Any
 from typing import List
 from typing import Dict
 from http import HTTPStatus
-from NonogramServer.views.CreateNewGame import CreateNewGame
+from NonogramServer.views.HandleGame import HandleGame
 from django.test.client import RequestFactory
 from ...util import send_test_request
 
@@ -12,7 +12,7 @@ RANDOM_BOARD = 0
 GAME_EXIST = 0
 NEW_GAME_STARTED = 1
 
-create_new_game = CreateNewGame.as_view()
+create_new_game = HandleGame.as_view()
 
 
 @pytest.mark.asyncio
@@ -22,28 +22,30 @@ async def test_create_new_game(
     test_sessions: List[Dict[str, Any]],
     add_test_data,
 ):
-    url = '/create_new_game/'
+    url = '/sessions/'
     query_dict = {}
     for key, value in {
-        'session_id': 1,
         'board_id': 1,
-        'force_new_game': 1,
     }.items():
         response = await send_test_request(
+            method_type="POST",
             mock_request=mock_request,
             request_function=create_new_game,
-            url=url,
+            url=f"{url}/1/",
             query_dict=query_dict,
+            session_id="1",
         )
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.content.decode() == f"{key} is missing."
         query_dict[key] = value
 
     response = await send_test_request(
+        method_type="POST",
         mock_request=mock_request,
         request_function=create_new_game,
-        url=url,
+        url=f"{url}/1/",
         query_dict=query_dict,
+        session_id="1",
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
     # assert response.content.decode() == "invalid type."
@@ -53,16 +55,16 @@ async def test_create_new_game(
         board_id = test_session["board_id"]
 
         query_dict = {
-            'session_id': session_id,
             'board_id': board_id,
-            'force_new_game': False,
         }
 
         response = await send_test_request(
+            method_type="POST",
             mock_request=mock_request,
             request_function=create_new_game,
-            url=url,
+            url=f"{url}/{session_id}/",
             query_dict=query_dict,
+            session_id=session_id,
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -77,10 +79,12 @@ async def test_create_new_game(
         }
 
         response = await send_test_request(
+            method_type="PUT",
             mock_request=mock_request,
             request_function=create_new_game,
-            url=url,
+            url=f"{url}/{session_id}/",
             query_dict=query_dict,
+            session_id=session_id,
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -96,10 +100,12 @@ async def test_create_new_game(
         }
 
         response = await send_test_request(
+            method_type="PUT",
             mock_request=mock_request,
             request_function=create_new_game,
-            url=url,
+            url=f"{url}/{session_id}/",
             query_dict=query_dict,
+            session_id=session_id,
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -124,16 +130,16 @@ async def test_create_new_game_with_new_session(
         board_id = test_session["board_id"]
 
         query_dict = {
-            'session_id': session_id,
             'board_id': board_id,
-            'force_new_game': False,
         }
 
         response = await send_test_request(
+            method_type="POST",
             mock_request=mock_request,
             request_function=create_new_game,
-            url=url,
+            url=f"{url}/{session_id}/",
             query_dict=query_dict,
+            session_id=session_id,
         )
 
         assert response.status_code == HTTPStatus.OK

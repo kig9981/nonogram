@@ -18,6 +18,9 @@ INCORRECT_ID = "xxxxxxx"
 
 set_cell_state = SetCellState.as_view()
 
+def get_url(session_id):
+    return f"/set_cell_state/{session_id}/move/"
+
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
@@ -26,8 +29,6 @@ async def test_session_for_set_cell_state(
     test_sessions: List[Dict[str, Any]],
     add_test_data,
 ):
-    url = '/set_cell_state/'
-
     moves = [
         GameBoardCellState.NOT_SELECTED,
         GameBoardCellState.MARK_X,
@@ -57,17 +58,18 @@ async def test_session_for_set_cell_state(
                 for new_state in moves:
                     expected_result = play.mark(x, y, new_state)
                     query_dict = {
-                        "session_id": session_id,
                         "x_coord": x,
                         "y_coord": y,
                         "new_state": new_state,
                     }
 
                     response = await send_test_request(
+                        method_type="POST",
                         mock_request=mock_request,
                         request_function=set_cell_state,
-                        url=url,
+                        url=get_url(session_id),
                         query_dict=query_dict,
+                        session_id=session_id,
                     )
 
                     assert response.status_code == HTTPStatus.OK
@@ -83,18 +85,19 @@ async def test_set_cell_state(
     mock_request: RequestFactory,
     add_test_data,
 ):
-    url = '/set_cell_state/'
     query_dict = {}
 
     response = await send_test_request(
+        method_type="POST",
         mock_request=mock_request,
         request_function=set_cell_state,
-        url=url,
+        url=get_url('1'),
         query_dict=query_dict,
+        session_id='1',
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.content.decode() == "session_id is missing."
+    assert response.content.decode() == "x_coord is missing."
 
     query_dict = {
         "session_id": SESSION_ID_UNUSED_FOR_TEST,
@@ -104,10 +107,12 @@ async def test_set_cell_state(
     }
 
     response = await send_test_request(
+        method_type="POST",
         mock_request=mock_request,
         request_function=set_cell_state,
-        url=url,
+        url=get_url(SESSION_ID_UNUSED_FOR_TEST),
         query_dict=query_dict,
+        session_id=SESSION_ID_UNUSED_FOR_TEST,
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
@@ -121,10 +126,12 @@ async def test_set_cell_state(
     }
 
     response = await send_test_request(
+        method_type="POST",
         mock_request=mock_request,
         request_function=set_cell_state,
-        url=url,
+        url=get_url(INCORRECT_ID),
         query_dict=query_dict,
+        session_id=INCORRECT_ID,
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
