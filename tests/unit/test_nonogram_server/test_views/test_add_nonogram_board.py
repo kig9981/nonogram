@@ -16,7 +16,7 @@ add_nonogram_board = AddNonogramBoard.as_view()
 async def test_add_nonogram_board(
     mock_request: RequestFactory,
 ):
-    url = '/add_nonogram_board/'
+    url = '/nonogram/'
     cwd = os.path.dirname(__file__)
     test_data_path = os.path.join(cwd, 'test_data')
     test_image_path = os.path.join(test_data_path, 'test_board_image.jpg')
@@ -33,6 +33,7 @@ async def test_add_nonogram_board(
     }
 
     response = await send_test_request(
+        method_type="POST",
         mock_request=mock_request,
         request_function=add_nonogram_board,
         url=url,
@@ -50,6 +51,7 @@ async def test_add_nonogram_board(
     }
 
     response = await send_test_request(
+        method_type="POST",
         mock_request=mock_request,
         request_function=add_nonogram_board,
         url=url,

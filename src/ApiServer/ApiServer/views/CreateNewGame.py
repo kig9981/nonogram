@@ -30,15 +30,34 @@ class CreateNewGame(AsyncAPIView):
                         1=NEW_GAME_STARTED
         board_id (str): 새로 시작한 board_id정보를 uuid형식으로 반환.
     '''
-    async def get(
-        self,
-        request: HttpRequest,
-    ) -> HttpResponse:
-        return HttpResponse("create_new_game(get)")
 
     async def post(
         self,
         request: HttpRequest,
+        session_id: str,
+    ) -> HttpResponse:
+        return await self._create_new_game(
+            request=request,
+            session_id=session_id,
+            force_new_game=False,
+        )
+    
+    async def put(
+        self,
+        request: HttpRequest,
+        session_id: str,
+    ) -> HttpResponse:
+        return await self._create_new_game(
+            request=request,
+            session_id=session_id,
+            force_new_game=True,
+        )
+        
+    async def _create_new_game(
+        self,
+        request: HttpRequest,
+        session_id: str,
+        force_new_game: bool,
     ) -> HttpResponse:
         RANDOM_BOARD = 0
         if request.content_type != "application/json":
@@ -46,29 +65,19 @@ class CreateNewGame(AsyncAPIView):
 
         query = json.loads(request.body)
 
-        if "session_id" not in query:
-            return HttpResponseBadRequest("session_id is missing.")
-        if "force_new_game" not in query:
-            return HttpResponseBadRequest("force_new_game is missing.")
-
-        session_id = query["session_id"]
         board_id = query["board_id"] if "board_id" in query else RANDOM_BOARD
-        force_new_game = query["force_new_game"]
 
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
-        if not isinstance(force_new_game, bool):
-            return HttpResponseBadRequest("Invalid type(force_new_game).")
         if board_id != RANDOM_BOARD and (not isinstance(board_id, str) or not is_uuid4(board_id)):
             return HttpResponseBadRequest(f"board_id '{board_id}' is not valid id.")
 
-        url = f"{NONOGRAM_SERVER_URL}/create_new_game"
+        url = f"{NONOGRAM_SERVER_URL}/sessions/{session_id}"
         query_dict = {
-            "session_id": session_id,
             "board_id": board_id,
-            "force_new_game": force_new_game,
         }
         response = await send_request(
+            method_type="PUT" if force_new_game else "POST",
             url=url,
             request=query_dict,
         )
@@ -85,3 +94,4 @@ class CreateNewGame(AsyncAPIView):
             return HttpResponseNotFound(response["response"])
         else:
             return HttpResponseServerError("unknown error")
+

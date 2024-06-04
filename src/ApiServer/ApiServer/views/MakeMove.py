@@ -34,23 +34,16 @@ class MakeMove(AsyncAPIView):
                       1: 정상적으로 반영됨
                       2: 해당 움직임으로 게임 종료(게임이 종료된 이후의 모든 요청은 이 답으로 돌아감)
     '''
-    async def get(
-        self,
-        request: HttpRequest,
-    ) -> HttpResponse:
-        return HttpResponse("make_move(get)")
-
     async def post(
         self,
         request: HttpRequest,
+        session_id: str,
     ) -> HttpResponse:
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
 
         query = json.loads(request.body)
 
-        if "session_id" not in query:
-            return HttpResponseBadRequest("session_id is missing.")
         if "x" not in query:
             return HttpResponseBadRequest("x is missing.")
         if "y" not in query:
@@ -58,7 +51,6 @@ class MakeMove(AsyncAPIView):
         if "state" not in query:
             return HttpResponseBadRequest("state is missing.")
 
-        session_id = query["session_id"]
         x = query["x"]
         y = query["y"]
         state = query["state"]
@@ -70,14 +62,14 @@ class MakeMove(AsyncAPIView):
         if not isinstance(state, int) or not (0 <= state <= 3):
             return HttpResponseBadRequest("Invalid state(type must be integer)")
 
-        url = f"{NONOGRAM_SERVER_URL}/set_cell_state"
+        url = f"{NONOGRAM_SERVER_URL}/sessions/{session_id}/move"
         query_dict = {
-            "session_id": session_id,
             "x_coord": x,
             "y_coord": y,
             "new_state": state,
         }
         response = await send_request(
+            method_type="POST",
             url=url,
             request=query_dict,
         )

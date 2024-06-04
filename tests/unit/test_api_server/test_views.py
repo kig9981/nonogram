@@ -17,13 +17,14 @@ make_move = MakeMove.as_view()
 create_new_session = CreateNewSession.as_view()
 create_new_game = CreateNewGame.as_view()
 
+session_id = str(uuid.uuid4())
 
 @pytest.mark.asyncio
 async def test_get_nonogram_board(
     mock_request,
     mocker,
 ):
-    url = '/get_nonogram_board/'
+    url = f'/sessions/{session_id}/board/'
     mocker.patch(
         target="ApiServer.views.GetNonogramBoard.send_request",
         return_value={
@@ -35,12 +36,11 @@ async def test_get_nonogram_board(
         }
     )
     response = await send_test_request(
+        method_type="GET",
         mock_request=mock_request,
         request_function=get_nonogram_board,
         url=url,
-        query_dict={
-            "session_id": str(uuid.uuid4()),
-        },
+        session_id=session_id,
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -51,7 +51,7 @@ async def test_get_nonogram_play(
     mock_request,
     mocker,
 ):
-    url = '/get_nonogram_play/'
+    url = f'/sessions/{session_id}/play/'
     mocker.patch(
         target="ApiServer.views.GetNonogramPlay.send_request",
         return_value={
@@ -61,12 +61,11 @@ async def test_get_nonogram_play(
         }
     )
     response = await send_test_request(
+        method_type="GET",
         mock_request=mock_request,
         request_function=get_nonogram_play,
         url=url,
-        query_dict={
-            "session_id": str(uuid.uuid4()),
-        },
+        session_id=session_id,
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -77,7 +76,7 @@ async def test_synchronize(
     mock_request,
     mocker,
 ):
-    url = '/synchronize/'
+    url = f'/sessions/{session_id}/sync/{0}'
     mocker.patch(
         target="ApiServer.views.Synchronize.send_request",
         return_value={
@@ -87,12 +86,12 @@ async def test_synchronize(
         }
     )
     response = await send_test_request(
+        method_type="GET",
         mock_request=mock_request,
         request_function=synchronize,
         url=url,
-        query_dict={
-            "session_id": str(uuid.uuid4()),
-        },
+        session_id=session_id,
+        game_turn=0,
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -103,7 +102,7 @@ async def test_make_move(
     mock_request,
     mocker,
 ):
-    url = '/make_move/'
+    url = f'/sessions/{session_id}/move/'
     mocker.patch(
         target="ApiServer.views.MakeMove.send_request",
         return_value={
@@ -112,15 +111,16 @@ async def test_make_move(
         }
     )
     response = await send_test_request(
+        method_type="POST",
         mock_request=mock_request,
         request_function=make_move,
         url=url,
         query_dict={
-            "session_id": str(uuid.uuid4()),
             "x": 0,
             "y": 0,
             "state": 0,
         },
+        session_id=session_id,
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -131,7 +131,7 @@ async def test_create_new_session(
     mock_request,
     mocker,
 ):
-    url = '/create_new_session/'
+    url = '/sessions/'
     mocker.patch(
         target="ApiServer.views.CreateNewSession.send_request",
         return_value={
@@ -140,10 +140,10 @@ async def test_create_new_session(
         }
     )
     response = await send_test_request(
+        method_type="POST",
         mock_request=mock_request,
         request_function=create_new_session,
         url=url,
-        query_dict={},
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -154,7 +154,7 @@ async def test_create_new_game(
     mock_request,
     mocker,
 ):
-    url = '/create_new_game/'
+    url = f'/sessions/{session_id}/'
     mocker.patch(
         target="ApiServer.views.CreateNewGame.send_request",
         return_value={
@@ -164,13 +164,14 @@ async def test_create_new_game(
         }
     )
     response = await send_test_request(
+        method_type="POST",
         mock_request=mock_request,
         request_function=create_new_game,
         url=url,
         query_dict={
-            "session_id": str(uuid.uuid4()),
-            "force_new_game": True,
+            "board_id": str(uuid.uuid4()),
         },
+        session_id=session_id,
     )
 
     assert response.status_code == HTTPStatus.OK

@@ -34,28 +34,20 @@ class SetCellState(AsyncAPIView):
                         1=APPLIED
                         2=GAME_OVER
     '''
-    async def get(
-        self,
-        request: HttpRequest,
-    ) -> HttpResponse:
-        return HttpResponse("set_cell_state(get)")
-
     async def post(
         self,
         request: HttpRequest,
+        session_id: str,
     ) -> HttpResponse:
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
         query = json.loads(request.body)
-        if 'session_id' not in query:
-            return HttpResponseBadRequest("session_id is missing.")
         if 'x_coord' not in query:
             return HttpResponseBadRequest("x_coord is missing.")
         if 'y_coord' not in query:
             return HttpResponseBadRequest("y_coord is missing.")
         if 'new_state' not in query:
             return HttpResponseBadRequest("new_state is missing.")
-        session_id = query['session_id']
         x = query['x_coord']
         y = query['y_coord']
         new_state = query['new_state']
