@@ -19,12 +19,6 @@ class CreateNewSession(AsyncAPIView):
         성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
         session_id (str): session_id를 uuid형식으로 반환.
     '''
-    async def get(
-        self,
-        request: HttpRequest,
-    ) -> HttpResponse:
-        return HttpResponse("create_new_session(get)")
-
     async def post(
         self,
         request: HttpRequest,
