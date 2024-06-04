@@ -49,7 +49,7 @@ async def test_get_nonogram_play(
     mock_request,
     mocker,
 ):
-    url = f'sessions/{str(uuid.uuid4())}/play/'
+    url = f'/sessions/{str(uuid.uuid4())}/play/'
     mocker.patch(
         target="ApiServer.views.GetNonogramPlay.send_request",
         return_value={
@@ -73,7 +73,7 @@ async def test_synchronize(
     mock_request,
     mocker,
 ):
-    url = f'sessions/{str(uuid.uuid4())}/sync/{0}'
+    url = f'/sessions/{str(uuid.uuid4())}/sync/{0}'
     mocker.patch(
         target="ApiServer.views.Synchronize.send_request",
         return_value={
@@ -125,7 +125,7 @@ async def test_create_new_session(
     mock_request,
     mocker,
 ):
-    url = '/create_new_session/'
+    url = '/sessions/'
     mocker.patch(
         target="ApiServer.views.CreateNewSession.send_request",
         return_value={
@@ -134,10 +134,10 @@ async def test_create_new_session(
         }
     )
     response = await send_test_request(
+        method_type="POST",
         mock_request=mock_request,
         request_function=create_new_session,
         url=url,
-        query_dict={},
     )
 
     assert response.status_code == HTTPStatus.OK
