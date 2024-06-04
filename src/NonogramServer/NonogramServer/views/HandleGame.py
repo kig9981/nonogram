@@ -11,6 +11,7 @@ from ..models import Session
 from Nonogram.NonogramBoard import NonogramGameplay
 from utils import async_get_from_db
 from utils import is_uuid4
+from utils import deserialize_gameboard
 
 
 class HandleGame(AsyncAPIView):
@@ -29,6 +30,37 @@ class HandleGame(AsyncAPIView):
                         1=NEW_GAME_STARTED
         board_id (str): 랜덤 보드를 요청한 경우 선택된 보드를, 아니면 argument로 주어진 board_id를 반환
     '''
+    async def get(
+        self,
+        request: HttpRequest,
+        session_id: str,
+    ) -> HttpResponse:
+        if not isinstance(session_id, str) or not is_uuid4(session_id):
+            return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
+        
+        try:
+            session_data = await async_get_from_db(
+                model_class=Session,
+                label=f"session_id '{session_id}'",
+                select_related=['current_game', 'board_data'],
+                session_id=session_id,
+            )
+        except ObjectDoesNotExist as error:
+            return HttpResponseNotFound(f"{error} not found.")
+        
+        board_data = session_data.board_data
+        
+        if board_data is None:
+            return HttpResponseNotFound("board data not found.")
+        
+        response_data = {
+            "board": deserialize_gameboard(board_data.board),
+            "num_row": board_data.num_row,
+            "num_column": board_data.num_column,
+        }
+
+        return JsonResponse(response_data)
+
     async def post(
         self,
         request: HttpRequest,
