@@ -17,6 +17,7 @@ async def test_create_new_session(mock_request: RequestFactory):
     url = '/create_new_session/'
     query_dict = {}
     response = await send_test_request(
+        method_type="POST",
         mock_request=mock_request,
         request_function=create_new_session,
         url=url,

@@ -24,10 +24,10 @@ class CreateNewSession(AsyncAPIView):
         request: HttpRequest,
     ) -> HttpResponse:
         # TODO: 비정상적인 쿼리에 대한 거부(같은 ip에 대해서 쿨타임 설정)
-        url = f"{NONOGRAM_SERVER_URL}/create_new_session"
+        url = f"{NONOGRAM_SERVER_URL}/sessions"
         response = await send_request(
+            method_type="POST",
             url=url,
-            request={},
         )
         status_code = response["status_code"]
 
