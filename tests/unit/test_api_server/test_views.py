@@ -73,7 +73,7 @@ async def test_synchronize(
     mock_request,
     mocker,
 ):
-    url = '/synchronize/'
+    url = f'sessions/{str(uuid.uuid4())}/sync/{0}'
     mocker.patch(
         target="ApiServer.views.Synchronize.send_request",
         return_value={
@@ -83,12 +83,10 @@ async def test_synchronize(
         }
     )
     response = await send_test_request(
+        method_type="GET",
         mock_request=mock_request,
         request_function=synchronize,
         url=url,
-        query_dict={
-            "session_id": str(uuid.uuid4()),
-        },
     )
 
     assert response.status_code == HTTPStatus.OK
