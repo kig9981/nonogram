@@ -162,7 +162,9 @@ async def test_create_new_game(
         mock_request=mock_request,
         request_function=create_new_game,
         url=url,
-        query_dict={},
+        query_dict={
+            "board_id": str(uuid.uuid4()),
+        },
     )
 
     assert response.status_code == HTTPStatus.OK
