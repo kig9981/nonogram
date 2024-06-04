@@ -27,10 +27,10 @@ from .views.Healthcheck import HealthCheck
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('healthcheck/', HealthCheck.as_view(), name="healthcheck"),
-    path("get_nonogram_board/", GetNonogramBoard.as_view(), name="get_nonogram_board"),
-    path("get_nonogram_play/", GetNonogramPlay.as_view(), name="get_nonogram_play"),
-    path("synchronize/", Synchronize.as_view(), name="synchronize"),
-    path("make_move/", MakeMove.as_view(), name="make_move"),
-    path("create_new_session/", CreateNewSession.as_view(), name="create_new_session"),
-    path("create_new_game/", CreateNewGame.as_view(), name="create_new_game"),
+    path("sessions/<str:session_id>/board/", GetNonogramBoard.as_view(), name="get_nonogram_board"),
+    path("sessions/<str:session_id>/play/", GetNonogramPlay.as_view(), name="get_nonogram_play"),
+    path("sessions/<str:session_id>/synchronize/", Synchronize.as_view(), name="synchronize"),
+    path("sessions/<str:session_id>/move/", MakeMove.as_view(), name="make_move"),
+    path("sessions/", CreateNewSession.as_view(), name="create_new_session"),
+    path("sessions/<str:session_id>/game/", CreateNewGame.as_view(), name="create_new_game"),
 ]
