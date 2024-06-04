@@ -4,7 +4,7 @@ from typing import Any
 from typing import List
 from typing import Dict
 from http import HTTPStatus
-from NonogramServer.views.CreateNewGame import CreateNewGame
+from NonogramServer.views.HandleGame import HandleGame
 from django.test.client import RequestFactory
 from ...util import send_test_request
 
@@ -12,7 +12,7 @@ RANDOM_BOARD = 0
 GAME_EXIST = 0
 NEW_GAME_STARTED = 1
 
-create_new_game = CreateNewGame.as_view()
+create_new_game = HandleGame.as_view()
 
 
 @pytest.mark.asyncio
