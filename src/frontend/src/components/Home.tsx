@@ -7,14 +7,13 @@ const Home: React.FC = () => {
     const navigate = useNavigate();
 
     const createSession = async () => {
-        // console.log(api_server_url);
-        // const response = await fetch(api_server_url + `/sessions`, {
-        //     method: 'POST',
-        // });
-        // const jsonData = await response.json();
-        // console.log(jsonData);
-        // navigate('/' + jsonData.session_id);
-        navigate('/1');
+        console.log(api_server_url);
+        const response = await fetch(api_server_url + `/sessions`, {
+            method: 'POST',
+        });
+        const jsonData = await response.json();
+        console.log(jsonData);
+        navigate('/' + jsonData.session_id);
     };
 
     return (

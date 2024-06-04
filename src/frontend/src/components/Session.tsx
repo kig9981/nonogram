@@ -6,8 +6,8 @@ import './Session.css';
 const Session: React.FC = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const [gameKey, setGameKey] = useState(0);
-  const [numRow, setNumRow] = useState(0);
-  const [numCol, setNumCol] = useState(0);
+  const [numRow, setNumRow] = useState(10);
+  const [numCol, setNumCol] = useState(10);
 
   const startNewGame = async () => {
     await fetch(`/session/${sessionId}/new-game`, {
