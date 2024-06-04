@@ -1,13 +1,13 @@
 import React, { useState, useEffect, MouseEvent } from 'react';
 import './GameBoard.css';
 
-export const NOT_SELECTED = 0;
-export const REVEALED = 1;
-export const MARK_X = 2;
-export const MARK_QUESTION = 3;
+const NOT_SELECTED = 0;
+const REVEALED = 1;
+const MARK_X = 2;
+const MARK_QUESTION = 3;
 
-export type CellState = 0 | 1 | 2 | 3;
-export type BoardState = CellState[][];
+type CellState = 0 | 1 | 2 | 3;
+type BoardState = CellState[][];
 
 interface GameBoardProps {
   numRow: number;
@@ -15,7 +15,7 @@ interface GameBoardProps {
 }
 
 const GameBoard: React.FC<GameBoardProps> = ({ numRow, numCol }) => {
-  const initialBoard: BoardState = Array(numRow).fill(null).map(() => Array(numCol).fill(null));
+  const initialBoard: BoardState = Array(numRow).fill(null).map(() => Array(numCol).fill(NOT_SELECTED));
   const [board, setBoard] = useState<BoardState>(initialBoard);
   const [rowHints, setRowHints] = useState<number[][]>([]);
   const [colHints, setColHints] = useState<number[][]>([]);
