@@ -17,13 +17,14 @@ make_move = MakeMove.as_view()
 create_new_session = CreateNewSession.as_view()
 create_new_game = CreateNewGame.as_view()
 
+session_id = str(uuid.uuid4())
 
 @pytest.mark.asyncio
 async def test_get_nonogram_board(
     mock_request,
     mocker,
 ):
-    url = f'/sessions/{str(uuid.uuid4())}/board/'
+    url = f'/sessions/{session_id}/board/'
     mocker.patch(
         target="ApiServer.views.GetNonogramBoard.send_request",
         return_value={
@@ -39,6 +40,7 @@ async def test_get_nonogram_board(
         mock_request=mock_request,
         request_function=get_nonogram_board,
         url=url,
+        session_id=session_id,
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -49,7 +51,7 @@ async def test_get_nonogram_play(
     mock_request,
     mocker,
 ):
-    url = f'/sessions/{str(uuid.uuid4())}/play/'
+    url = f'/sessions/{session_id}/play/'
     mocker.patch(
         target="ApiServer.views.GetNonogramPlay.send_request",
         return_value={
@@ -63,6 +65,7 @@ async def test_get_nonogram_play(
         mock_request=mock_request,
         request_function=get_nonogram_play,
         url=url,
+        session_id=session_id,
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -73,7 +76,7 @@ async def test_synchronize(
     mock_request,
     mocker,
 ):
-    url = f'/sessions/{str(uuid.uuid4())}/sync/{0}'
+    url = f'/sessions/{session_id}/sync/{0}'
     mocker.patch(
         target="ApiServer.views.Synchronize.send_request",
         return_value={
@@ -87,6 +90,8 @@ async def test_synchronize(
         mock_request=mock_request,
         request_function=synchronize,
         url=url,
+        session_id=session_id,
+        game_turn=0,
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -97,7 +102,7 @@ async def test_make_move(
     mock_request,
     mocker,
 ):
-    url = f'/sessions/{str(uuid.uuid4())}/move/'
+    url = f'/sessions/{session_id}/move/'
     mocker.patch(
         target="ApiServer.views.MakeMove.send_request",
         return_value={
@@ -115,6 +120,7 @@ async def test_make_move(
             "y": 0,
             "state": 0,
         },
+        session_id=session_id,
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -148,7 +154,6 @@ async def test_create_new_game(
     mock_request,
     mocker,
 ):
-    session_id = str(uuid.uuid4())
     url = f'/sessions/{session_id}/'
     mocker.patch(
         target="ApiServer.views.CreateNewGame.send_request",
