@@ -13,6 +13,7 @@ async def send_test_request(
     request_function: Callable[[HttpRequest], HttpResponse],
     url: str,
     query_dict: Dict[str, Any] = {},
+    **kwargs,
 ) -> HttpResponse:
     if method_type == "POST":
         query = json.dumps(query_dict)
@@ -21,10 +22,10 @@ async def send_test_request(
             data=query,
             content_type="application/json",
         )
-        response = await request_function(request)
+        response = await request_function(request, **kwargs)
     elif method_type == "GET":
         request = mock_request.get(url)
-        response = await request_function(request)
+        response = await request_function(request, **kwargs)
     else:
         raise Exception("Invalid method type")
 

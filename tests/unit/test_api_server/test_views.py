@@ -148,7 +148,8 @@ async def test_create_new_game(
     mock_request,
     mocker,
 ):
-    url = f'/sessions/{str(uuid.uuid4())}/'
+    session_id = str(uuid.uuid4())
+    url = f'/sessions/{session_id}/'
     mocker.patch(
         target="ApiServer.views.CreateNewGame.send_request",
         return_value={
@@ -165,6 +166,7 @@ async def test_create_new_game(
         query_dict={
             "board_id": str(uuid.uuid4()),
         },
+        session_id=session_id,
     )
 
     assert response.status_code == HTTPStatus.OK

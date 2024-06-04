@@ -36,7 +36,7 @@ class CreateNewGame(AsyncAPIView):
         request: HttpRequest,
         session_id: str,
     ) -> HttpResponse:
-        return self._create_new_game(
+        return await self._create_new_game(
             request=request,
             session_id=session_id,
             force_new_game=False,
@@ -47,7 +47,7 @@ class CreateNewGame(AsyncAPIView):
         request: HttpRequest,
         session_id: str,
     ) -> HttpResponse:
-        return self._create_new_game(
+        return await self._create_new_game(
             request=request,
             session_id=session_id,
             force_new_game=True,
