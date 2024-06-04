@@ -40,14 +40,10 @@ class GetNonogramPlay(AsyncAPIView):
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return HttpResponseBadRequest(f"'{session_id}' is not valid id.")
 
-        url = f"{NONOGRAM_SERVER_URL}/get_nonogram_server"
-        query_dict = {
-            "session_id": session_id,
-            "game_turn": LATEST_TURN,
-        }
+        url = f"{NONOGRAM_SERVER_URL}/sessions/{session_id}/turn/{LATEST_TURN}"
         response = await send_request(
+            method_type="GET",
             url=url,
-            request=query_dict,
         )
         status_code = response["status_code"]
 
