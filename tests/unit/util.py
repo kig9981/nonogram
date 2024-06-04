@@ -5,7 +5,6 @@ from django.http import HttpResponse
 from typing import Callable
 from typing import Dict
 from typing import Any
-from typing import Optional
 
 
 async def send_test_request(
@@ -13,7 +12,7 @@ async def send_test_request(
     mock_request: RequestFactory,
     request_function: Callable[[HttpRequest], HttpResponse],
     url: str,
-    query_dict: Optional[Dict[str, Any]],
+    query_dict: Dict[str, Any] = {},
 ) -> HttpResponse:
     if method_type == "POST":
         query = json.dumps(query_dict)
