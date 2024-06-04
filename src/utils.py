@@ -193,19 +193,41 @@ def is_uuid4(
 
 
 async def send_request(
+    method_type: str,
     url: str,
-    request: Dict[str, Any],
+    request: Dict[str, Any] = {},
 ) -> Dict[str, Any]:
     async with aiohttp.ClientSession() as session:
-        async with session.post(url, json=request, ssl=False) as resp:
-            if resp.status == HTTPStatus.OK:
-                response = json.loads(await resp.json())
-                response["status_code"] = resp.status
-            else:
-                response = {
-                    "status_code": resp.status,
-                    "response": await resp.text()
-                }
+        if method_type == "POST":
+            async with session.post(url, json=request, ssl=False) as resp:
+                if resp.status == HTTPStatus.OK:
+                    response = json.loads(await resp.json())
+                    response["status_code"] = resp.status
+                else:
+                    response = {
+                        "status_code": resp.status,
+                        "response": await resp.text()
+                    }
+        elif method_type == "GET":
+            async with session.get(url, ssl=False) as resp:
+                if resp.status == HTTPStatus.OK:
+                    response = json.loads(await resp.json())
+                    response["status_code"] = resp.status
+                else:
+                    response = {
+                        "status_code": resp.status,
+                        "response": await resp.text()
+                    }
+        elif method_type == "PUT":
+            async with session.put(url, json=request, ssl=False) as resp:
+                if resp.status == HTTPStatus.OK:
+                    response = json.loads(await resp.json())
+                    response["status_code"] = resp.status
+                else:
+                    response = {
+                        "status_code": resp.status,
+                        "response": await resp.text()
+                    }
     return response
 
 
