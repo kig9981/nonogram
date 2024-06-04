@@ -22,28 +22,30 @@ async def test_create_new_game(
     test_sessions: List[Dict[str, Any]],
     add_test_data,
 ):
-    url = '/create_new_game/'
+    url = '/sessions/'
     query_dict = {}
     for key, value in {
-        'session_id': 1,
         'board_id': 1,
-        'force_new_game': 1,
     }.items():
         response = await send_test_request(
+            method_type="POST",
             mock_request=mock_request,
             request_function=create_new_game,
-            url=url,
+            url=f"{url}/1/",
             query_dict=query_dict,
+            session_id="1",
         )
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.content.decode() == f"{key} is missing."
         query_dict[key] = value
 
     response = await send_test_request(
+        method_type="POST",
         mock_request=mock_request,
         request_function=create_new_game,
-        url=url,
+        url=f"{url}/1/",
         query_dict=query_dict,
+        session_id="1",
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
     # assert response.content.decode() == "invalid type."
@@ -53,16 +55,16 @@ async def test_create_new_game(
         board_id = test_session["board_id"]
 
         query_dict = {
-            'session_id': session_id,
             'board_id': board_id,
-            'force_new_game': False,
         }
 
         response = await send_test_request(
+            method_type="POST",
             mock_request=mock_request,
             request_function=create_new_game,
-            url=url,
+            url=f"{url}/{session_id}/",
             query_dict=query_dict,
+            session_id=session_id,
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -77,10 +79,12 @@ async def test_create_new_game(
         }
 
         response = await send_test_request(
+            method_type="PUT",
             mock_request=mock_request,
             request_function=create_new_game,
-            url=url,
+            url=f"{url}/{session_id}/",
             query_dict=query_dict,
+            session_id=session_id,
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -96,10 +100,12 @@ async def test_create_new_game(
         }
 
         response = await send_test_request(
+            method_type="PUT",
             mock_request=mock_request,
             request_function=create_new_game,
-            url=url,
+            url=f"{url}/{session_id}/",
             query_dict=query_dict,
+            session_id=session_id,
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -124,16 +130,16 @@ async def test_create_new_game_with_new_session(
         board_id = test_session["board_id"]
 
         query_dict = {
-            'session_id': session_id,
             'board_id': board_id,
-            'force_new_game': False,
         }
 
         response = await send_test_request(
+            method_type="POST",
             mock_request=mock_request,
             request_function=create_new_game,
-            url=url,
+            url=f"{url}/{session_id}/",
             query_dict=query_dict,
+            session_id=session_id,
         )
 
         assert response.status_code == HTTPStatus.OK

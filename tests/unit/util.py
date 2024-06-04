@@ -26,6 +26,14 @@ async def send_test_request(
     elif method_type == "GET":
         request = mock_request.get(url)
         response = await request_function(request, **kwargs)
+    elif method_type == "PUT":
+        query = json.dumps(query_dict)
+        request = mock_request.put(
+            path=url,
+            data=query,
+            content_type="application/json",
+        )
+        response = await request_function(request, **kwargs)
     else:
         raise Exception("Invalid method type")
 
