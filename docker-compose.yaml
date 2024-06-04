@@ -33,7 +33,7 @@ services:
       DB_PORT: 5432
       DEBUG: ${DEBUG}
     healthcheck:
-      test: curl --fail http://localhost:8000/healthcheck/ || exit 1
+      test: curl --fail http://localhost:8000/healthcheck || exit 1
       interval: 30s
       timeout: 10s
       retries: 3
@@ -62,7 +62,7 @@ services:
       API_SERVER_HOST: ${API_SERVER_HOST}
       DEBUG: ${DEBUG}
     healthcheck:
-      test: curl --fail http://localhost:8000/healthcheck/ || exit 1
+      test: curl --fail http://localhost:8000/healthcheck || exit 1
       interval: 30s
       timeout: 10s
       retries: 3
