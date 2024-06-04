@@ -20,8 +20,6 @@ const GameBoard: React.FC<GameBoardProps> = ({ numRow, numCol }) => {
   const [rowHints, setRowHints] = useState<number[][]>([]);
   const [colHints, setColHints] = useState<number[][]>([]);
 
-  
-
   useEffect(() => {
     setRowHints(generateHints(initialBoard, 'row'));
     setColHints(generateHints(initialBoard, 'col'));
