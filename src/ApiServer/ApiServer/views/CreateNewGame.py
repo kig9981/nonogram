@@ -65,7 +65,6 @@ class CreateNewGame(AsyncAPIView):
 
         query = json.loads(request.body)
 
-        session_id = query["session_id"]
         board_id = query["board_id"] if "board_id" in query else RANDOM_BOARD
 
         if not isinstance(session_id, str) or not is_uuid4(session_id):
