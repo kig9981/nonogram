@@ -197,11 +197,11 @@ async def send_request(
     url: str,
     request: Dict[str, Any] = {},
 ) -> Dict[str, Any]:
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(trust_env=True) as session:
         if method_type == "POST":
             async with session.post(url, json=request, ssl=False) as resp:
                 if resp.status == HTTPStatus.OK:
-                    response = json.loads(await resp.json())
+                    response = await resp.json()
                     response["status_code"] = resp.status
                 else:
                     response = {
@@ -211,7 +211,7 @@ async def send_request(
         elif method_type == "GET":
             async with session.get(url, ssl=False) as resp:
                 if resp.status == HTTPStatus.OK:
-                    response = json.loads(await resp.json())
+                    response = await resp.json()
                     response["status_code"] = resp.status
                 else:
                     response = {
@@ -221,7 +221,7 @@ async def send_request(
         elif method_type == "PUT":
             async with session.put(url, json=request, ssl=False) as resp:
                 if resp.status == HTTPStatus.OK:
-                    response = json.loads(await resp.json())
+                    response = await resp.json()
                     response["status_code"] = resp.status
                 else:
                     response = {
