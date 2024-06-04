@@ -6,7 +6,9 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
 
   const createSession = async () => {
-    // 임시로 세션 ID를 1로 설정하여 이동
+    // await fetch(`/session/${sessionId}/new-game`, {
+    //   method: 'POST',
+    // });
     navigate('/1');
   };
 
