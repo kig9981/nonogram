@@ -1,14 +1,13 @@
 import React, { useState, useEffect, MouseEvent } from 'react';
 import './GameBoard.css';
 
-const NOT_SELECTED = 0;
-const REVEALED = 1;
-const MARK_X = 2;
-const MARK_QUESTION = 3;
+export const NOT_SELECTED = 0;
+export const REVEALED = 1;
+export const MARK_X = 2;
+export const MARK_QUESTION = 3;
 
-// TypeScript types
-type CellState = 0 | 1 | 2 | 3;
-type BoardState = CellState[][];
+export type CellState = 0 | 1 | 2 | 3;
+export type BoardState = CellState[][];
 
 interface GameBoardProps {
   numRow: number;
