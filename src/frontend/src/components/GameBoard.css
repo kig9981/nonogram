@@ -77,6 +77,14 @@
   display: flex;
 }
 
+.game-row:nth-child(1) {
+  border-top: 4px solid black;
+}
+
+.game-row:nth-child(5n + 6) {
+  border-top: 3px solid black;
+}
+
 .game-cell {
   width: var(--cell_size);
   height: var(--cell_size);
@@ -87,6 +95,14 @@
   cursor: pointer;
   user-select: none;
   position: relative;
+}
+
+.game-cell:nth-child(1) {
+  border-left: 4px solid black;
+}
+
+.game-cell:nth-child(5n + 6) {
+  border-left: 3px solid black;
 }
 
 .game-cell.marked {
