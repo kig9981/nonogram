@@ -1,6 +1,5 @@
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
-from .models import NonogramBoard
 from utils import serialize_gameboard
 from utils import RealBoardCellState
 import uuid
@@ -29,6 +28,7 @@ default_board = [
 ]
 
 def add_default_data(sender, **kwargs):
+    from .models import NonogramBoard
     if not NonogramBoard.objects.exists():
         NonogramBoard.objects.create(
             board_id=str(uuid.uuid4),
