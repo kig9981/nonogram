@@ -32,6 +32,7 @@ services:
       DB_HOST: ${DB_HOST}
       DB_PORT: 5432
       DEBUG: ${DEBUG}
+    command: bash -c "python src/NonogramServer/manage.py runserver 0.0.0.0:8000"
     healthcheck:
       test: curl --fail http://localhost:8000/healthcheck || exit 1
       interval: 30s
@@ -61,6 +62,7 @@ services:
       FRONTEND_SERVER_PORT: ${FRONTEND_SERVER_PORT}
       API_SERVER_HOST: ${API_SERVER_HOST}
       DEBUG: ${DEBUG}
+    command: bash -c "python src/ApiServer/manage.py runserver 0.0.0.0:8000"
     healthcheck:
       test: curl --fail http://localhost:8000/healthcheck || exit 1
       interval: 30s
