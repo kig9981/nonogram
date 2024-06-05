@@ -7,13 +7,19 @@ const Home: React.FC = () => {
     const navigate = useNavigate();
 
     const createSession = async () => {
-        console.log(api_server_url);
-        const response = await fetch(api_server_url + `/sessions`, {
-            method: 'POST',
-        });
-        const jsonData = await response.json();
-        console.log(jsonData);
-        navigate('/' + jsonData.session_id);
+        try {
+            console.log(api_server_url);
+            const response = await fetch(api_server_url + `/sessions`, {
+                method: 'POST',
+            });
+            const jsonData = await response.json();
+            console.log(jsonData);
+            navigate('/' + jsonData.session_id);
+        }
+        catch (error) {
+            console.error('Fetch error:', error);
+            alert('서버 응답이 없습니다. 잠시 후 다시 시도해주세요.');
+        }
     };
 
     return (
