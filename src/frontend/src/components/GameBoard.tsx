@@ -5,11 +5,12 @@ const NOT_SELECTED = 0;
 const REVEALED = 1;
 const MARK_X = 2;
 const MARK_QUESTION = 3;
+const MARK_WRONG = 4;
 
 const WHITE = 0;
 const BLACK = 1;
 
-type PlayCellState = 0 | 1 | 2 | 3;
+type PlayCellState = 0 | 1 | 2 | 3 | 4;
 type GameCellState = 0 | 1;
 type PlayBoardState = PlayCellState[][];
 type GameBoardState = GameCellState[][];
@@ -18,7 +19,8 @@ const CellStateToStr = [
     "",
     "marked",
     "x",
-    "question"
+    "question",
+    "red-marked"
 ]
 
 
@@ -82,13 +84,12 @@ const GameBoard: React.FC<GameBoardProps> = ({ gameBoard }) => {
         const newBoard = board.map((r, rowIndex) =>
             r.map((c, colIndex) => {
                 if (rowIndex === row && colIndex === col) {
-                    if (gameBoard[rowIndex][colIndex] == BLACK) {
-                        alert("Correct!");
+                    if (gameBoard[rowIndex][colIndex] === BLACK) {
                         return c = REVEALED;
                     }
-                    else {
+                    else if (c !== MARK_WRONG) {
                         alert("Incorrect!");
-                        return c;
+                        return c = MARK_WRONG;
                     }
                 }
                 return c;
@@ -149,7 +150,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ gameBoard }) => {
                             >
                                 {cell !== REVEALED && cell !== NOT_SELECTED && (
                                     <span className={`cell-content ${CellStateToStr[cell]}`}>
-                                        {cell === MARK_X ? 'X' : cell === MARK_QUESTION ? '?' : ''}
+                                        {cell === MARK_X || cell == MARK_WRONG ? 'X' : cell === MARK_QUESTION ? '?' : ''}
                                     </span>
                                 )}
                             </div>
