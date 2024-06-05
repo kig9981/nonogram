@@ -149,6 +149,9 @@ class HandleGame(AsyncAPIView):
         response_data = {
             "response": NEW_GAME_STARTED,
             "board_id": board_id,
+            "board": deserialize_gameboard(board_data.board),
+            "num_row": board_data.num_row,
+            "num_column": board_data.num_column,
         }
 
         return JsonResponse(response_data)
