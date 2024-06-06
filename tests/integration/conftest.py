@@ -2,7 +2,6 @@ import os
 import json
 import pytest
 import requests
-import docker
 import psycopg2
 from http import HTTPStatus
 from psycopg2 import OperationalError
@@ -127,7 +126,7 @@ def testdb_healthcheck(
 def testapiserver_healthcheck(
     api_server_url: str,
 ) -> bool:
-    apiserver_healthcheck_url = f"{api_server_url}/healthcheck/"
+    apiserver_healthcheck_url = f"{api_server_url}/healthcheck"
 
     try:
         response = requests.get(apiserver_healthcheck_url)
@@ -140,7 +139,7 @@ def testapiserver_healthcheck(
 def testnonogramserver_healthcheck(
     nonogram_server_url: str,
 ) -> bool:
-    nonogramserver_healthcheck_url = f"{nonogram_server_url}/healthcheck/"
+    nonogramserver_healthcheck_url = f"{nonogram_server_url}/healthcheck"
 
     try:
         response = requests.get(nonogramserver_healthcheck_url)
@@ -188,17 +187,6 @@ def load_servers(
         check=lambda: testnonogramserver_healthcheck(
             nonogram_server_url,
         ),
-    )
-
-    client = docker.from_env()
-
-    nonogram_server = client.containers.get(nonogram_server_host)
-    nonogram_server.exec_run(
-        "python src/NonogramServer/manage.py makemigrations"
-    )
-
-    nonogram_server.exec_run(
-        "python src/NonogramServer/manage.py migrate"
     )
 
 
