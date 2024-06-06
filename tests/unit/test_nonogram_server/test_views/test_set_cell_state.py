@@ -18,6 +18,7 @@ INCORRECT_ID = "xxxxxxx"
 
 set_cell_state = SetCellState.as_view()
 
+
 def get_url(session_id):
     return f"/set_cell_state/{session_id}/move/"
 

@@ -1,4 +1,3 @@
-import json
 from drfasyncview import AsyncAPIView
 from django.http import HttpRequest
 from django.http import HttpResponse
@@ -7,13 +6,9 @@ from django.http import HttpResponseNotFound
 from django.http import HttpResponseBadRequest
 from django.core.exceptions import ObjectDoesNotExist
 from ..models import NonogramBoard
-from ..models import Session
-from ..models import History
 from utils import async_get_from_db
 from utils import deserialize_gameboard
-from utils import deserialize_gameplay
 from utils import is_uuid4
-from Nonogram.NonogramBoard import NonogramGameplay
 
 
 class GetNonogramBoard(AsyncAPIView):
