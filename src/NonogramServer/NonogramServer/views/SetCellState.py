@@ -71,8 +71,8 @@ class SetCellState(AsyncAPIView):
         num_column = gameplay.num_column
         if not isinstance(x, int) or not isinstance(y, int) or not (0 <= x < num_row) or not (0 <= y < num_column):
             return HttpResponseBadRequest("Invalid coordinate.")
-        if not isinstance(new_state, int) or not (0 <= new_state <= 3):
-            return HttpResponseBadRequest("Invalid state. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), or 3(MARK_QUESTION).")
+        if not isinstance(new_state, int) or not (0 <= new_state <= 4):
+            return HttpResponseBadRequest("Invalid state. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), 3(MARK_QUESTION), or 4(MARK_WRONG).")
         changed = await gameplay.async_mark(x, y, new_state)
         response_data = {"response": changed}
         return JsonResponse(response_data)
