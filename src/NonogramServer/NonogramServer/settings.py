@@ -38,6 +38,15 @@ ALLOWED_HOSTS = [
     env("DB_HOST"),
 ]
 
+API_SERVER_PROTOCOL = env("API_SERVER_PROTOCOL")
+API_SERVER_HOST = env("API_SERVER_HOST")
+API_SERVER_PORT = env("API_SERVER_PORT")
+
+CORS_ALLOWED_ORIGINS = [
+    f"{API_SERVER_PROTOCOL}://{API_SERVER_HOST}:{API_SERVER_PORT}",
+    f"{API_SERVER_PROTOCOL}://localhost:{API_SERVER_PORT}",
+]
+
 
 # Application definition
 
@@ -49,13 +58,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',

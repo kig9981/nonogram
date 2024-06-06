@@ -87,6 +87,9 @@ class CreateNewGame(AsyncAPIView):
             response_data = {
                 "response": response["response"],
                 "board_id": response["board_id"],
+                "board": response["board"],
+                "num_row": response["num_row"],
+                "num_column": response["num_column"],
             }
             return JsonResponse(response_data)
 

@@ -32,6 +32,19 @@ DEBUG = env.bool("DEBUG")
 
 ALLOWED_HOSTS = ['*']
 
+NONOGRAM_SERVER_PROTOCOL = env("NONOGRAM_SERVER_PROTOCOL")
+NONOGRAM_SERVER_HOST = env("NONOGRAM_SERVER_HOST")
+NONOGRAM_SERVER_PORT = env("NONOGRAM_SERVER_PORT")
+FRONTEND_SERVER_PROTOCOL = env("FRONTEND_SERVER_PROTOCOL")
+FRONTEND_SERVER_HOST = env("FRONTEND_SERVER_HOST")
+FRONTEND_SERVER_PORT = env("FRONTEND_SERVER_PORT")
+
+CORS_ALLOWED_ORIGINS = [
+    f"{NONOGRAM_SERVER_PROTOCOL}://{NONOGRAM_SERVER_HOST}:{NONOGRAM_SERVER_PORT}",
+    f"{NONOGRAM_SERVER_PROTOCOL}://localhost:{NONOGRAM_SERVER_PORT}",
+    f"{FRONTEND_SERVER_PROTOCOL}://{FRONTEND_SERVER_HOST}:{FRONTEND_SERVER_PORT}",
+    f"{FRONTEND_SERVER_PROTOCOL}://localhost:{FRONTEND_SERVER_PORT}",
+]
 
 # Application definition
 
@@ -43,12 +56,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

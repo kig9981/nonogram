@@ -26,6 +26,7 @@ class GameBoardCellState(IntEnum):
     REVEALED = 1
     MARK_X = 2
     MARK_QUESTION = 3
+    MARK_WRONG = 4
 
 
 def validate_gameboard(
@@ -141,8 +142,8 @@ def validate_gameplay(
         for item in row:
             if not isinstance(item, int) and not isinstance(item, GameBoardCellState):
                 raise ValueError("Invalid gameplay(Invalid item type).")
-            if isinstance(item, int) and not (0 <= item <= 3):
-                raise ValueError("Invalid gameplay(Invalid range(0 ~ 3)).")
+            if isinstance(item, int) and not (0 <= item <= 4):
+                raise ValueError("Invalid gameplay(Invalid range(0 ~ 4)).")
 
 
 def deserialize_gameplay(
@@ -197,11 +198,11 @@ async def send_request(
     url: str,
     request: Dict[str, Any] = {},
 ) -> Dict[str, Any]:
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(trust_env=True) as session:
         if method_type == "POST":
             async with session.post(url, json=request, ssl=False) as resp:
                 if resp.status == HTTPStatus.OK:
-                    response = json.loads(await resp.json())
+                    response = await resp.json()
                     response["status_code"] = resp.status
                 else:
                     response = {
@@ -211,7 +212,7 @@ async def send_request(
         elif method_type == "GET":
             async with session.get(url, ssl=False) as resp:
                 if resp.status == HTTPStatus.OK:
-                    response = json.loads(await resp.json())
+                    response = await resp.json()
                     response["status_code"] = resp.status
                 else:
                     response = {
@@ -221,7 +222,7 @@ async def send_request(
         elif method_type == "PUT":
             async with session.put(url, json=request, ssl=False) as resp:
                 if resp.status == HTTPStatus.OK:
-                    response = json.loads(await resp.json())
+                    response = await resp.json()
                     response["status_code"] = resp.status
                 else:
                     response = {

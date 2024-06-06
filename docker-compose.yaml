@@ -23,15 +23,18 @@ services:
     environment:
       NONOGRAM_SERVER_SECRET_KEY: ${NONOGRAM_SERVER_SECRET_KEY}
       NONOGRAM_SERVER_HOST: ${NONOGRAM_SERVER_HOST}
+      API_SERVER_PROTOCOL: ${API_SERVER_PROTOCOL}
       API_SERVER_HOST: ${API_SERVER_HOST}
+      API_SERVER_PORT: ${API_SERVER_PORT}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST}
       DB_PORT: 5432
       DEBUG: ${DEBUG}
+    command: bash -c "python src/NonogramServer/manage.py runserver 0.0.0.0:8000"
     healthcheck:
-      test: curl --fail http://localhost:8000/healthcheck/ || exit 1
+      test: curl --fail http://localhost:8000/healthcheck || exit 1
       interval: 30s
       timeout: 10s
       retries: 3
@@ -51,11 +54,17 @@ services:
     container_name: ${API_SERVER_HOST}
     environment:
       API_SERVER_SECRET_KEY: ${API_SERVER_SECRET_KEY}
+      NONOGRAM_SERVER_PROTOCOL: ${NONOGRAM_SERVER_PROTOCOL}
       NONOGRAM_SERVER_HOST: ${NONOGRAM_SERVER_HOST}
+      NONOGRAM_SERVER_PORT: ${NONOGRAM_SERVER_PORT}
+      FRONTEND_SERVER_PROTOCOL: ${FRONTEND_SERVER_PROTOCOL}
+      FRONTEND_SERVER_HOST: ${FRONTEND_SERVER_HOST}
+      FRONTEND_SERVER_PORT: ${FRONTEND_SERVER_PORT}
       API_SERVER_HOST: ${API_SERVER_HOST}
       DEBUG: ${DEBUG}
+    command: bash -c "python src/ApiServer/manage.py runserver 0.0.0.0:8000"
     healthcheck:
-      test: curl --fail http://localhost:8000/healthcheck/ || exit 1
+      test: curl --fail http://localhost:8000/healthcheck || exit 1
       interval: 30s
       timeout: 10s
       retries: 3

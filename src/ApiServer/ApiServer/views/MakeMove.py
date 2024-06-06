@@ -59,7 +59,7 @@ class MakeMove(AsyncAPIView):
             return HttpResponseBadRequest(f"'{session_id}' is not valid id.")
         if not isinstance(x, int) or not isinstance(y, int):
             return HttpResponseBadRequest("Invalid coordinate(type must be integer)")
-        if not isinstance(state, int) or not (0 <= state <= 3):
+        if not isinstance(state, int) or not (0 <= state <= 4):
             return HttpResponseBadRequest("Invalid state(type must be integer)")
 
         url = f"{NONOGRAM_SERVER_URL}/sessions/{session_id}/move"
