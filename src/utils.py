@@ -26,6 +26,7 @@ class GameBoardCellState(IntEnum):
     REVEALED = 1
     MARK_X = 2
     MARK_QUESTION = 3
+    MARK_WRONG = 4
 
 
 def validate_gameboard(
