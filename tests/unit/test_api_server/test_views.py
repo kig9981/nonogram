@@ -161,6 +161,9 @@ async def test_create_new_game(
             "status_code": HTTPStatus.OK,
             "response": 0,
             "board_id": "!!!",
+            "board": [[0, 1], [1, 0]],
+            "num_row": 2,
+            "num_column": 2,
         }
     )
     response = await send_test_request(
