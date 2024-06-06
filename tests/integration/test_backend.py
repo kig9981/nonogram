@@ -128,3 +128,24 @@ def test_game(
         assert response["board"] == board
         assert response["num_row"] == num_row
         assert response["num_column"] == num_column
+
+        for move in moves:
+            x = move["x"]
+            y = move["y"]
+            state = move["state"]
+            expected_response = move["response"]
+
+            response = requests.post(
+                f"{api_server_url}/sessions/{session_id}/move",
+                json={
+                    "x": x,
+                    "y": y,
+                    "state": state,
+                }
+            )
+
+            assert response.status_code == HTTPStatus.OK
+
+            response = response.json()
+
+            assert expected_response == response["response"]
