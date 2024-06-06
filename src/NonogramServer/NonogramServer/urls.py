@@ -25,12 +25,12 @@ from .views.AddNonogramBoard import AddNonogramBoard
 from .views.Healthcheck import HealthCheck
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('healthcheck/', HealthCheck.as_view(), name="healthcheck"),
-    path("sessions/", CreateNewSession.as_view(), name="create_new_session"),
-    path("sessions/<str:session_id>/", HandleGame.as_view(), name="create_new_game/get_session_board"),
+    path('admin', admin.site.urls),
+    path('healthcheck', HealthCheck.as_view(), name="healthcheck"),
+    path("sessions", CreateNewSession.as_view(), name="create_new_session"),
+    path("sessions/<str:session_id>", HandleGame.as_view(), name="create_new_game/get_session_board"),
     path("sessions/<str:session_id>/turn/<int:game_turn>", GetNonogramPlay.as_view(), name="get_nonogram_play"),
-    path("sessions/<str:session_id>/move/", SetCellState.as_view(), name="set_cell_state"),
-    path("nonogram/", AddNonogramBoard.as_view(), name="add_nonogram_board"),
-    path("nonogram/<str:board_id>/", GetNonogramBoard.as_view(), name="get_nonogram_board"),
+    path("sessions/<str:session_id>/move", SetCellState.as_view(), name="set_cell_state"),
+    path("nonogram", AddNonogramBoard.as_view(), name="add_nonogram_board"),
+    path("nonogram/<str:board_id>", GetNonogramBoard.as_view(), name="get_nonogram_board"),
 ]

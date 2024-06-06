@@ -146,12 +146,12 @@ class NonogramGameplay:
             return False
         current_cell_state = self.playboard[x][y]
         current_cell = self.board[x][y]
-        if current_cell_state == GameBoardCellState.REVEALED:
+        if current_cell_state == GameBoardCellState.REVEALED or current_cell_state == GameBoardCellState.MARK_WRONG:
             return False
         if new_state == GameBoardCellState.REVEALED:
-            if current_cell == RealBoardCellState.BLACK:
-                return True
-            return False
+            return current_cell == RealBoardCellState.BLACK
+        elif new_state == GameBoardCellState.MARK_WRONG:
+            return current_cell == RealBoardCellState.WHITE
         return current_cell_state != new_state
 
     def save(self) -> None:

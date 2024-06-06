@@ -28,11 +28,17 @@
   flex-direction: column-reverse;
   align-items: center;
   justify-content: flex-start;
+  border-top: none;
+  border-left: 2px solid black;
+  border-bottom: 2px solid black;
+  border-right: none;
+  padding-bottom: 3px;
 }
 
 .hint-num {
   font-size: calc(var(--cell_size) * 7 / 10);
   line-height: calc(var(--cell_size) * 3 / 5);
+  user-select: none;
 }
 
 .hints-column {
@@ -42,17 +48,24 @@
 }
 
 .hint-row {
+  flex: 1;
   height: var(--cell_size);
   display: flex;
   gap: 3px;
   justify-content: flex-start;
   align-items: center;
   flex-direction: row-reverse;
+  border-top: 2px solid black;
+  border-left: none;
+  border-bottom: none;
+  border-right: 2px solid black;
+  padding-right: 3px;
 }
 
 .hint-row .hint-num {
   font-size: calc(var(--cell_size) * 7 / 10);
   line-height: calc(var(--cell_size) * 3 / 5);
+  user-select: none;
 }
 
 .game-board {
@@ -62,6 +75,14 @@
 
 .game-row {
   display: flex;
+}
+
+.game-row:nth-child(1) {
+  border-top: 4px solid black;
+}
+
+.game-row:nth-child(5n + 6) {
+  border-top: 3px solid black;
 }
 
 .game-cell {
@@ -76,8 +97,22 @@
   position: relative;
 }
 
+.game-cell:nth-child(1) {
+  border-left: 4px solid black;
+}
+
+.game-cell:nth-child(5n + 6) {
+  border-left: 3px solid black;
+}
+
 .game-cell.marked {
   background-color: black;
+}
+
+.cell-content.red-marked {
+  font-size: calc(var(--cell_size) * 4 / 5);
+  line-height: var(--cell_size);
+  color: red;
 }
 
 .cell-content.x {
