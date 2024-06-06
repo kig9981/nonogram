@@ -16,8 +16,8 @@ synchronize = Synchronize.as_view()
 make_move = MakeMove.as_view()
 create_new_session = CreateNewSession.as_view()
 create_new_game = CreateNewGame.as_view()
-
 session_id = str(uuid.uuid4())
+
 
 @pytest.mark.asyncio
 async def test_get_nonogram_board(

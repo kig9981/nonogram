@@ -1,4 +1,3 @@
-import json
 from .configure import NONOGRAM_SERVER_URL
 from drfasyncview import AsyncAPIView
 from django.http import HttpRequest

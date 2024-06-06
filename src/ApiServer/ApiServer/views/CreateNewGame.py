@@ -41,7 +41,7 @@ class CreateNewGame(AsyncAPIView):
             session_id=session_id,
             force_new_game=False,
         )
-    
+
     async def put(
         self,
         request: HttpRequest,
@@ -52,7 +52,7 @@ class CreateNewGame(AsyncAPIView):
             session_id=session_id,
             force_new_game=True,
         )
-        
+
     async def _create_new_game(
         self,
         request: HttpRequest,
@@ -97,4 +97,3 @@ class CreateNewGame(AsyncAPIView):
             return HttpResponseNotFound(response["response"])
         else:
             return HttpResponseServerError("unknown error")
-
