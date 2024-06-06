@@ -54,10 +54,11 @@ class AddNonogramBoard(AsyncAPIView):
         try:
             board_image_data = base64.b64decode(base64_board_data)
             board_image = Image.open(io.BytesIO(board_image_data))
-
-            board_image.load()
             board_image.verify()
-        except (ValueError, UnidentifiedImageError):
+
+            board_image = Image.open(io.BytesIO(board_image_data))
+            board_image.load()
+        except Exception:
             return HttpResponseBadRequest("invalid image data.")
 
         board_id = str(uuid.uuid4())
