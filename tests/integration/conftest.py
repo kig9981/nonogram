@@ -1,18 +1,15 @@
 import os
+import json
 import pytest
 import requests
-import docker
 import psycopg2
 from http import HTTPStatus
 from psycopg2 import OperationalError
 
 
-cwd = os.path.dirname(__file__)
-env_path = os.path.join(cwd, '.env')
-
-
-@pytest.fixture(scope='session')
 def load_env():
+    cwd = os.path.dirname(__file__)
+    env_path = os.path.join(cwd, 'test.env')
     if os.path.exists(env_path):
         with open(env_path) as f:
             for line in f:
@@ -21,43 +18,47 @@ def load_env():
                     os.environ[key] = value
 
 
+def pytest_configure():
+    load_env()
+
+
 @pytest.fixture(scope="session")
-def db_name(load_env):
+def db_name():
     return os.environ["DB_NAME"]
 
 
 @pytest.fixture(scope="session")
-def db_user(load_env):
+def db_user():
     return os.environ["DB_USER"]
 
 
 @pytest.fixture(scope="session")
-def db_password(load_env):
+def db_password():
     return os.environ["DB_PASSWORD"]
 
 
 @pytest.fixture(scope="session")
-def db_host(load_env):
+def db_host():
     return os.environ["DB_HOST"]
 
 
 @pytest.fixture(scope="session")
-def db_port(load_env):
+def db_port():
     return os.environ["DB_PORT"]
 
 
 @pytest.fixture(scope="session")
-def api_server_protocol(load_env):
+def api_server_protocol():
     return os.environ["API_SERVER_PROTOCOL"]
 
 
 @pytest.fixture(scope="session")
-def api_server_port(load_env):
+def api_server_port():
     return os.environ["API_SERVER_PORT"]
 
 
 @pytest.fixture(scope="session")
-def api_server_host(load_env):
+def api_server_host():
     return os.environ["API_SERVER_HOST"]
 
 
@@ -70,17 +71,17 @@ def api_server_url(
 
 
 @pytest.fixture(scope="session")
-def nonogram_server_protocol(load_env):
+def nonogram_server_protocol():
     return os.environ["NONOGRAM_SERVER_PROTOCOL"]
 
 
 @pytest.fixture(scope="session")
-def nonogram_server_port(load_env):
+def nonogram_server_port():
     return os.environ["NONOGRAM_SERVER_PORT"]
 
 
 @pytest.fixture(scope="session")
-def nonogram_server_host(load_env):
+def nonogram_server_host():
     return os.environ["NONOGRAM_SERVER_HOST"]
 
 
@@ -118,7 +119,7 @@ def testdb_healthcheck(
 def testapiserver_healthcheck(
     api_server_url: str,
 ) -> bool:
-    apiserver_healthcheck_url = f"{api_server_url}/healthcheck/"
+    apiserver_healthcheck_url = f"{api_server_url}/healthcheck"
 
     try:
         response = requests.get(apiserver_healthcheck_url)
@@ -131,7 +132,7 @@ def testapiserver_healthcheck(
 def testnonogramserver_healthcheck(
     nonogram_server_url: str,
 ) -> bool:
-    nonogramserver_healthcheck_url = f"{nonogram_server_url}/healthcheck/"
+    nonogramserver_healthcheck_url = f"{nonogram_server_url}/healthcheck"
 
     try:
         response = requests.get(nonogramserver_healthcheck_url)
@@ -143,7 +144,6 @@ def testnonogramserver_healthcheck(
 
 @pytest.fixture(scope='session')
 def load_servers(
-    load_env,
     docker_services,
     db_name: str,
     db_user: str,
@@ -179,17 +179,6 @@ def load_servers(
         check=lambda: testnonogramserver_healthcheck(
             nonogram_server_url,
         ),
-    )
-
-    client = docker.from_env()
-
-    nonogram_server = client.containers.get(nonogram_server_host)
-    nonogram_server.exec_run(
-        "python src/NonogramServer/manage.py makemigrations"
-    )
-
-    nonogram_server.exec_run(
-        "python src/NonogramServer/manage.py migrate"
     )
 
 

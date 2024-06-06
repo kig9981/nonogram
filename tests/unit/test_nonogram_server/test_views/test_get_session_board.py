@@ -1,15 +1,13 @@
 import pytest
-import json
 import uuid
 from typing import Any
 from typing import List
 from typing import Dict
 from http import HTTPStatus
-from NonogramServer.models import NonogramBoard
-from NonogramServer.models import Session
 from NonogramServer.views.HandleGame import HandleGame
 from django.test.client import RequestFactory
 from ...util import send_test_request
+
 
 SESSION_ID_UNUSED_FOR_TEST = str(uuid.uuid4())
 INCORRECT_ID = "xxxxxxx"
@@ -17,7 +15,9 @@ BOARD_QUERY = 0
 GAME_NOT_START = 0
 INVALID_GAME_TURN = -2
 
+
 get_session_board = HandleGame.as_view()
+
 
 def get_url(session_id):
     return f"/nonogram/{session_id}/"
