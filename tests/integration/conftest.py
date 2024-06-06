@@ -7,7 +7,6 @@ from http import HTTPStatus
 from psycopg2 import OperationalError
 
 
-@pytest.fixture(scope='session')
 def load_env():
     cwd = os.path.dirname(__file__)
     env_path = os.path.join(cwd, 'test.env')
@@ -19,43 +18,47 @@ def load_env():
                     os.environ[key] = value
 
 
+def pytest_configure():
+    load_env()
+
+
 @pytest.fixture(scope="session")
-def db_name(load_env):
+def db_name():
     return os.environ["DB_NAME"]
 
 
 @pytest.fixture(scope="session")
-def db_user(load_env):
+def db_user():
     return os.environ["DB_USER"]
 
 
 @pytest.fixture(scope="session")
-def db_password(load_env):
+def db_password():
     return os.environ["DB_PASSWORD"]
 
 
 @pytest.fixture(scope="session")
-def db_host(load_env):
+def db_host():
     return os.environ["DB_HOST"]
 
 
 @pytest.fixture(scope="session")
-def db_port(load_env):
+def db_port():
     return os.environ["DB_PORT"]
 
 
 @pytest.fixture(scope="session")
-def api_server_protocol(load_env):
+def api_server_protocol():
     return os.environ["API_SERVER_PROTOCOL"]
 
 
 @pytest.fixture(scope="session")
-def api_server_port(load_env):
+def api_server_port():
     return os.environ["API_SERVER_PORT"]
 
 
 @pytest.fixture(scope="session")
-def api_server_host(load_env):
+def api_server_host():
     return os.environ["API_SERVER_HOST"]
 
 
@@ -68,17 +71,17 @@ def api_server_url(
 
 
 @pytest.fixture(scope="session")
-def nonogram_server_protocol(load_env):
+def nonogram_server_protocol():
     return os.environ["NONOGRAM_SERVER_PROTOCOL"]
 
 
 @pytest.fixture(scope="session")
-def nonogram_server_port(load_env):
+def nonogram_server_port():
     return os.environ["NONOGRAM_SERVER_PORT"]
 
 
 @pytest.fixture(scope="session")
-def nonogram_server_host(load_env):
+def nonogram_server_host():
     return os.environ["NONOGRAM_SERVER_HOST"]
 
 
@@ -141,7 +144,6 @@ def testnonogramserver_healthcheck(
 
 @pytest.fixture(scope='session')
 def load_servers(
-    load_env,
     docker_services,
     db_name: str,
     db_user: str,
