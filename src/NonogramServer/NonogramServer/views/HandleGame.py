@@ -37,7 +37,7 @@ class HandleGame(AsyncAPIView):
     ) -> HttpResponse:
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
-        
+
         try:
             session_data = await async_get_from_db(
                 model_class=Session,
@@ -47,12 +47,12 @@ class HandleGame(AsyncAPIView):
             )
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
-        
-        board_data = session_data.board_data
-        
+
+        board_data = session_data.board_dat
+
         if board_data is None:
             return HttpResponseNotFound("board data not found.")
-        
+
         response_data = {
             "board": deserialize_gameboard(board_data.board),
             "num_row": board_data.num_row,
@@ -71,7 +71,7 @@ class HandleGame(AsyncAPIView):
             session_id=session_id,
             force_new_game=False,
         )
-    
+
     async def put(
         self,
         request: HttpRequest,
