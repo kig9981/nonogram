@@ -70,6 +70,7 @@ def test_game(
     nonogram_server_url: str,
     backend_testdatas: List[Dict[str, Any]],
 ):
+    NEW_GAME_STARTED = 1
     for test_data in backend_testdatas:
         board = test_data["board"]
         moves = test_data["moves"]
@@ -100,3 +101,30 @@ def test_game(
         response = response.json()
 
         board_id = response["board_id"]
+
+        response = requests.post(
+            f"{api_server_url}/sessions",
+        )
+
+        assert response.status_code == HTTPStatus.OK
+
+        response = response.json()
+
+        session_id = response["session_id"]
+
+        response = requests.post(
+            f"{api_server_url}/sessions/{session_id}",
+            json={
+                "board_id": board_id,
+            }
+        )
+
+        assert response.status_code == HTTPStatus.OK
+
+        response = response.json()
+
+        assert response["response"] == NEW_GAME_STARTED
+        assert response["board_id"] == board_id
+        assert response["board"] == board
+        assert response["num_row"] == num_row
+        assert response["num_column"] == num_column
