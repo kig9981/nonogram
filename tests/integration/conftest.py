@@ -7,16 +7,6 @@ from http import HTTPStatus
 from psycopg2 import OperationalError
 
 
-@pytest.fixture(scope="session")
-def backend_testdatas():
-    cwd = os.path.dirname(__file__)
-    test_data_path = os.path.join(cwd, 'backend_testdata.json')
-    with open(test_data_path, 'r') as f:
-        test_datas = json.load(f)
-
-    return test_datas
-
-
 @pytest.fixture(scope='session')
 def load_env():
     cwd = os.path.dirname(__file__)
