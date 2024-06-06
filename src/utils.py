@@ -142,8 +142,8 @@ def validate_gameplay(
         for item in row:
             if not isinstance(item, int) and not isinstance(item, GameBoardCellState):
                 raise ValueError("Invalid gameplay(Invalid item type).")
-            if isinstance(item, int) and not (0 <= item <= 3):
-                raise ValueError("Invalid gameplay(Invalid range(0 ~ 3)).")
+            if isinstance(item, int) and not (0 <= item <= 4):
+                raise ValueError("Invalid gameplay(Invalid range(0 ~ 4)).")
 
 
 def deserialize_gameplay(
