@@ -19,23 +19,21 @@ def image_datas():
     return [b64_image]
 
 
-def test(
+def test_add_new_board(
     load_servers,
     api_server_url: str,
     nonogram_server_url: str,
     image_datas: List[str],
 ):
-    response = requests.get(f"{api_server_url}/healthcheck/")
+    response = requests.get(f"{api_server_url}/healthcheck")
     assert response.status_code == HTTPStatus.OK
 
-    response = requests.get(f"{nonogram_server_url}/healthcheck/")
+    response = requests.get(f"{nonogram_server_url}/healthcheck")
     assert response.status_code == HTTPStatus.OK
-
-    board_id_list = []
 
     for b64_image in image_datas:
         response = requests.post(
-            f"{nonogram_server_url}/add_nonogram_board/",
+            f"{nonogram_server_url}/nonogram",
             json={
                 "board": b64_image,
                 "num_row": 20,
@@ -50,10 +48,8 @@ def test(
 
         board_id = response["board_id"]
 
-        board_id_list.append(board_id)
-
         response = requests.post(
-            f"{nonogram_server_url}/get_nonogram_board/",
+            f"{nonogram_server_url}/nonogram/{board_id}",
             json={
                 "session_id": 0,
                 "board_id": board_id,
