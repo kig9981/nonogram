@@ -9,7 +9,7 @@ const Home: React.FC = () => {
     const createSession = async () => {
         try {
             console.log(api_server_url);
-            const response = await fetch(api_server_url + `/sessions`, {
+            const response = await fetch(`${api_server_url}/sessions`, {
                 method: 'POST',
             });
             const jsonData = await response.json();
