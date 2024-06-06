@@ -41,7 +41,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
     const [rowHints, setRowHints] = useState<number[][]>([]);
     const [colHints, setColHints] = useState<number[][]>([]);
     const [isGameFinished, setIsGameFinished] = useState<Boolean>(false);
-    
+    let unrevealed_counter = gameBoard.flat().filter(cell => cell === BLACK).length;
 
     useEffect(() => {
         setRowHints(generateHints(gameBoard, 'row'));
@@ -104,12 +104,27 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
         return hints;
     };
 
+    const finishGame = () => {
+        const newBoard = board.map((r, rowIndex) =>
+            r.map((c, colIndex) => {
+                if (gameBoard[rowIndex][colIndex] === WHITE && c !== MARK_WRONG) {
+                    sendClickMessage(rowIndex, colIndex, MARK_X);
+                    return MARK_X;
+                }
+                return c;
+            })
+        );
+        setBoard(newBoard);
+    }
+
     const handleLeftClick = (row: number, col: number) => {
+        if (isGameFinished) return;
         const newBoard = board.map((r, rowIndex) =>
             r.map((c, colIndex) => {
                 if (rowIndex === row && colIndex === col) {
                     if (gameBoard[rowIndex][colIndex] === BLACK) {
                         sendClickMessage(rowIndex, colIndex, REVEALED);
+                        unrevealed_counter -= 1;
                         return c = REVEALED;
                     }
                     else if (c !== MARK_WRONG) {
@@ -121,10 +136,15 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
             })
         );
         setBoard(newBoard);
+        if (unrevealed_counter === 0) {
+            setIsGameFinished(true);
+            finishGame();
+        }
     };
 
     const handleRightClick = (row: number, col: number, e: MouseEvent) => {
         e.preventDefault();
+        if (isGameFinished) return;
         const newBoard = board.map((r, rowIndex) =>
             r.map((c, colIndex) => {
                 if (rowIndex === row && colIndex === col) {
