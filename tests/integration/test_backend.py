@@ -80,7 +80,7 @@ def test_game(
 
         for x in range(num_row):
             for y in range(num_column):
-                board_image.putpixel((x, y), (1-board[x][y])*255)
+                board_image.putpixel((x, y), (1 - board[x][y]) * 255)
 
         byte_image = io.BytesIO()
         board_image.save(byte_image, "PNG")
