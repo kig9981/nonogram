@@ -3,7 +3,7 @@ __pycache__
 .pytest_cache
 db.*
 .nonogram_pgpass
-*.env
+.env
 migrations/
 poetry.lock
 
