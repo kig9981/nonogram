@@ -41,14 +41,14 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
     const [rowHints, setRowHints] = useState<number[][]>([]);
     const [colHints, setColHints] = useState<number[][]>([]);
     const [isGameFinished, setIsGameFinished] = useState<Boolean>(false);
-    let unrevealed_counter = gameBoard.flat().filter(cell => cell === BLACK).length;
+    const [unrevealedCounter, setUnrevealedCounter] = useState<number>(gameBoard.flat().filter(cell => cell === BLACK).length);
 
     useEffect(() => {
         setRowHints(generateHints(gameBoard, 'row'));
         setColHints(generateHints(gameBoard, 'col'));
     }, []);
 
-    const sendClickMessage = async (x: Number, y: Number, state: PlayCellState) => {
+    const sendClickMessage = async (x: number, y: number, state: PlayCellState) => {
         const response = await fetch(`${api_server_url}/sessions/${sessionId}/move`, {
             method: 'POST',
             headers: {
@@ -61,7 +61,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
         }
         else {
             const jsonData = await response.json();
-            const responseCode: Number = jsonData.response;
+            const responseCode: number = jsonData.response;
             console.log(JSON.stringify({"x": x, "y": y, "state": state, "response": responseCode}));
             return responseCode;
         }
@@ -111,6 +111,10 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
                     sendClickMessage(rowIndex, colIndex, MARK_X);
                     return MARK_X;
                 }
+                else if (gameBoard[rowIndex][colIndex] === BLACK) {
+                    sendClickMessage(rowIndex, colIndex, REVEALED);
+                    return REVEALED;
+                }
                 return c;
             })
         );
@@ -124,7 +128,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
                 if (rowIndex === row && colIndex === col) {
                     if (gameBoard[rowIndex][colIndex] === BLACK) {
                         sendClickMessage(rowIndex, colIndex, REVEALED);
-                        unrevealed_counter -= 1;
+                        setUnrevealedCounter(unrevealedCounter - 1);
                         return c = REVEALED;
                     }
                     else if (c !== MARK_WRONG) {
@@ -136,7 +140,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
             })
         );
         setBoard(newBoard);
-        if (unrevealed_counter === 0) {
+        if (unrevealedCounter === 0) {
             setIsGameFinished(true);
             finishGame();
         }
