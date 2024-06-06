@@ -11,7 +11,7 @@ const Session: React.FC = () => {
     const [isGameStarted, setIsGameStarted] = useState(false);
 
     const startNewGame = async () => {
-        const response = await fetch(api_server_url + `/sessions/${sessionId}`, {
+        const response = await fetch(`${api_server_url}/sessions/${sessionId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -35,9 +35,9 @@ const Session: React.FC = () => {
         <button onClick={startNewGame} className="new-game-button">
             새 게임하기
         </button>
-        {isGameStarted && (
+        {isGameStarted && sessionId && (
             <div className="gameboard-container">
-            <GameBoard key={gameKey} gameBoard={gameBoard} />
+            <GameBoard key={gameKey} sessionId={sessionId} gameBoard={gameBoard} />
             </div>
         )}
         </div>
