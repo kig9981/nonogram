@@ -8,10 +8,6 @@ from http import HTTPStatus
 from psycopg2 import OperationalError
 
 
-cwd = os.path.dirname(__file__)
-env_path = os.path.join(cwd, '.env')
-
-
 @pytest.fixture(scope="session")
 def backend_testdatas():
     cwd = os.path.dirname(__file__)
@@ -24,6 +20,8 @@ def backend_testdatas():
 
 @pytest.fixture(scope='session')
 def load_env():
+    cwd = os.path.dirname(__file__)
+    env_path = os.path.join(cwd, 'test.env')
     if os.path.exists(env_path):
         with open(env_path) as f:
             for line in f:
