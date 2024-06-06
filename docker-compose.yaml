@@ -32,15 +32,15 @@ services:
       DB_HOST: ${DB_HOST}
       DB_PORT: 5432
       DEBUG: ${DEBUG}
-    command: bash -c "python src/NonogramServer/manage.py runserver 0.0.0.0:8000"
+    command: bash -c "python src/NonogramServer/manage.py runserver 0.0.0.0:${NONOGRAM_SERVER_PORT}"
     healthcheck:
-      test: curl --fail http://localhost:8000/healthcheck || exit 1
+      test: curl --fail http://localhost:${NONOGRAM_SERVER_PORT}/healthcheck || exit 1
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
     ports:
-      - "${NONOGRAM_SERVER_PORT}:8000"
+      - "${NONOGRAM_SERVER_PORT}:${NONOGRAM_SERVER_PORT}"
     networks:
       - nonogram_net
     depends_on:
@@ -62,15 +62,15 @@ services:
       FRONTEND_SERVER_PORT: ${FRONTEND_SERVER_PORT}
       API_SERVER_HOST: ${API_SERVER_HOST}
       DEBUG: ${DEBUG}
-    command: bash -c "python src/ApiServer/manage.py runserver 0.0.0.0:8000"
+    command: bash -c "python src/ApiServer/manage.py runserver 0.0.0.0:${API_SERVER_PORT}"
     healthcheck:
-      test: curl --fail http://localhost:8000/healthcheck || exit 1
+      test: curl --fail http://localhost:${API_SERVER_PORT}/healthcheck || exit 1
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
     ports:
-      - "${API_SERVER_PORT}:8000"
+      - "${API_SERVER_PORT}:${API_SERVER_PORT}"
     networks:
       - nonogram_net
     env_file:
