@@ -1,5 +1,6 @@
 import React, { useState, useEffect, MouseEvent } from 'react';
 import './GameBoard.css';
+import {api_server_url} from '../utils/links'
 
 const NOT_SELECTED = 0;
 const REVEALED = 1;
@@ -28,10 +29,11 @@ export type { GameCellState };
 export type { GameBoardState };
 
 interface GameBoardProps {
+    sessionId: string,
     gameBoard: GameBoardState;
 }
 
-const GameBoard: React.FC<GameBoardProps> = ({ gameBoard }) => {
+const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
     const numRow = gameBoard.length;
     const numCol = gameBoard[0].length;
     const initialBoard: PlayBoardState = Array(numRow).fill(null).map(() => Array(numCol).fill(NOT_SELECTED));
@@ -43,6 +45,26 @@ const GameBoard: React.FC<GameBoardProps> = ({ gameBoard }) => {
         setRowHints(generateHints(gameBoard, 'row'));
         setColHints(generateHints(gameBoard, 'col'));
     }, []);
+
+    const sendClickMessage = async (x: Number, y: Number, state: PlayCellState) => {
+        const response = await fetch(`${api_server_url}/sessions/${sessionId}/move`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ "x": x, "y": y, "state": state }),
+        });
+        if (!response.ok) {
+            alert("서버가 응답하지 않습니다.")
+        }
+        else {
+            const jsonData = await response.json();
+            const responseCode: Number = jsonData.response;
+            console.log(JSON.stringify({"x": x, "y": y, "state": state, "response": responseCode}));
+            return responseCode;
+        }
+        return 3;
+    }
 
     const generateHints = (board: GameBoardState, type: 'row' | 'col'): number[][] => {
         const hints: number[][] = [];
@@ -85,10 +107,11 @@ const GameBoard: React.FC<GameBoardProps> = ({ gameBoard }) => {
             r.map((c, colIndex) => {
                 if (rowIndex === row && colIndex === col) {
                     if (gameBoard[rowIndex][colIndex] === BLACK) {
+                        sendClickMessage(rowIndex, colIndex, REVEALED);
                         return c = REVEALED;
                     }
                     else if (c !== MARK_WRONG) {
-                        alert("Incorrect!");
+                        sendClickMessage(rowIndex, colIndex, MARK_WRONG);
                         return c = MARK_WRONG;
                     }
                 }
@@ -104,10 +127,13 @@ const GameBoard: React.FC<GameBoardProps> = ({ gameBoard }) => {
             r.map((c, colIndex) => {
                 if (rowIndex === row && colIndex === col) {
                     if (c === MARK_X) {
+                        sendClickMessage(rowIndex, colIndex, MARK_QUESTION);
                         return MARK_QUESTION;
                     } else if (c === MARK_QUESTION) {
+                        sendClickMessage(rowIndex, colIndex, NOT_SELECTED);
                         return NOT_SELECTED;
                     } else if (c === NOT_SELECTED) {
+                        sendClickMessage(rowIndex, colIndex, MARK_X);
                         return MARK_X;
                     }
                 }
@@ -150,7 +176,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ gameBoard }) => {
                             >
                                 {cell !== REVEALED && cell !== NOT_SELECTED && (
                                     <span className={`cell-content ${CellStateToStr[cell]}`}>
-                                        {cell === MARK_X || cell == MARK_WRONG ? 'X' : cell === MARK_QUESTION ? '?' : ''}
+                                        {cell === MARK_X || cell === MARK_WRONG ? 'X' : cell === MARK_QUESTION ? '?' : ''}
                                     </span>
                                 )}
                             </div>
