@@ -1,20 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import {api_server_url} from '../utils/links'
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
+    const [sessionId, setSessionId] = useState<string | null>(null);
 
     const createSession = async () => {
         try {
             console.log(api_server_url);
             const response = await fetch(`${api_server_url}/sessions`, {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ "session_id": sessionId }),
             });
             const jsonData = await response.json();
-            console.log(jsonData);
-            navigate('/' + jsonData.session_id);
+            // console.log(jsonData);
+            const session_id = jsonData.session_id as string;
+            setSessionId(session_id);
+            // console.log(session_id);
+            navigate('/session', { state: { sessionId: session_id } });
         }
         catch (error) {
             console.error('Fetch error:', error);

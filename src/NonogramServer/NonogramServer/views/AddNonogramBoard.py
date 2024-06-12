@@ -11,7 +11,6 @@ from ..models import NonogramBoard
 from utils import RealBoardCellState
 from utils import is_base64
 from PIL import Image
-from PIL import UnidentifiedImageError
 
 
 class AddNonogramBoard(AsyncAPIView):
