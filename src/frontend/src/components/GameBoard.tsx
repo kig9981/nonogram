@@ -65,6 +65,12 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
         
     }, [sessionId]);
 
+    useEffect(() => {
+        if (isGameFinished) {
+            finishGame();
+        }
+    }, [isGameFinished]);
+
     const sendClickMessage = async (x: number, y: number, state: PlayCellState) => {
         const response = await fetch(`${api_server_url}/sessions/${sessionId}/move`, {
             method: 'POST',
@@ -147,7 +153,11 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
                     if (gameBoard[rowIndex][colIndex] === BLACK) {
                         if (c !== REVEALED) {
                             sendClickMessage(rowIndex, colIndex, REVEALED);
+                            if (unrevealedCounter === 1) {
+                                setIsGameFinished(true);
+                            }
                             setUnrevealedCounter(unrevealedCounter - 1);
+                            
                         }
                         return c = REVEALED;
                     }
@@ -160,10 +170,6 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
             })
         );
         setBoard(newBoard);
-        if (unrevealedCounter === 0) {
-            setIsGameFinished(true);
-            finishGame();
-        }
     };
 
     const handleRightClick = (row: number, col: number, e: MouseEvent) => {
