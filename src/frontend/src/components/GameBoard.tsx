@@ -140,11 +140,11 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
         const newBoard = board.map((r, rowIndex) =>
             r.map((c, colIndex) => {
                 if (gameBoard[rowIndex][colIndex] === WHITE && c !== MARK_WRONG) {
-                    sendClickMessage(rowIndex, colIndex, MARK_X);
+                    // sendClickMessage(rowIndex, colIndex, MARK_X);
                     return MARK_X;
                 }
                 else if (gameBoard[rowIndex][colIndex] === BLACK) {
-                    sendClickMessage(rowIndex, colIndex, REVEALED);
+                    // sendClickMessage(rowIndex, colIndex, REVEALED);
                     return REVEALED;
                 }
                 return c;
