@@ -44,9 +44,16 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
     const [rowHints, setRowHints] = useState<number[][]>([]);
     const [colHints, setColHints] = useState<number[][]>([]);
     const [isGameFinished, setIsGameFinished] = useState<Boolean>(false);
+    const [isInitialized, setIsInitialized] = useState<Boolean>(false);
     const [unrevealedCounter, setUnrevealedCounter] = useState<number>(gameBoard.flat().filter(cell => cell === BLACK).length);
 
+    useEffect(() => setIsInitialized(true), []);
+
     useEffect(() => {
+        if (!isInitialized) {
+            return;
+        }
+        console.log("initializeBoard");
         const initializeBoard = async () => {
             setRowHints(generateHints(gameBoard, 'row'));
             setColHints(generateHints(gameBoard, 'col'));
@@ -64,22 +71,19 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
         };
 
         initializeBoard();
-        
-    }, [sessionId]);
+    }, [isInitialized]);
 
     useEffect(() => {
+        console.log("isGameFinished changed");
         if (isGameFinished) {
             finishGame();
         }
     }, [isGameFinished]);
 
-    useEffect(() => {
-        if (unrevealedCounter === 0) {
-            setIsGameFinished(true);
-        }
-    }, [unrevealedCounter]);
+    useEffect(() => setIsGameFinished(isGameFinished || unrevealedCounter === 0), [unrevealedCounter]);
 
     const sendClickMessage = async (x: number, y: number, state: PlayCellState) => {
+        console.log("sendClickMessage");
         const response = await fetch(`${api_server_url}/sessions/${sessionId}/move`, {
             method: 'POST',
             headers: {
@@ -102,6 +106,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
 
     const generateHints = (board: GameBoardState, type: 'row' | 'col'): number[][] => {
         const hints: number[][] = [];
+        console.log("generateHints");
         if (type === 'row') {
         for (let row of board) {
             const hint: number[] = [];
@@ -137,6 +142,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
     };
 
     const finishGame = () => {
+        console.log("finishGame");
         const newBoard = board.map((r, rowIndex) =>
             r.map((c, colIndex) => {
                 if (gameBoard[rowIndex][colIndex] === WHITE && c !== MARK_WRONG) {
@@ -155,6 +161,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
 
     const handleLeftClick = (row: number, col: number) => {
         if (isGameFinished) return;
+        console.log("handleLightClick");
         const newBoard = board.map((r, rowIndex) =>
             r.map((c, colIndex) => {
                 if (rowIndex === row && colIndex === col) {
@@ -180,6 +187,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
     const handleRightClick = (row: number, col: number, e: MouseEvent) => {
         e.preventDefault();
         if (isGameFinished) return;
+        console.log("handleRightClick");
         const newBoard = board.map((r, rowIndex) =>
             r.map((c, colIndex) => {
                 if (rowIndex === row && colIndex === col) {
