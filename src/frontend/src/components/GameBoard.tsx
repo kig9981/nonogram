@@ -1,4 +1,5 @@
 import React, { useState, useEffect, MouseEvent } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './GameBoard.css';
 import {api_server_url} from '../utils/links'
 
@@ -34,6 +35,8 @@ interface GameBoardProps {
 }
 
 const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const numRow = gameBoard.length;
     const numCol = gameBoard[0].length;
     const initialBoard: PlayBoardState = Array(numRow).fill(null).map(() => Array(numCol).fill(NOT_SELECTED));
@@ -44,9 +47,23 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
     const [unrevealedCounter, setUnrevealedCounter] = useState<number>(gameBoard.flat().filter(cell => cell === BLACK).length);
 
     useEffect(() => {
-        setRowHints(generateHints(gameBoard, 'row'));
-        setColHints(generateHints(gameBoard, 'col'));
-    }, []);
+        const initializeBoard = async () => {
+            setRowHints(generateHints(gameBoard, 'row'));
+            setColHints(generateHints(gameBoard, 'col'));
+            const response = await fetch(`${api_server_url}/sessions/${sessionId}/play`);
+            console.log(response);
+            if (response.ok) {
+                const jsonData = await response.json();
+                setBoard(jsonData.board);
+            }
+            else {
+                console.log(await response.text());
+            }
+        };
+
+        initializeBoard();
+        
+    }, [sessionId]);
 
     const sendClickMessage = async (x: number, y: number, state: PlayCellState) => {
         const response = await fetch(`${api_server_url}/sessions/${sessionId}/move`, {
@@ -58,6 +75,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
         });
         if (!response.ok) {
             alert("서버가 응답하지 않습니다.")
+            console.log(await response.text());
         }
         else {
             const jsonData = await response.json();
