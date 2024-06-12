@@ -1,14 +1,53 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameBoard, { GameBoardState, GameCellState } from './GameBoard';
 import './Session.css';
 import {api_server_url} from '../utils/links'
 
+
 const Session: React.FC = () => {
-    const { sessionId } = useParams<{ sessionId: string }>();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const state = location.state as { sessionId?: string }
     const [gameKey, setGameKey] = useState(0);
     const [gameBoard, setGameBoard] = useState(Array(1).fill(null).map(() => Array(1).fill(1)));
     const [isGameStarted, setIsGameStarted] = useState(false);
+    const [sessionId, setSessionId] = useState<string | null>(null);
+
+    useEffect(() => {
+        console.log("Session entered");
+        console.log(`sessionId: ${sessionId}`);
+        console.log(`given sessionId: ${state.sessionId}`);
+        const initializeSession = async () => {
+            try {
+                if (!state.sessionId && sessionId === "") {
+                    navigate("/");
+                }
+                if(state.sessionId && sessionId === "") {
+                    setSessionId(state.sessionId);
+                }
+                const response = await fetch(`${api_server_url}/sessions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ "session_id": sessionId }),
+                });
+                if (!response.ok) {
+                    alert("서버가 응답하지 않습니다.");
+                    navigate("/");
+                }
+                const jsonData = await response.json();
+                setSessionId(jsonData.session_id);
+            }
+            catch (error) {
+                alert("unknown error");
+                navigate("/");
+            }
+        }
+
+        initializeSession();
+    }, [navigate]);
 
     const startNewGame = async () => {
         const response = await fetch(`${api_server_url}/sessions/${sessionId}`, {
