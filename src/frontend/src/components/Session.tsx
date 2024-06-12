@@ -10,9 +10,21 @@ const Session: React.FC = () => {
     const location = useLocation();
     const state = location.state as { sessionId?: string }
     const [gameKey, setGameKey] = useState(0);
-    const [gameBoard, setGameBoard] = useState(Array(1).fill(null).map(() => Array(1).fill(1)));
-    const [isGameStarted, setIsGameStarted] = useState(false);
-    const [sessionId, setSessionId] = useState<string | null>(null);
+    const [gameBoard, setGameBoard] = useState(() => {
+        const savedGameBoard = sessionStorage.getItem('gameBoard');
+        if (savedGameBoard) {
+            return JSON.parse(savedGameBoard);
+        }
+        return Array(1).fill(null).map(() => Array(1).fill(1));
+    });
+    const [isGameStarted, setIsGameStarted] = useState(() => {
+        const savedIsGameStarted = sessionStorage.getItem('isGameStarted');
+        if (savedIsGameStarted) {
+            return JSON.parse(savedIsGameStarted);
+        }
+        return false;
+    });
+    const [sessionId, setSessionId] = useState<string>(() => sessionStorage.getItem('sessionId') || "");
 
     useEffect(() => {
         console.log("Session entered");
@@ -44,10 +56,13 @@ const Session: React.FC = () => {
                 alert("unknown error");
                 navigate("/");
             }
-        }
-
+        };
         initializeSession();
     }, [navigate]);
+
+    useEffect(() => sessionStorage.setItem('sessionId', sessionId), [sessionId]);
+    useEffect(() => sessionStorage.setItem('isGameStarted', JSON.stringify(isGameStarted)), [isGameStarted]);
+    useEffect(() => sessionStorage.setItem('gameBoard', JSON.stringify(gameBoard)), [gameBoard]);
 
     const startNewGame = async () => {
         const response = await fetch(`${api_server_url}/sessions/${sessionId}`, {
