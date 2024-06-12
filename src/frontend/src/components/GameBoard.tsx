@@ -74,7 +74,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
     }, [isInitialized]);
 
     useEffect(() => {
-        console.log("isGameFinished changed");
+        console.log(`isGameFinished changed to ${isGameFinished ? "true":"false"}`);
         if (isGameFinished) {
             finishGame();
         }
