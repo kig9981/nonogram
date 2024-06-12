@@ -24,9 +24,16 @@ const Session: React.FC = () => {
         }
         return false;
     });
-    const [sessionId, setSessionId] = useState<string>(() => sessionStorage.getItem('sessionId') || "");
+    const [sessionId, setSessionId] = useState<string | null>(() => sessionStorage.getItem('sessionId'));
+    const [isInitialized, setIsInitialized] = useState<Boolean>(false);
+    const [isSessionValid, setSessionValid] = useState<Boolean>(false);
+
+    useEffect(() => setIsInitialized(true), []);
 
     useEffect(() => {
+        if (!isInitialized) {
+            return;
+        }
         console.log("Session entered");
         console.log(`sessionId: ${sessionId}`);
         console.log(`given sessionId: ${state.sessionId}`);
@@ -53,16 +60,22 @@ const Session: React.FC = () => {
                 }
                 const jsonData = await response.json();
                 setSessionId(jsonData.session_id);
+                setSessionValid(true);
             }
             catch (error) {
                 alert("unknown error");
                 navigate("/");
             }
         };
-        initializeSession();
-    }, [navigate]);
 
-    useEffect(() => sessionStorage.setItem('sessionId', sessionId), [sessionId]);
+        initializeSession();
+    }, [isInitialized]);
+
+    useEffect(() => {
+        if (sessionId) {
+            sessionStorage.setItem('sessionId', sessionId);
+        }
+    }, [sessionId]);
     useEffect(() => sessionStorage.setItem('isGameStarted', JSON.stringify(isGameStarted)), [isGameStarted]);
     useEffect(() => sessionStorage.setItem('gameBoard', JSON.stringify(gameBoard)), [gameBoard]);
 
@@ -91,7 +104,7 @@ const Session: React.FC = () => {
         <button onClick={startNewGame} className="new-game-button">
             새 게임하기
         </button>
-        {isGameStarted && sessionId && (
+        {isGameStarted && isSessionValid && sessionId && (
             <div className="gameboard-container">
             <GameBoard key={gameKey} sessionId={sessionId} gameBoard={gameBoard} />
             </div>
