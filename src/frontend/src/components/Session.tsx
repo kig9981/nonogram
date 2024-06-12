@@ -32,18 +32,20 @@ const Session: React.FC = () => {
         console.log(`given sessionId: ${state.sessionId}`);
         const initializeSession = async () => {
             try {
+                let currentSessionId = sessionId;
                 if (!state.sessionId && sessionId === "") {
                     navigate("/");
                 }
                 if(state.sessionId && sessionId === "") {
                     setSessionId(state.sessionId);
+                    currentSessionId = state.sessionId;
                 }
                 const response = await fetch(`${api_server_url}/sessions`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ "session_id": sessionId }),
+                    body: JSON.stringify({ "session_id": currentSessionId }),
                 });
                 if (!response.ok) {
                     alert("서버가 응답하지 않습니다.");
