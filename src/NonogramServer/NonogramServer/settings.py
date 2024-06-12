@@ -92,6 +92,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'NonogramServer.wsgi.application'
+ASGI_APPLICATION = 'NonogramServer.asgi.application'
 
 
 # Database

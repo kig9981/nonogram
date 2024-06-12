@@ -90,6 +90,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'ApiServer.wsgi.application'
+ASGI_APPLICATION = 'ApiServer.asgi.application'
 
 
 # Database
