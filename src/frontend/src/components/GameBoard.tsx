@@ -54,7 +54,9 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
             console.log(response);
             if (response.ok) {
                 const jsonData = await response.json();
-                setBoard(jsonData.board);
+                const board = jsonData.board as PlayBoardState;
+                setBoard(board);
+                setUnrevealedCounter(board.flat().filter(cell => cell == BLACK).length);
             }
             else {
                 console.log(await response.text());
@@ -70,6 +72,12 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
             finishGame();
         }
     }, [isGameFinished]);
+
+    useEffect(() => {
+        if (unrevealedCounter === 0) {
+            setIsGameFinished(true);
+        }
+    }, [unrevealedCounter]);
 
     const sendClickMessage = async (x: number, y: number, state: PlayCellState) => {
         const response = await fetch(`${api_server_url}/sessions/${sessionId}/move`, {
@@ -153,9 +161,6 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
                     if (gameBoard[rowIndex][colIndex] === BLACK) {
                         if (c !== REVEALED) {
                             sendClickMessage(rowIndex, colIndex, REVEALED);
-                            if (unrevealedCounter === 1) {
-                                setIsGameFinished(true);
-                            }
                             setUnrevealedCounter(unrevealedCounter - 1);
                             
                         }
