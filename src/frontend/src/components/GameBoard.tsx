@@ -1,4 +1,5 @@
 import React, { useState, useEffect, MouseEvent } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './GameBoard.css';
 import {api_server_url} from '../utils/links'
 
@@ -34,6 +35,8 @@ interface GameBoardProps {
 }
 
 const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const numRow = gameBoard.length;
     const numCol = gameBoard[0].length;
     const initialBoard: PlayBoardState = Array(numRow).fill(null).map(() => Array(numCol).fill(NOT_SELECTED));
@@ -41,14 +44,46 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
     const [rowHints, setRowHints] = useState<number[][]>([]);
     const [colHints, setColHints] = useState<number[][]>([]);
     const [isGameFinished, setIsGameFinished] = useState<Boolean>(false);
+    const [isInitialized, setIsInitialized] = useState<Boolean>(false);
     const [unrevealedCounter, setUnrevealedCounter] = useState<number>(gameBoard.flat().filter(cell => cell === BLACK).length);
 
+    useEffect(() => setIsInitialized(true), []);
+
     useEffect(() => {
-        setRowHints(generateHints(gameBoard, 'row'));
-        setColHints(generateHints(gameBoard, 'col'));
-    }, []);
+        if (!isInitialized) {
+            return;
+        }
+        console.log("initializeBoard");
+        const initializeBoard = async () => {
+            setRowHints(generateHints(gameBoard, 'row'));
+            setColHints(generateHints(gameBoard, 'col'));
+            const response = await fetch(`${api_server_url}/sessions/${sessionId}/play`);
+            console.log(response);
+            if (response.ok) {
+                const jsonData = await response.json();
+                const board = jsonData.board as PlayBoardState;
+                setBoard(board);
+                setUnrevealedCounter(unrevealedCounter - board.flat().filter(cell => cell == REVEALED).length);
+            }
+            else {
+                console.log(await response.text());
+            }
+        };
+
+        initializeBoard();
+    }, [isInitialized]);
+
+    useEffect(() => {
+        console.log(`isGameFinished changed to ${isGameFinished ? "true":"false"}`);
+        if (isGameFinished) {
+            finishGame();
+        }
+    }, [isGameFinished]);
+
+    useEffect(() => setIsGameFinished(isGameFinished || unrevealedCounter === 0), [unrevealedCounter]);
 
     const sendClickMessage = async (x: number, y: number, state: PlayCellState) => {
+        console.log("sendClickMessage");
         const response = await fetch(`${api_server_url}/sessions/${sessionId}/move`, {
             method: 'POST',
             headers: {
@@ -58,6 +93,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
         });
         if (!response.ok) {
             alert("서버가 응답하지 않습니다.")
+            console.log(await response.text());
         }
         else {
             const jsonData = await response.json();
@@ -70,6 +106,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
 
     const generateHints = (board: GameBoardState, type: 'row' | 'col'): number[][] => {
         const hints: number[][] = [];
+        console.log("generateHints");
         if (type === 'row') {
         for (let row of board) {
             const hint: number[] = [];
@@ -105,14 +142,15 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
     };
 
     const finishGame = () => {
+        console.log("finishGame");
         const newBoard = board.map((r, rowIndex) =>
             r.map((c, colIndex) => {
                 if (gameBoard[rowIndex][colIndex] === WHITE && c !== MARK_WRONG) {
-                    sendClickMessage(rowIndex, colIndex, MARK_X);
+                    // sendClickMessage(rowIndex, colIndex, MARK_X);
                     return MARK_X;
                 }
                 else if (gameBoard[rowIndex][colIndex] === BLACK) {
-                    sendClickMessage(rowIndex, colIndex, REVEALED);
+                    // sendClickMessage(rowIndex, colIndex, REVEALED);
                     return REVEALED;
                 }
                 return c;
@@ -123,12 +161,16 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
 
     const handleLeftClick = (row: number, col: number) => {
         if (isGameFinished) return;
+        console.log("handleLightClick");
         const newBoard = board.map((r, rowIndex) =>
             r.map((c, colIndex) => {
                 if (rowIndex === row && colIndex === col) {
                     if (gameBoard[rowIndex][colIndex] === BLACK) {
-                        sendClickMessage(rowIndex, colIndex, REVEALED);
-                        setUnrevealedCounter(unrevealedCounter - 1);
+                        if (c !== REVEALED) {
+                            sendClickMessage(rowIndex, colIndex, REVEALED);
+                            setUnrevealedCounter(unrevealedCounter - 1);
+                            
+                        }
                         return c = REVEALED;
                     }
                     else if (c !== MARK_WRONG) {
@@ -140,15 +182,12 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
             })
         );
         setBoard(newBoard);
-        if (unrevealedCounter === 0) {
-            setIsGameFinished(true);
-            finishGame();
-        }
     };
 
     const handleRightClick = (row: number, col: number, e: MouseEvent) => {
         e.preventDefault();
         if (isGameFinished) return;
+        console.log("handleRightClick");
         const newBoard = board.map((r, rowIndex) =>
             r.map((c, colIndex) => {
                 if (rowIndex === row && colIndex === col) {
