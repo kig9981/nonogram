@@ -48,7 +48,7 @@ class HandleGame(AsyncAPIView):
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
 
-        board_data = session_data.board_dat
+        board_data = session_data.board_data
 
         if board_data is None:
             return HttpResponseNotFound("board data not found.")
