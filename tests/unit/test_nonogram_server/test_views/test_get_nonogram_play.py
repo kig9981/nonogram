@@ -21,8 +21,8 @@ INVALID_GAME_TURN = -2
 get_nonogram_play = GetNonogramPlay.as_view()
 
 
-def get_url(session_id, game_turn):
-    return f'/sessions/{session_id}/turn/{game_turn}/'
+def get_url(session_id, game_turn_str):
+    return f'/sessions/{session_id}/turn/{game_turn_str}/'
 
 
 @pytest.mark.asyncio
@@ -37,7 +37,7 @@ async def test_session_for_get_nonogram_play(
 
         query_dict = {
             "session_id": session_id,
-            "game_turn": INVALID_GAME_TURN,
+            "game_turn_str": str(INVALID_GAME_TURN),
         }
         response = await send_test_request(
             method_type="GET",
@@ -66,7 +66,7 @@ async def test_history_for_get_nonogram_play(
         for cur_turn, move in enumerate(test_history["moves"]):
             query_dict = {
                 "session_id": session_id,
-                "game_turn": cur_turn + 1,
+                "game_turn_str": str(cur_turn + 1),
             }
             response = await send_test_request(
                 method_type="GET",
@@ -92,7 +92,7 @@ async def test_get_nonogram_play(
 ):
     query_dict = {
         "session_id": INCORRECT_ID,
-        "game_turn": GAME_NOT_START,
+        "game_turn_str": str(GAME_NOT_START),
     }
 
     response = await send_test_request(
