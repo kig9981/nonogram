@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker compose -f docker-compose.develop.yaml up
+HOST=${1:localhost} docker compose -f docker-compose.develop.yaml up
