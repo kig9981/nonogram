@@ -111,7 +111,6 @@ services:
       FRONTEND_SERVER_PORT: ${FRONTEND_SERVER_PORT}
     volumes:
       - ./nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template
-    
     depends_on:
       frontendserver:
         condition: service_healthy
