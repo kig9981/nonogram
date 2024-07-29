@@ -62,6 +62,7 @@ services:
       FRONTEND_SERVER_PORT: ${FRONTEND_SERVER_PORT}
       API_SERVER_HOST: ${API_SERVER_HOST}
       HOST: ${HOST}
+      SERVER_DOMAIN: ${SERVER_DOMAIN}
       DEBUG: ${DEBUG}
     command: bash -c "python src/ApiServer/manage.py runserver 0.0.0.0:${API_SERVER_PORT}"
     healthcheck:
