@@ -108,7 +108,7 @@ services:
       API_SERVER_HOST: ${HOST}
       API_SERVER_PORT: ${API_SERVER_PORT}
       FRONTEND_SERVER_HOST: ${HOST}
-      FRONTEND_SERVER_PORT: ${API_SERVER_PORT}
+      FRONTEND_SERVER_PORT: ${FRONTEND_SERVER_PORT}
     volumes:
       - ./nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template
     
