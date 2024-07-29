@@ -2,7 +2,7 @@ server {
     listen 80;
     server_name ${SERVER_DOMAIN};
 
-    location /api {
+    location /api/ {
         proxy_pass http://${API_SERVER_HOST}:${API_SERVER_PORT};
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
