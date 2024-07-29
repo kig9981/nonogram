@@ -64,7 +64,7 @@ services:
       HOST: ${HOST}
       SERVER_DOMAIN: ${SERVER_DOMAIN}
       DEBUG: false
-    command: bash -c "uvicorn ApiServer.asgi:application --host 0.0.0.0 --port ${API_SERVER_PORT} --app-dir src/ApiServer"
+    command: bash -c "uvicorn ApiServer.asgi:application --host 0.0.0.0 --port ${API_SERVER_PORT} --app-dir src/ApiServer --proxy-headers"
     healthcheck:
       test: curl --fail http://localhost:${API_SERVER_PORT}/healthcheck || exit 1
       interval: 30s
