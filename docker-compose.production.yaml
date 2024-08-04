@@ -81,7 +81,10 @@ services:
   frontendserver:
     image: frontend_server:${FRONTEND_SERVER_VERSION:-latest}
     container_name: ${FRONTEND_SERVER_HOST}
-    command: ["sh", "-c", "echo \"window.REACT_APP_API_SERVER_PROTOCOL='$API_SERVER_PROTOCOL';window.REACT_APP_API_SERVER_DOMAIN='$SERVER_DOMAIN';\" > ./build/env-config.js && serve -s build"]
+    environment:
+      REACT_APP_API_SERVER_PROTOCOL: ${API_SERVER_PROTOCOL}
+      REACT_APP_API_SERVER_DOMAIN: ${SERVER_DOMAIN}
+    command: "npx react-inject-env set && serve -s build"
     healthcheck:
       test: curl --fail http://localhost:${FRONTEND_SERVER_PORT}/healthcheck || exit 1
       interval: 30s
