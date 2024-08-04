@@ -84,7 +84,7 @@ services:
     environment:
       REACT_APP_API_SERVER_PROTOCOL: ${API_SERVER_PROTOCOL}
       REACT_APP_API_SERVER_DOMAIN: ${SERVER_DOMAIN}
-    command: "npx react-inject-env set && serve -s build"
+    command: ["sh", "-c", "npx react-inject-env set && serve -s build"]
     healthcheck:
       test: curl --fail http://localhost:${FRONTEND_SERVER_PORT}/healthcheck || exit 1
       interval: 30s
