@@ -40,12 +40,12 @@ class CreateNewSession(AsyncAPIView):
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return await self._create_new_session()
         try:
-            session = await async_get_from_db(
+            await async_get_from_db(
                 model_class=Session,
                 label=f"session_id '{session_id}'",
                 session_id=session_id,
             )
-        except ObjectDoesNotExist as error:
+        except ObjectDoesNotExist:
             return await self._create_new_session()
         response_data = {"session_id": session_id}
         return JsonResponse(response_data)
