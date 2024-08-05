@@ -50,10 +50,10 @@ class GetNonogramPlay(AsyncAPIView):
 
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
-        
+
         try:
             game_turn = int(game_turn_str)
-        except ValueError as error:
+        except ValueError:
             return HttpResponseBadRequest("game_turn_str must be integer.")
 
         try:
