@@ -31,8 +31,8 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST}
       DB_PORT: 5432
-      DEBUG: ${DEBUG}
-    command: bash -c "python src/NonogramServer/manage.py runserver 0.0.0.0:${NONOGRAM_SERVER_PORT}"
+      DEBUG: false
+    command: bash -c "uvicorn NonogramServer.asgi:application --host 0.0.0.0 --port ${NONOGRAM_SERVER_PORT} --app-dir src/NonogramServer"
     healthcheck:
       test: curl --fail http://localhost:${NONOGRAM_SERVER_PORT}/healthcheck || exit 1
       interval: 30s
@@ -61,8 +61,10 @@ services:
       FRONTEND_SERVER_HOST: ${FRONTEND_SERVER_HOST}
       FRONTEND_SERVER_PORT: ${FRONTEND_SERVER_PORT}
       API_SERVER_HOST: ${API_SERVER_HOST}
-      DEBUG: ${DEBUG}
-    command: bash -c "python src/ApiServer/manage.py runserver 0.0.0.0:${API_SERVER_PORT}"
+      HOST: ${HOST}
+      SERVER_DOMAIN: ${SERVER_DOMAIN}
+      DEBUG: false
+    command: bash -c "uvicorn ApiServer.asgi:application --host 0.0.0.0 --port ${API_SERVER_PORT} --app-dir src/ApiServer --proxy-headers"
     healthcheck:
       test: curl --fail http://localhost:${API_SERVER_PORT}/healthcheck || exit 1
       interval: 30s
@@ -81,16 +83,40 @@ services:
     container_name: ${FRONTEND_SERVER_HOST}
     environment:
       REACT_APP_API_SERVER_PROTOCOL: ${API_SERVER_PROTOCOL}
-      REACT_APP_API_SERVER_HOST: ${API_SERVER_HOST}
-      REACT_APP_API_SERVER_PORT: ${API_SERVER_PORT}
-      DEBUG: ${DEBUG}
-    command: bash -c "npm start"
+      REACT_APP_API_SERVER_DOMAIN: ${SERVER_DOMAIN}
+    command: ["sh", "-c", "npx react-inject-env set && serve -s build"]
+    healthcheck:
+      test: curl --fail http://localhost:${FRONTEND_SERVER_PORT}/healthcheck || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     ports:
       - "${FRONTEND_SERVER_PORT}:${FRONTEND_SERVER_PORT}"
     networks:
       - nonogram_net
     env_file:
       - .env
+    
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    environment:
+      SERVER_DOMAIN: ${SERVER_DOMAIN}
+      API_SERVER_HOST: ${HOST}
+      API_SERVER_PORT: ${API_SERVER_PORT}
+      FRONTEND_SERVER_HOST: ${HOST}
+      FRONTEND_SERVER_PORT: ${FRONTEND_SERVER_PORT}
+    volumes:
+      - ./nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template
+    depends_on:
+      frontendserver:
+        condition: service_healthy
+      apiserver:
+        condition: service_healthy
+    networks:
+      - nonogram_net
 
 networks:
   nonogram_net:
