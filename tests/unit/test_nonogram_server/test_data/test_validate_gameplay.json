@@ -21,6 +21,6 @@
     {
         "board": [[1, -1], [0, 2]],
         "valid": false,
-        "exception_message": "Invalid gameplay(Invalid range(0 ~ 3))."
+        "exception_message": "Invalid gameplay(Invalid range(0 ~ 4))."
     }
 ]

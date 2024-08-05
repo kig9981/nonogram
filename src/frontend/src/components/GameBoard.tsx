@@ -63,7 +63,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ sessionId, gameBoard }) => {
                 const jsonData = await response.json();
                 const board = jsonData.board as PlayBoardState;
                 setBoard(board);
-                setUnrevealedCounter(unrevealedCounter - board.flat().filter(cell => cell == REVEALED).length);
+                setUnrevealedCounter(unrevealedCounter - board.flat().filter(cell => cell === REVEALED).length);
             }
             else {
                 console.log(await response.text());

@@ -7,6 +7,7 @@ from http import HTTPStatus
 from NonogramServer.views.HandleGame import HandleGame
 from django.test.client import RequestFactory
 from ...util import send_test_request
+from src.utils import is_uuid4
 
 RANDOM_BOARD = 0
 GAME_EXIST = 0
@@ -112,7 +113,7 @@ async def test_create_new_game(
         response_data = json.loads(response.content)
 
         assert response_data["response"] == NEW_GAME_STARTED
-        assert response_data["board_id"] == board_id
+        assert is_uuid4(response_data["board_id"])
 
 
 @pytest.mark.asyncio

@@ -1,0 +1,124 @@
+services:
+  nonogramserverdb:
+    image: postgres:latest
+    container_name: ${DB_NAME}
+    restart: always
+    environment:
+      PGUSER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+    ports:
+      - "${DB_PORT}:5432"
+    networks:
+      - nonogram_net
+    env_file:
+      - .env
+
+  nonogramserver:
+    image: nonogram_server:${NONOGRAM_SERVER_VERSION:-latest}
+    container_name: ${NONOGRAM_SERVER_HOST}
+    environment:
+      NONOGRAM_SERVER_SECRET_KEY: ${NONOGRAM_SERVER_SECRET_KEY}
+      NONOGRAM_SERVER_HOST: ${NONOGRAM_SERVER_HOST}
+      API_SERVER_PROTOCOL: ${API_SERVER_PROTOCOL}
+      API_SERVER_HOST: ${API_SERVER_HOST}
+      API_SERVER_PORT: ${API_SERVER_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: 5432
+      DEBUG: ${DEBUG}
+    command: bash -c "python src/NonogramServer/manage.py runserver 0.0.0.0:${NONOGRAM_SERVER_PORT}"
+    healthcheck:
+      test: curl --fail http://localhost:${NONOGRAM_SERVER_PORT}/healthcheck || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    ports:
+      - "${NONOGRAM_SERVER_PORT}:${NONOGRAM_SERVER_PORT}"
+    networks:
+      - nonogram_net
+    depends_on:
+      nonogramserverdb:
+        condition: service_healthy
+    env_file:
+      - .env
+
+  apiserver:
+    image: api_server:${API_SERVER_VERSION:-latest}
+    container_name: ${API_SERVER_HOST}
+    environment:
+      API_SERVER_SECRET_KEY: ${API_SERVER_SECRET_KEY}
+      NONOGRAM_SERVER_PROTOCOL: ${NONOGRAM_SERVER_PROTOCOL}
+      NONOGRAM_SERVER_HOST: ${NONOGRAM_SERVER_HOST}
+      NONOGRAM_SERVER_PORT: ${NONOGRAM_SERVER_PORT}
+      FRONTEND_SERVER_PROTOCOL: ${FRONTEND_SERVER_PROTOCOL}
+      FRONTEND_SERVER_HOST: ${FRONTEND_SERVER_HOST}
+      FRONTEND_SERVER_PORT: ${FRONTEND_SERVER_PORT}
+      API_SERVER_HOST: ${API_SERVER_HOST}
+      HOST: ${HOST}
+      SERVER_DOMAIN: ${SERVER_DOMAIN}
+      DEBUG: ${DEBUG}
+    command: bash -c "python src/ApiServer/manage.py runserver 0.0.0.0:${API_SERVER_PORT}"
+    healthcheck:
+      test: curl --fail http://localhost:${API_SERVER_PORT}/healthcheck || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    ports:
+      - "${API_SERVER_PORT}:${API_SERVER_PORT}"
+    networks:
+      - nonogram_net
+    env_file:
+      - .env
+
+  frontendserver:
+    image: frontend_server:${FRONTEND_SERVER_VERSION:-latest}
+    container_name: ${FRONTEND_SERVER_HOST}
+    environment:
+      REACT_APP_API_SERVER_PROTOCOL: ${API_SERVER_PROTOCOL}
+      REACT_APP_API_SERVER_DOMAIN: ${SERVER_DOMAIN}
+      DEBUG: ${DEBUG}
+    command: bash -c "npm start"
+    healthcheck:
+      test: curl --fail http://localhost:${FRONTEND_SERVER_PORT}/healthcheck || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    ports:
+      - "${FRONTEND_SERVER_PORT}:${FRONTEND_SERVER_PORT}"
+    networks:
+      - nonogram_net
+    env_file:
+      - .env
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    environment:
+      SERVER_DOMAIN: ${SERVER_DOMAIN}
+      API_SERVER_HOST: ${HOST}
+      API_SERVER_PORT: ${API_SERVER_PORT}
+      FRONTEND_SERVER_HOST: ${HOST}
+      FRONTEND_SERVER_PORT: ${FRONTEND_SERVER_PORT}
+    volumes:
+      - ./nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template
+    depends_on:
+      frontendserver:
+        condition: service_healthy
+      apiserver:
+        condition: service_healthy
+    networks:
+      - nonogram_net
+
+networks:
+  nonogram_net:
+    driver: bridge
