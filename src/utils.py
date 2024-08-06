@@ -4,12 +4,14 @@ import uuid
 import base64
 import hashlib
 import aiohttp
+import logging
 from http import HTTPStatus
 from typing import Any
 from typing import List
 from typing import Dict
 from typing import Union
 from typing import Optional
+from typing import Callable
 from django.db.models import Model
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
@@ -252,3 +254,21 @@ def is_base64(
         return base64.b64encode(base64.b64decode(base64_to_test)) == base64_to_test
     except Exception:
         return False
+
+
+class LogSystem:
+    def __init__(
+        self,
+        module_name: str,
+    ):
+        self.logger = logging.getLogger(module_name)
+
+    def log(self):
+        def decorator(func: Callable[..., Any]):
+            def wrapper(*args, **kwargs):
+                self.logger.info(f"{func.__name__} begins")
+                result = func(args, kwargs)
+                self.logger.info(f"{func.__name__} finished")
+                return result
+            return wrapper
+        return decorator
