@@ -30,7 +30,8 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST}
-      DB_PORT: 5432
+      DB_PORT: ${DB_PORT}
+      LOG_PATH: ${LOG_PATH}
       DEBUG: false
     command: bash -c "uvicorn NonogramServer.asgi:application --host 0.0.0.0 --port ${NONOGRAM_SERVER_PORT} --app-dir src/NonogramServer"
     healthcheck:
@@ -63,6 +64,7 @@ services:
       API_SERVER_HOST: ${API_SERVER_HOST}
       HOST: ${HOST}
       SERVER_DOMAIN: ${SERVER_DOMAIN}
+      LOG_PATH: ${LOG_PATH}
       DEBUG: false
     command: bash -c "uvicorn ApiServer.asgi:application --host 0.0.0.0 --port ${API_SERVER_PORT} --app-dir src/ApiServer --proxy-headers"
     healthcheck:
