@@ -12,6 +12,8 @@ from Nonogram.NonogramBoard import NonogramGameplay
 from utils import async_get_from_db
 from utils import is_uuid4
 from utils import deserialize_gameboard
+from utils import LogSystem
+from .configure import LOG_PATH
 
 
 class HandleGame(AsyncAPIView):
@@ -30,6 +32,12 @@ class HandleGame(AsyncAPIView):
                         1=NEW_GAME_STARTED
         board_id (str): 랜덤 보드를 요청한 경우 선택된 보드를, 아니면 argument로 주어진 board_id를 반환
     '''
+    logger = LogSystem(
+        module_name=__name__,
+        log_path=LOG_PATH,
+    )
+
+    @logger.log
     async def get(
         self,
         request: HttpRequest,
@@ -61,6 +69,7 @@ class HandleGame(AsyncAPIView):
 
         return JsonResponse(response_data)
 
+    @logger.log
     async def post(
         self,
         request: HttpRequest,
@@ -72,6 +81,7 @@ class HandleGame(AsyncAPIView):
             force_new_game=False,
         )
 
+    @logger.log
     async def put(
         self,
         request: HttpRequest,
@@ -83,6 +93,7 @@ class HandleGame(AsyncAPIView):
             force_new_game=True,
         )
 
+    @logger.log
     async def _create_new_game(
         self,
         request: HttpRequest,

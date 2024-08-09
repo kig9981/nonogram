@@ -8,6 +8,8 @@ from django.http import HttpResponseBadRequest
 from django.http import HttpResponseServerError
 from utils import is_uuid4
 from utils import send_request
+from utils import LogSystem
+from .configure import LOG_PATH
 from http import HTTPStatus
 
 
@@ -30,6 +32,12 @@ class GetNonogramBoard(AsyncAPIView):
         num_row (int): 게임보드의 행 수
         num_column (int): 게임보드의 열 수
     '''
+    logger = LogSystem(
+        module_name=__name__,
+        log_path=LOG_PATH,
+    )
+
+    @logger.log
     async def get(
         self,
         request: HttpRequest,

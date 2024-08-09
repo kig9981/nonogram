@@ -10,6 +10,8 @@ from ..models import History
 from utils import async_get_from_db
 from utils import deserialize_gameplay
 from utils import is_uuid4
+from utils import LogSystem
+from .configure import LOG_PATH
 from Nonogram.NonogramBoard import NonogramGameplay
 
 
@@ -39,6 +41,12 @@ class GetNonogramPlay(AsyncAPIView):
         num_column (int): 게임보드의 열 수
         latest_turn (int): 게임 진행 정보를 반환할 경우만 가장 최근 턴 수를 반환.
     '''
+    logger = LogSystem(
+        module_name=__name__,
+        log_path=LOG_PATH,
+    )
+
+    @logger.log
     async def get(
         self,
         request: HttpRequest,
@@ -50,10 +58,10 @@ class GetNonogramPlay(AsyncAPIView):
 
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
-        
+
         try:
             game_turn = int(game_turn_str)
-        except ValueError as error:
+        except ValueError:
             return HttpResponseBadRequest("game_turn_str must be integer.")
 
         try:

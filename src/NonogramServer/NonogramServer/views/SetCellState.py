@@ -10,6 +10,8 @@ from Nonogram.NonogramBoard import NonogramGameplay
 from ..models import Session
 from utils import async_get_from_db
 from utils import is_uuid4
+from utils import LogSystem
+from .configure import LOG_PATH
 
 
 class SetCellState(AsyncAPIView):
@@ -34,6 +36,12 @@ class SetCellState(AsyncAPIView):
                         1=APPLIED
                         2=GAME_OVER
     '''
+    logger = LogSystem(
+        module_name=__name__,
+        log_path=LOG_PATH,
+    )
+
+    @logger.log
     async def post(
         self,
         request: HttpRequest,

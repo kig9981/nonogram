@@ -10,7 +10,9 @@ from django.http import HttpResponseBadRequest
 from ..models import NonogramBoard
 from utils import RealBoardCellState
 from utils import is_base64
+from utils import LogSystem
 from PIL import Image
+from .configure import LOG_PATH
 
 
 class AddNonogramBoard(AsyncAPIView):
@@ -28,6 +30,12 @@ class AddNonogramBoard(AsyncAPIView):
         base64로 디코딩한 것이 PIL 이미지가 아니면 400에러(invalid image format) 리턴
         board_id (str): 생성한 board_id의 uuid를 리턴, 실패시 빈 문자열을 리턴.
     '''
+    logger = LogSystem(
+        module_name=__name__,
+        log_path=LOG_PATH,
+    )
+
+    @logger.log
     async def post(
         self,
         request: HttpRequest,
