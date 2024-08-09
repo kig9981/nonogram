@@ -10,6 +10,8 @@ from django.http import HttpResponseServerError
 from utils import is_uuid4
 from utils import send_request
 from http import HTTPStatus
+from utils import LogSystem
+from .configure import LOG_PATH
 
 
 class CreateNewGame(AsyncAPIView):
@@ -30,7 +32,12 @@ class CreateNewGame(AsyncAPIView):
                         1=NEW_GAME_STARTED
         board_id (str): 새로 시작한 board_id정보를 uuid형식으로 반환.
     '''
+    logger = LogSystem(
+        module_name=__name__,
+        log_path=LOG_PATH,
+    )
 
+    @logger.log
     async def post(
         self,
         request: HttpRequest,
@@ -42,6 +49,7 @@ class CreateNewGame(AsyncAPIView):
             force_new_game=False,
         )
 
+    @logger.log
     async def put(
         self,
         request: HttpRequest,
@@ -53,6 +61,7 @@ class CreateNewGame(AsyncAPIView):
             force_new_game=True,
         )
 
+    @logger.log
     async def _create_new_game(
         self,
         request: HttpRequest,

@@ -30,6 +30,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST}
       DB_PORT: 5432
+      LOG_PATH: ${LOG_PATH}
       DEBUG: ${DEBUG}
     command: bash -c "python src/NonogramServer/manage.py runserver 0.0.0.0:${NONOGRAM_SERVER_PORT}"
     healthcheck:
@@ -62,6 +63,7 @@ services:
       API_SERVER_HOST: ${API_SERVER_HOST}
       DEBUG: ${DEBUG}
       HOST: ${HOST}
+      LOG_PATH: ${LOG_PATH}
       SERVER_DOMAIN: ${SERVER_DOMAIN}
     command: bash -c "python src/ApiServer/manage.py runserver 0.0.0.0:${API_SERVER_PORT}"
     healthcheck:
