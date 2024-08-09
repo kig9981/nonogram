@@ -1,17 +1,21 @@
 from enum import IntEnum
 import json
 import uuid
+import time
 import base64
+import inspect
 import hashlib
 import aiohttp
 import logging
 from http import HTTPStatus
+from pathlib import Path
 from typing import Any
 from typing import List
 from typing import Dict
 from typing import Union
 from typing import Optional
 from typing import Callable
+from typing import TypeVar
 from django.db.models import Model
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
@@ -256,19 +260,101 @@ def is_base64(
         return False
 
 
+LogFunction = TypeVar("LogFunction", bound=Callable[..., Any])
+
+
 class LogSystem:
     def __init__(
         self,
         module_name: str,
+        log_path: str,
+        log_level: int = logging.INFO,
     ):
-        self.logger = logging.getLogger(module_name)
+        self._logger = logging.getLogger(module_name)
+        self._logger.setLevel(logging.DEBUG)
+        self._log_level = log_level
 
-    def log(self):
-        def decorator(func: Callable[..., Any]):
-            def wrapper(*args, **kwargs):
-                self.logger.info(f"{func.__name__} begins")
-                result = func(args, kwargs)
-                self.logger.info(f"{func.__name__} finished")
-                return result
-            return wrapper
-        return decorator
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+        ch = logging.StreamHandler()
+        ch.setLevel(log_level)
+        ch.setFormatter(formatter)
+
+        self._logger.addHandler(ch)
+
+        log_dir = Path(log_path)
+        log_dir.mkdir(parents=True, exist_ok=True)
+
+        log_dir.mkdir(parents=True, exist_ok=True)
+
+        ch = logging.FileHandler(f"{log_path}/{module_name}.log")
+        ch.setLevel(logging.DEBUG)
+        ch.setFormatter(formatter)
+
+        self._logger.addHandler(ch)
+
+    def _log(
+        self,
+        msg: str,
+        log_level: int,
+    ) -> None:
+        if log_level == logging.INFO:
+            self._logger.info(msg)
+        elif log_level == logging.ERROR:
+            self._logger.error(msg)
+        elif log_level == logging.DEBUG:
+            self._logger.debug(msg)
+        elif log_level == logging.CRITICAL:
+            self._logger.critical(msg)
+        elif log_level == logging.WARNING:
+            self._logger.warning(msg)
+
+    def _decorator(
+        self,
+        func: LogFunction,
+        log_level: int,
+    ) -> LogFunction:
+        def sync_wrapper(*args, **kwargs) -> Any:
+            self._log(f"{func.__name__} begins", log_level=log_level)
+            start_time = time.time()
+            try:
+                result = func(*args, **kwargs)
+            except Exception as e:
+                self._log(f"Error on {func.__name__}: {e}", logging.ERROR)
+                raise
+            end_time = time.time()
+            self._log(f"{func.__name__} finished", log_level=log_level)
+            self._log(f"{func.__name__} excution time: {end_time - start_time: .5f} sec", log_level=log_level)
+            return result
+
+        async def async_wrapper(*args, **kwargs) -> Any:
+            self._log(f"{func.__name__} begins", log_level=log_level)
+            start_time = time.time()
+            try:
+                result = await func(*args, **kwargs)
+            except Exception as e:
+                self._log(f"Error on {func.__name__}: {e}", logging.ERROR)
+                raise
+            end_time = time.time()
+            self._log(f"{func.__name__} finished", log_level=log_level)
+            self._log(f"{func.__name__} excution time: {end_time - start_time: .5f} sec", log_level=log_level)
+            return result
+
+        if inspect.iscoroutinefunction(func):
+            return async_wrapper
+        else:
+            return sync_wrapper
+
+    def log(
+        self,
+        func: Optional[LogFunction] = None,
+        *,
+        log_level: int = logging.INFO,
+    ) -> LogFunction | Callable[[LogFunction], LogFunction]:
+        if func:
+            return self._decorator(func, log_level)
+        
+        def wrapper(func: LogFunction):
+            return self._decorator(func, log_level)
+        
+        return wrapper
