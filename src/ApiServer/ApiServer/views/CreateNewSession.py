@@ -6,6 +6,8 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.http import HttpResponseServerError
 from utils import send_request
+from utils import LogSystem
+from .configure import LOG_PATH
 from http import HTTPStatus
 
 
@@ -20,6 +22,12 @@ class CreateNewSession(AsyncAPIView):
         성공적일 경우 요청한 사항에 대한 응답을 json형식으로 리턴.
         session_id (str): session_id를 uuid형식으로 반환.
     '''
+    logger = LogSystem(
+        module_name=__name__,
+        log_path=LOG_PATH,
+    )
+
+    @logger.log
     async def post(
         self,
         request: HttpRequest,

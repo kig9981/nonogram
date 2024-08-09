@@ -8,6 +8,8 @@ from django.http import HttpResponseBadRequest
 from django.http import HttpResponseServerError
 from utils import is_uuid4
 from utils import send_request
+from utils import LogSystem
+from .configure import LOG_PATH
 from http import HTTPStatus
 
 
@@ -29,6 +31,12 @@ class GetNonogramPlay(AsyncAPIView):
                             각 원소의 값은 Nonogram.utils의 GameBoardCellState, RealBoardCellState 참조.
         latest_turn (int): 가장 최근 턴 수를 반환.
     '''
+    logger = LogSystem(
+        module_name=__name__,
+        log_path=LOG_PATH,
+    )
+
+    @logger.log
     async def get(
         self,
         request: HttpRequest,

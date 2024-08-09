@@ -9,6 +9,8 @@ from ..models import NonogramBoard
 from utils import async_get_from_db
 from utils import deserialize_gameboard
 from utils import is_uuid4
+from utils import LogSystem
+from .configure import LOG_PATH
 
 
 class GetNonogramBoard(AsyncAPIView):
@@ -37,6 +39,12 @@ class GetNonogramBoard(AsyncAPIView):
         num_column (int): 게임보드의 열 수
         latest_turn (int): 게임 진행 정보를 반환할 경우만 가장 최근 턴 수를 반환.
     '''
+    logger = LogSystem(
+        module_name=__name__,
+        log_path=LOG_PATH,
+    )
+
+    @logger.log
     async def get(
         self,
         request: HttpRequest,

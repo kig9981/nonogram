@@ -9,6 +9,8 @@ from django.http import HttpResponseBadRequest
 from django.http import HttpResponseServerError
 from utils import is_uuid4
 from utils import send_request
+from utils import LogSystem
+from .configure import LOG_PATH
 from http import HTTPStatus
 
 
@@ -34,6 +36,12 @@ class MakeMove(AsyncAPIView):
                       1: 정상적으로 반영됨
                       2: 해당 움직임으로 게임 종료(게임이 종료된 이후의 모든 요청은 이 답으로 돌아감)
     '''
+    logger = LogSystem(
+        module_name=__name__,
+        log_path=LOG_PATH,
+    )
+
+    @logger.log
     async def post(
         self,
         request: HttpRequest,
