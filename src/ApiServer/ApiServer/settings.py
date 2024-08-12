@@ -50,7 +50,6 @@ else:
         "localhost",
         "127.0.0.1",
         f"{API_SERVER_HOST}",
-        f"{PROMETHEUS_HOST}",
         f"{CURRENT_HOST}",
         f"{SERVER_DOMAIN}",
         f"{SERVER_DOMAIN}/api",
