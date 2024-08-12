@@ -26,6 +26,9 @@ services:
       API_SERVER_PROTOCOL: ${API_SERVER_PROTOCOL}
       API_SERVER_HOST: ${API_SERVER_HOST}
       API_SERVER_PORT: ${API_SERVER_PORT}
+      PROMETHEUS_PROTOCOL: ${PROMETHEUS_PROTOCOL}
+      PROMETHEUS_HOST: ${PROMETHEUS_HOST}
+      PROMETHEUS_PORT: ${PROMETHEUS_PORT}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -64,6 +67,9 @@ services:
       FRONTEND_SERVER_HOST: ${FRONTEND_SERVER_HOST}
       FRONTEND_SERVER_PORT: ${FRONTEND_SERVER_PORT}
       API_SERVER_HOST: ${API_SERVER_HOST}
+      PROMETHEUS_PROTOCOL: ${PROMETHEUS_PROTOCOL}
+      PROMETHEUS_HOST: ${PROMETHEUS_HOST}
+      PROMETHEUS_PORT: ${PROMETHEUS_PORT}
       SERVER_DOMAIN: ${SERVER_DOMAIN}
       LOG_PATH: ${LOG_PATH}
       DEBUG: false
@@ -120,6 +126,48 @@ services:
         condition: service_healthy
       apiserver:
         condition: service_healthy
+    networks:
+      - nonogram_net
+
+  prometheus:
+    image: prom/prometheus
+    container_name: ${PROMETHEUS_HOST}
+    ports:
+      - ${PROMETHEUS_PORT}:${PROMETHEUS_PORT}
+    volumes:
+      - ./prometheus/.temp/prometheus.yaml:/etc/prometheus/prometheus.yml
+      - ./prometheus/django.rules:/etc/prometheus/django.rules
+    environment:
+      NONOGRAM_SERVER_HOST: ${NONOGRAM_SERVER_HOST}
+      NONOGRAM_SERVER_PORT: ${NONOGRAM_SERVER_PORT}
+      API_SERVER_HOST: ${API_SERVER_HOST}
+      API_SERVER_PORT: ${API_SERVER_PORT}
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    depends_on:
+      nonogramserver:
+        condition: service_healthy
+      apiserver:
+        condition: service_healthy
+    networks:
+      - nonogram_net
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-clock-panel
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - USER_NAME
+      - USER_ID
+      - GROUP_NAME
+      - GROUP_ID
+    ports:
+      - '3030:3000'
+    volumes:
+      - './grafana:/var/lib/grafana'
     networks:
       - nonogram_net
 
