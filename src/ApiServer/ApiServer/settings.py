@@ -40,7 +40,6 @@ FRONTEND_SERVER_PORT = env("FRONTEND_SERVER_PORT")
 PROMETHEUS_PROTOCOL = env("PROMETHEUS_PROTOCOL")
 PROMETHEUS_HOST = env("PROMETHEUS_HOST")
 PROMETHEUS_PORT = env("PROMETHEUS_PORT")
-CURRENT_HOST = env("HOST")
 SERVER_DOMAIN = env("SERVER_DOMAIN")
 
 if DEBUG:
@@ -50,7 +49,6 @@ else:
         "localhost",
         "127.0.0.1",
         f"{API_SERVER_HOST}",
-        f"{CURRENT_HOST}",
         f"{SERVER_DOMAIN}",
         f"{SERVER_DOMAIN}/api",
     ]
