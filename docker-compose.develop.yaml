@@ -125,6 +125,43 @@ services:
     networks:
       - nonogram_net
 
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/.temp/prometheus.yaml:/etc/prometheus/prometheus.yml
+      - ./prometheus/django.rules:/etc/prometheus/django.rules
+    environment:
+      NONOGRAM_SERVER_HOST: ${NONOGRAM_SERVER_HOST}
+      NONOGRAM_SERVER_PORT: ${NONOGRAM_SERVER_PORT}
+      API_SERVER_HOST: ${API_SERVER_HOST}
+      API_SERVER_PORT: ${API_SERVER_PORT}
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    depends_on:
+      nonogramserver:
+        condition: service_healthy
+      apiserver:
+        condition: service_healthy
+    networks:
+      - nonogram_net
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+     - GF_INSTALL_PLUGINS=grafana-clock-panel
+     - GF_SECURITY_ADMIN_USER=admin
+     - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports:
+     - '3030:3000'
+    volumes:
+     - './grafana:/var/lib/grafana'
+    networks:
+      - nonogram_net
+
 networks:
   nonogram_net:
     driver: bridge
