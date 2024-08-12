@@ -19,7 +19,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /api/metrics/ {
-        deny all;
+    location /api/metrics {
+        return 403;
     }
 }
