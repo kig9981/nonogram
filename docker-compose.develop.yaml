@@ -64,6 +64,7 @@ services:
       FRONTEND_SERVER_HOST: ${FRONTEND_SERVER_HOST}
       FRONTEND_SERVER_PORT: ${FRONTEND_SERVER_PORT}
       API_SERVER_HOST: ${API_SERVER_HOST}
+      PROMETHEUS_HOST: prometheus
       HOST: ${HOST}
       SERVER_DOMAIN: ${SERVER_DOMAIN}
       LOG_PATH: ${LOG_PATH}
@@ -152,13 +153,17 @@ services:
     container_name: grafana
     restart: unless-stopped
     environment:
-     - GF_INSTALL_PLUGINS=grafana-clock-panel
-     - GF_SECURITY_ADMIN_USER=admin
-     - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=grafana-clock-panel
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - USER_NAME
+      - USER_ID
+      - GROUP_NAME
+      - GROUP_ID
     ports:
-     - '3030:3000'
+      - '3030:3000'
     volumes:
-     - './grafana:/var/lib/grafana'
+      - './grafana:/var/lib/grafana'
     networks:
       - nonogram_net
 
