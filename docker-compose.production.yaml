@@ -115,10 +115,15 @@ services:
       - "80:80"
     environment:
       SERVER_DOMAIN: ${SERVER_DOMAIN}
+      API_SERVER_PROTOCOL: ${API_SERVER_PROTOCOL}
       API_SERVER_HOST: ${HOST}
       API_SERVER_PORT: ${API_SERVER_PORT}
+      FRONTEND_SERVER_PROTOCOL: ${FRONTEND_SERVER_PROTOCOL}
       FRONTEND_SERVER_HOST: ${HOST}
       FRONTEND_SERVER_PORT: ${FRONTEND_SERVER_PORT}
+      GRAFANA_PROTOCOL: ${PROMETHEUS_PROTOCOL}
+      GRAFANA_HOST: ${HOST}
+      GRAFANA_PORT: ${GRAFANA_PORT}
     volumes:
       - ./nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template
     depends_on:
