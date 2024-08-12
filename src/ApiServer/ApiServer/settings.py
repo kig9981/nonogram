@@ -30,6 +30,7 @@ SECRET_KEY = env("API_SERVER_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG")
 
+API_SERVER_HOST = env("API_SERVER_HOST")
 NONOGRAM_SERVER_PROTOCOL = env("NONOGRAM_SERVER_PROTOCOL")
 NONOGRAM_SERVER_HOST = env("NONOGRAM_SERVER_HOST")
 NONOGRAM_SERVER_PORT = env("NONOGRAM_SERVER_PORT")
@@ -48,6 +49,7 @@ else:
     ALLOWED_HOSTS = [
         "localhost",
         "127.0.0.1",
+        f"{API_SERVER_HOST}",
         f"{PROMETHEUS_HOST}",
         f"{CURRENT_HOST}",
         f"{SERVER_DOMAIN}",
