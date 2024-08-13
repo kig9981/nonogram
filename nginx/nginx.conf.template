@@ -3,16 +3,25 @@ map $http_upgrade $connection_upgrade {
   '' close;
 }
 
+upstream frontend {
+    server ${FRONTEND_SERVER_HOST}:${FRONTEND_SERVER_PORT}
+}
+
+upstream api {
+    server ${API_SERVER_HOST}:${API_SERVER_PORT}
+}
+
 upstream grafana {
     server ${GRAFANA_HOST}:${GRAFANA_PORT};
 }
 
 server {
     listen 80;
+    listen [::]:80;
     server_name ${SERVER_DOMAIN};
 
     location / {
-        proxy_pass ${FRONTEND_SERVER_PROTOCOL}://${FRONTEND_SERVER_HOST}:${FRONTEND_SERVER_PORT};
+        proxy_pass ${FRONTEND_SERVER_PROTOCOL}://frontend;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -20,7 +29,7 @@ server {
     }
 
     location /api/ {
-        proxy_pass ${API_SERVER_PROTOCOL}://${API_SERVER_HOST}:${API_SERVER_PORT};
+        proxy_pass ${API_SERVER_PROTOCOL}://api;
         rewrite ^/api/(.*) /$1 break;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
