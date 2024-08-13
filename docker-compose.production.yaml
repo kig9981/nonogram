@@ -166,6 +166,7 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_SERVER_DOMAIN=${SERVER_DOMAIN}
+      - GF_SERVER_HTTP_PORT=${GRAFANA_PORT}
       - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s:%(http_port)s/monitor/
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
       - USER_NAME
@@ -173,7 +174,7 @@ services:
       - GROUP_NAME
       - GROUP_ID
     ports:
-      - "${GRAFANA_PORT}:3000"
+      - "${GRAFANA_PORT}:${GRAFANA_PORT}"
     volumes:
       - './grafana:/var/lib/grafana'
     networks:
