@@ -1,9 +1,5 @@
 #!/bin/bash
 
-HOST=${1:-"localhost"}
-
-echo "HOST: ${HOST}"
-
 export $(grep -v '^#' .env | xargs)
 
 mkdir -p ./prometheus/.temp/
@@ -13,7 +9,6 @@ envsubst < ./prometheus/prometheus.yaml.template > ./prometheus/.temp/prometheus
 
 mkdir -p ./grafana
 
-export HOST=$HOST
 docker compose -f docker-compose.develop.yaml up
 
 rm ./prometheus/.temp/prometheus.yaml
