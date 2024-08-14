@@ -60,11 +60,17 @@ server {
     }
 
     location /monitor/ {
+        allow ${ADMIN_IP};
+        deny all;
+
         proxy_set_header Host $host;
         proxy_pass ${GRAFANA_PROTOCOL}://grafana;
     }
 
     location /monitor/api/live/ {
+        allow ${ADMIN_IP};
+        deny all;
+
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
