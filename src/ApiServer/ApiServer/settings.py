@@ -30,13 +30,18 @@ SECRET_KEY = env("API_SERVER_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG")
 
+API_SERVER_HOST = env("API_SERVER_HOST")
 NONOGRAM_SERVER_PROTOCOL = env("NONOGRAM_SERVER_PROTOCOL")
 NONOGRAM_SERVER_HOST = env("NONOGRAM_SERVER_HOST")
 NONOGRAM_SERVER_PORT = env("NONOGRAM_SERVER_PORT")
 FRONTEND_SERVER_PROTOCOL = env("FRONTEND_SERVER_PROTOCOL")
 FRONTEND_SERVER_HOST = env("FRONTEND_SERVER_HOST")
 FRONTEND_SERVER_PORT = env("FRONTEND_SERVER_PORT")
-CURRENT_HOST = env("HOST")
+ENABLE_PROMETHEUS = env.bool("ENABLE_PROMETHEUS")
+if ENABLE_PROMETHEUS:
+    PROMETHEUS_PROTOCOL = env("PROMETHEUS_PROTOCOL")
+    PROMETHEUS_HOST = env("PROMETHEUS_HOST")
+    PROMETHEUS_PORT = env("PROMETHEUS_PORT")
 SERVER_DOMAIN = env("SERVER_DOMAIN")
 
 if DEBUG:
@@ -45,7 +50,7 @@ else:
     ALLOWED_HOSTS = [
         "localhost",
         "127.0.0.1",
-        f"{CURRENT_HOST}",
+        f"{API_SERVER_HOST}",
         f"{SERVER_DOMAIN}",
         f"{SERVER_DOMAIN}/api",
     ]
@@ -55,6 +60,12 @@ CORS_ALLOWED_ORIGINS = [
     f"{NONOGRAM_SERVER_PROTOCOL}://localhost:{NONOGRAM_SERVER_PORT}",
     f"{FRONTEND_SERVER_PROTOCOL}://{SERVER_DOMAIN}",
 ]
+
+if ENABLE_PROMETHEUS:
+    CORS_ALLOWED_ORIGINS += [
+        f"{PROMETHEUS_PROTOCOL}://{PROMETHEUS_HOST}:{PROMETHEUS_PORT}",
+        f"{PROMETHEUS_PROTOCOL}://localhost:{PROMETHEUS_PORT}",
+    ]
 
 # Application definition
 
@@ -68,9 +79,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
+    'django_prometheus',
 ]
 
 MIDDLEWARE = [
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     "corsheaders.middleware.CorsMiddleware",
@@ -79,6 +92,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 ROOT_URLCONF = 'ApiServer.urls'

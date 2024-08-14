@@ -41,12 +41,23 @@ ALLOWED_HOSTS = [
 API_SERVER_PROTOCOL = env("API_SERVER_PROTOCOL")
 API_SERVER_HOST = env("API_SERVER_HOST")
 API_SERVER_PORT = env("API_SERVER_PORT")
+ENABLE_PROMETHEUS = env.bool("ENABLE_PROMETHEUS")
+if ENABLE_PROMETHEUS:
+    PROMETHEUS_PROTOCOL = env("PROMETHEUS_PROTOCOL")
+    PROMETHEUS_HOST = env("PROMETHEUS_HOST")
+    PROMETHEUS_PORT = env("PROMETHEUS_PORT")
 
 CORS_ALLOWED_ORIGINS = [
     f"{API_SERVER_PROTOCOL}://{API_SERVER_HOST}:{API_SERVER_PORT}",
     f"{API_SERVER_PROTOCOL}://localhost:{API_SERVER_PORT}",
 ]
 
+
+if ENABLE_PROMETHEUS:
+    CORS_ALLOWED_ORIGINS += [
+        f"{PROMETHEUS_PROTOCOL}://{PROMETHEUS_HOST}:{PROMETHEUS_PORT}",
+        f"{PROMETHEUS_PROTOCOL}://localhost:{PROMETHEUS_PORT}",
+    ]
 
 # Application definition
 
@@ -60,9 +71,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
+    'django_prometheus',
 ]
 
 MIDDLEWARE = [
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     "corsheaders.middleware.CorsMiddleware",
@@ -71,6 +84,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 ROOT_URLCONF = 'NonogramServer.urls'
@@ -100,7 +114,7 @@ ASGI_APPLICATION = 'NonogramServer.asgi.application'
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
+        "ENGINE": "django_prometheus.db.backends.postgresql",
         "NAME": env("DB_NAME"),
         "USER": env("DB_USER"),
         "PASSWORD": env("DB_PASSWORD"),

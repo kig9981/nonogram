@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.urls import include
 from .views.GetNonogramBoard import GetNonogramBoard
 from .views.GetNonogramPlay import GetNonogramPlay
 from .views.Synchronize import Synchronize
@@ -26,6 +27,7 @@ from .views.Healthcheck import HealthCheck
 
 urlpatterns = [
     path('admin', admin.site.urls),
+    path('', include('django_prometheus.urls')),
     path('healthcheck', HealthCheck.as_view(), name="healthcheck"),
     path("sessions/<str:session_id>/board", GetNonogramBoard.as_view(), name="get_nonogram_board"),
     path("sessions/<str:session_id>/play", GetNonogramPlay.as_view(), name="get_nonogram_play"),
