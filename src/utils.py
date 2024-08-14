@@ -353,8 +353,8 @@ class LogSystem:
     ) -> LogFunction | Callable[[LogFunction], LogFunction]:
         if func:
             return self._decorator(func, log_level)
-        
+
         def wrapper(func: LogFunction):
             return self._decorator(func, log_level)
-        
+
         return wrapper
