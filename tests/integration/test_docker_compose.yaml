@@ -1,16 +1,18 @@
 services:
   testnonogramserverdb:
     image: postgres:latest
+    container_name: ${DB_HOST}
     restart: always
     environment:
       PGUSER: ${DB_USER}
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGPORT: ${DB_PORT}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
     ports:
-      - "${DB_PORT}:5432"
+      - "${DB_PORT}:${DB_PORT}"
     networks:
       - test_nonogram_net
     env_file:
