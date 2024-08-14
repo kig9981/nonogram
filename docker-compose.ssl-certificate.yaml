@@ -19,7 +19,6 @@ services:
       - cert_init_net
   certbot:
     image: certbot/certbot:latest
-    restart: unless-stopped
     command: certonly --webroot --webroot-path=/var/www/certbot -d ${SERVER_DOMAIN} --email ${EMAIL} --agree-tos
     volumes:
       - ./logs:/var/log/letsencrypt
