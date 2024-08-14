@@ -10,11 +10,6 @@ services:
       - ./nginx/nginx-init-certificate.conf.template:/etc/nginx/templates/default.conf.template
       - ./certbot/certificate:/etc/letsencrypt
       - ./certbot/challenge:/var/www/certbot
-    depends_on:
-      frontendserver:
-        condition: service_healthy
-      apiserver:
-        condition: service_healthy
     networks:
       - cert_init_net
   certbot:
