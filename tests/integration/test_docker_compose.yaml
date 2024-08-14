@@ -25,6 +25,7 @@ services:
       API_SERVER_PROTOCOL: ${API_SERVER_PROTOCOL}
       API_SERVER_HOST: ${API_SERVER_HOST}
       API_SERVER_PORT: ${API_SERVER_PORT}
+      ENABLE_PROMETHEUS: ${ENABLE_PROMETHEUS}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -61,9 +62,10 @@ services:
       FRONTEND_SERVER_HOST: ${FRONTEND_SERVER_HOST}
       FRONTEND_SERVER_PORT: ${FRONTEND_SERVER_PORT}
       API_SERVER_HOST: ${API_SERVER_HOST}
+      ENABLE_PROMETHEUS: ${ENABLE_PROMETHEUS}
+      SERVER_DOMAIN: ${SERVER_DOMAIN}
       DEBUG: ${DEBUG}
       LOG_PATH: ${LOG_PATH}
-      SERVER_DOMAIN: ${SERVER_DOMAIN}
     command: bash -c "python src/ApiServer/manage.py runserver 0.0.0.0:${API_SERVER_PORT}"
     healthcheck:
       test: curl --fail http://localhost:${API_SERVER_PORT}/healthcheck || exit 1
