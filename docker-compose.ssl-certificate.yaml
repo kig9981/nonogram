@@ -1,0 +1,33 @@
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SERVER_DOMAIN: ${SERVER_DOMAIN}
+    volumes:
+      - ./nginx/nginx-init-certificate.conf.template:/etc/nginx/templates/default.conf.template
+      - ./certbot/certificate:/etc/letsencrypt
+      - ./certbot/challenge:/var/www/certbot
+    depends_on:
+      frontendserver:
+        condition: service_healthy
+      apiserver:
+        condition: service_healthy
+    networks:
+      - cert_init_net
+  certbot:
+    image: certbot/certbot:latest
+    restart: unless-stopped
+    command: certonly --webroot --webroot-path=/var/www/certbot -d ${SERVER_DOMAIN} --email ${EMAIL} --agree-tos
+    volumes:
+      - ./logs:/var/log/letsencrypt
+      - ./certbot/certificate:/etc/letsencrypt
+      - ./certbot/challenge:/var/www/certbot
+    networks:
+      - cert_init_net
+
+networks:
+  cert_init_net:
+    driver: bridge
