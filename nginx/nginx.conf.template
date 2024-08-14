@@ -20,6 +20,24 @@ server {
     listen [::]:80;
     server_name ${SERVER_DOMAIN};
 
+    location /.well-known/acme-challenge {
+        allow all;
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443;
+    listen [::]:443;
+    server_name ${SERVER_DOMAIN};
+
+    ssl_certificate /etc/letsencrypt/live/${SERVER_DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${SERVER_DOMAIN}/privkey.pem;
+
     location / {
         proxy_pass ${FRONTEND_SERVER_PROTOCOL}://frontend;
         proxy_set_header Host $host;
