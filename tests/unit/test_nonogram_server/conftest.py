@@ -60,6 +60,7 @@ def pytest_configure():
     os.environ["DB_PORT"] = f"{DB_PORT}"
     os.environ["NONOGRAM_SERVER_HOST"] = "localhost"
     os.environ["API_SERVER_HOST"] = "localhost"
+    os.environ["ENABLE_PROMETHEUS"] = "False"
     os.environ["DEBUG"] = "True"
     django.setup()
 

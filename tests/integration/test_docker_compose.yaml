@@ -1,16 +1,18 @@
 services:
   testnonogramserverdb:
     image: postgres:latest
+    container_name: ${DB_HOST}
     restart: always
     environment:
       PGUSER: ${DB_USER}
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGPORT: ${DB_PORT}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
     ports:
-      - "${DB_PORT}:5432"
+      - "${DB_PORT}:${DB_PORT}"
     networks:
       - test_nonogram_net
     env_file:
@@ -25,11 +27,12 @@ services:
       API_SERVER_PROTOCOL: ${API_SERVER_PROTOCOL}
       API_SERVER_HOST: ${API_SERVER_HOST}
       API_SERVER_PORT: ${API_SERVER_PORT}
+      ENABLE_PROMETHEUS: ${ENABLE_PROMETHEUS}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST}
-      DB_PORT: 5432
+      DB_PORT: ${DB_PORT}
       LOG_PATH: ${LOG_PATH}
       DEBUG: ${DEBUG}
     command: bash -c "python src/NonogramServer/manage.py runserver 0.0.0.0:${NONOGRAM_SERVER_PORT}"
@@ -61,10 +64,10 @@ services:
       FRONTEND_SERVER_HOST: ${FRONTEND_SERVER_HOST}
       FRONTEND_SERVER_PORT: ${FRONTEND_SERVER_PORT}
       API_SERVER_HOST: ${API_SERVER_HOST}
-      DEBUG: ${DEBUG}
-      HOST: ${HOST}
-      LOG_PATH: ${LOG_PATH}
+      ENABLE_PROMETHEUS: ${ENABLE_PROMETHEUS}
       SERVER_DOMAIN: ${SERVER_DOMAIN}
+      DEBUG: ${DEBUG}
+      LOG_PATH: ${LOG_PATH}
     command: bash -c "python src/ApiServer/manage.py runserver 0.0.0.0:${API_SERVER_PORT}"
     healthcheck:
       test: curl --fail http://localhost:${API_SERVER_PORT}/healthcheck || exit 1
