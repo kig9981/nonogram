@@ -1,17 +1,9 @@
-FROM python:3.10-slim-bullseye
+ARG VERSION=latest
 
-RUN apt-get update && apt-get install -y curl
-RUN pip install --upgrade pip
+FROM common_base_python:$VERSION
 
-COPY pyproject.toml pyproject.toml
 COPY src/ApiServer /src/ApiServer
 COPY src/utils.py /src/utils.py
-
-RUN pip install poetry
-ENV PATH="${PATH}:/root/.local/bin"
-
-RUN poetry export -f requirements.txt -o requirements.txt --without-hashes
-RUN pip install -r requirements.txt
 
 RUN chmod +x /src/ApiServer/docker_entrypoint.sh
 
