@@ -128,6 +128,7 @@ services:
       GRAFANA_PROTOCOL: ${GRAFANA_PROTOCOL}
       GRAFANA_HOST: ${GRAFANA_HOST}
       GRAFANA_PORT: ${GRAFANA_PORT}
+      ADMIN_IP: ${ADMIN_IP}
     volumes:
       - ./nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template
       - ./certbot/certificate:/etc/letsencrypt
