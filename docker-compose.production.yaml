@@ -37,7 +37,7 @@ services:
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       LOG_PATH: ${LOG_PATH}
-      DEBUG: false
+      DEBUG: False
     command: bash -c "uvicorn NonogramServer.asgi:application --host 0.0.0.0 --port ${NONOGRAM_SERVER_PORT} --app-dir src/NonogramServer"
     healthcheck:
       test: curl --fail http://localhost:${NONOGRAM_SERVER_PORT}/healthcheck || exit 1
@@ -75,7 +75,7 @@ services:
       PROMETHEUS_PORT: ${PROMETHEUS_PORT}
       SERVER_DOMAIN: ${SERVER_DOMAIN}
       LOG_PATH: ${LOG_PATH}
-      DEBUG: false
+      DEBUG: False
     command: bash -c "uvicorn ApiServer.asgi:application --host 0.0.0.0 --port ${API_SERVER_PORT} --app-dir src/ApiServer --proxy-headers"
     healthcheck:
       test: curl --fail http://localhost:${API_SERVER_PORT}/healthcheck || exit 1
