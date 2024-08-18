@@ -96,7 +96,7 @@ services:
     image: frontend_server:${FRONTEND_SERVER_VERSION:-latest}
     container_name: ${FRONTEND_SERVER_HOST}
     environment:
-      REACT_APP_API_SERVER_PROTOCOL: ${API_SERVER_PROTOCOL}
+      REACT_APP_API_SERVER_PROTOCOL: ${SERVER_PROTOCOL}
       REACT_APP_API_SERVER_DOMAIN: ${SERVER_DOMAIN}
       DEBUG: ${DEBUG}
     command: bash -c "npm start"
@@ -117,6 +117,7 @@ services:
     image: nginx:alpine
     ports:
       - "80:80"
+      - "443:443"
     environment:
       SERVER_DOMAIN: ${SERVER_DOMAIN}
       API_SERVER_PROTOCOL: ${API_SERVER_PROTOCOL}
@@ -128,13 +129,26 @@ services:
       GRAFANA_PROTOCOL: ${GRAFANA_PROTOCOL}
       GRAFANA_HOST: ${GRAFANA_HOST}
       GRAFANA_PORT: ${GRAFANA_PORT}
+      ADMIN_IP: ${ADMIN_IP}
     volumes:
       - ./nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template
+      - ./certbot/certificate:/etc/letsencrypt
+      - ./certbot/challenge:/var/www/certbot
     depends_on:
       frontendserver:
         condition: service_healthy
       apiserver:
         condition: service_healthy
+    networks:
+      - nonogram_net
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./logs:/var/log/letsencrypt
+      - ./certbot/certificate:/etc/letsencrypt
+      - ./certbot/challenge:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
     networks:
       - nonogram_net
 
