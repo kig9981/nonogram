@@ -60,6 +60,7 @@ class History(models.Model):
 
 class Session(models.Model):
     session_id = models.UUIDField(primary_key=True, validators=[validate_uuid4], editable=False, unique=True)
+    client_session_key = models.TextField()
     current_game = models.ForeignKey("History", on_delete=models.SET_DEFAULT, null=True, default=None)
     board_data = models.ForeignKey("NonogramBoard", on_delete=models.SET_DEFAULT, null=True, default=None)
     board = models.TextField(null=True, default=None)

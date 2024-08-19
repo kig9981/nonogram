@@ -39,6 +39,13 @@ class CreateNewSession(AsyncAPIView):
             query = json.loads(request.body)
 
         url = f"{NONOGRAM_SERVER_URL}/sessions"
+
+        client_ip = request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')
+        user_agent = request.META.get('HTTP_USER_AGENT')
+
+        client_session_key = f"{client_ip}_{user_agent}"
+
+        query["client_session_key"] = client_session_key
         response = await send_request(
             method_type="POST",
             url=url,

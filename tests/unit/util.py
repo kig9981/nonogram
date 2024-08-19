@@ -21,10 +21,16 @@ async def send_test_request(
             path=url,
             data=query,
             content_type="application/json",
+            HTTP_X_FORWARDED_FOR='0.0.0.0',
+            HTTP_USER_AGENT='test-agent',
         )
         response = await request_function(request, **kwargs)
     elif method_type == "GET":
-        request = mock_request.get(url)
+        request = mock_request.get(
+            url,
+            HTTP_X_FORWARDED_FOR='0.0.0.0',
+            HTTP_USER_AGENT='test-agent',
+        )
         response = await request_function(request, **kwargs)
     elif method_type == "PUT":
         query = json.dumps(query_dict)
@@ -32,6 +38,8 @@ async def send_test_request(
             path=url,
             data=query,
             content_type="application/json",
+            HTTP_X_FORWARDED_FOR='0.0.0.0',
+            HTTP_USER_AGENT='test-agent',
         )
         response = await request_function(request, **kwargs)
     else:
