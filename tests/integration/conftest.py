@@ -5,21 +5,12 @@ import psycopg2
 from http import HTTPStatus
 from psycopg2 import OperationalError
 from pathlib import Path
-
-
-def load_env():
-    cwd = Path(os.path.dirname(__file__))
-    env_path = cwd.parent.joinpath('test.env')
-    if env_path.exists():
-        with env_path.open() as f:
-            for line in f:
-                if line.strip() and not line.startswith('#'):
-                    key, value = line.strip().split('=', 1)
-                    os.environ[key] = value
+from ..config import load_env
 
 
 def pytest_configure():
-    load_env()
+    cwd = Path(os.path.dirname(__file__))
+    load_env(cwd.parent)
 
 
 @pytest.fixture(scope="session")
