@@ -1,11 +1,10 @@
 import os
 import pytest
-import requests
-import psycopg2
-from http import HTTPStatus
-from psycopg2 import OperationalError
 from pathlib import Path
 from ..config import load_env
+from ..config import testdb_healthcheck
+from ..config import testnonogramserver_healthcheck
+from ..config import testapiserver_healthcheck
 
 
 def pytest_configure():
@@ -82,55 +81,6 @@ def nonogram_server_url(
     nonogram_server_port: str,
 ):
     return f"{nonogram_server_protocol}://localhost:{nonogram_server_port}"
-
-
-def testdb_healthcheck(
-    db_name: str,
-    db_user: str,
-    db_password: str,
-    db_port: str,
-) -> bool:
-    try:
-        conn = psycopg2.connect(
-            dbname=db_name,
-            user=db_user,
-            password=db_password,
-            host="localhost",
-            port=db_port,
-        )
-        cursor = conn.cursor()
-        cursor.execute("SELECT 1")
-        cursor.close()
-        conn.close()
-        return True
-    except OperationalError:
-        return False
-
-
-def testapiserver_healthcheck(
-    api_server_url: str,
-) -> bool:
-    apiserver_healthcheck_url = f"{api_server_url}/healthcheck"
-
-    try:
-        response = requests.get(apiserver_healthcheck_url)
-
-        return response.status_code == HTTPStatus.OK
-    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-        return False
-
-
-def testnonogramserver_healthcheck(
-    nonogram_server_url: str,
-) -> bool:
-    nonogramserver_healthcheck_url = f"{nonogram_server_url}/healthcheck"
-
-    try:
-        response = requests.get(nonogramserver_healthcheck_url)
-
-        return response.status_code == HTTPStatus.OK
-    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-        return False
 
 
 @pytest.fixture(scope='session')
