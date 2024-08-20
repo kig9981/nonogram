@@ -4,13 +4,14 @@ import requests
 import psycopg2
 from http import HTTPStatus
 from psycopg2 import OperationalError
+from pathlib import Path
 
 
 def load_env():
-    cwd = os.path.dirname(__file__)
-    env_path = os.path.join(cwd, 'test.env')
-    if os.path.exists(env_path):
-        with open(env_path) as f:
+    cwd = Path(os.path.dirname(__file__))
+    env_path = cwd.parent.joinpath('test.env')
+    if env_path.exists():
+        with env_path.open() as f:
             for line in f:
                 if line.strip() and not line.startswith('#'):
                     key, value = line.strip().split('=', 1)
@@ -183,7 +184,7 @@ def load_servers(
 
 @pytest.fixture(scope="session")
 def docker_compose_file(pytestconfig):
-    return str(pytestconfig.rootdir.join(os.path.join("tests", "integration", "test_docker_compose.yaml")))
+    return str(pytestconfig.rootdir.join(os.path.join("tests", "test_docker_compose.yaml")))
 
 
 # @pytest.fixture(scope='session')
