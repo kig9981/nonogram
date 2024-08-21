@@ -47,7 +47,6 @@ def on_locust_init(environment, **kwargs):
         print("initialization is done")
 
 
-
 @events.quit.add_listener
 def on_locust_quit(exit_code, **kwargs):
     test_path = Path(os.path.dirname(__file__)).parent.parent
@@ -71,7 +70,7 @@ class CreateNewSessionUser(HttpUser):
 
     @task
     def random_session_id(self):
-        random_number = random.randint(0,1000000000)
+        random_number = random.randint(0, 1000000000)
         with self.client.post("/sessions", json={"client_session_key": f"0.0.0.0_test-agent{random_number}"}, catch_response=True) as response:
             try:
                 session_id = response.json()["session_id"]
