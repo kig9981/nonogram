@@ -60,7 +60,7 @@ def on_locust_quit(environment, **kwargs):
 
 
 class CreateNewSessionUser(HttpUser):
-    wait_time = between(5, 15)
+    wait_time = between(0.5, 2)
 
     @task
     def single_session_id(self):
