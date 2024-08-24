@@ -47,11 +47,12 @@ def on_locust_init(environment, **kwargs):
         print("initialization is done")
 
 
-@events.quit.add_listener
-def on_locust_quit(exit_code, **kwargs):
-    test_path = Path(os.path.dirname(__file__)).parent.parent
-    docker_compose_file = str(test_path.joinpath("test_docker_compose.yaml"))
-    subprocess.call(f"docker compose -f {docker_compose_file} down", shell=True)
+@events.quitting.add_listener
+def on_locust_quit(environment, **kwargs):
+    if isinstance(environment.runner, MasterRunner) or isinstance(environment.runner, LocalRunner):
+        test_path = Path(os.path.dirname(__file__)).parent.parent
+        docker_compose_file = str(test_path.joinpath("test_docker_compose.yaml"))
+        subprocess.call(f"docker compose -f {docker_compose_file} down", shell=True)
 
 
 class CreateNewSessionUser(HttpUser):
