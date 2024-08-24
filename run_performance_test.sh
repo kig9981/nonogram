@@ -10,7 +10,7 @@ if [[ $test_condition == "local" ]]; then
     locust -f tests/performance/test_nonogram_server/CreateNewSession.py --headless -u 10 --run-time 60s -H http://localhost:${NONOGRAM_SERVER_PORT} --processes 10
 elif [[ $test_condition == "production" ]]; then
     export $(grep -v '^#' .env | xargs)
-    export TEST_CONDITION=""
+    export TEST_CONDITION="production"
     locust -f tests/performance/test_nonogram_server/CreateNewSession.py --headless -u 10 --run-time 60s -H ${SERVER_PROTOCOL}://${SERVER_DOMAIN}/api --processes 10
 else
     echo "Invalid test condition"
