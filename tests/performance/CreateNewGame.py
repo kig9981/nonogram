@@ -3,7 +3,7 @@ from locust import task
 from locust import between
 from json import JSONDecodeError
 from src.utils import Config
-import config
+import config # noqa
 
 
 response_code_to_str = [
