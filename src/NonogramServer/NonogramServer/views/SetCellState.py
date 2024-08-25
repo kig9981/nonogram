@@ -11,6 +11,7 @@ from ..models import Session
 from utils import async_get_from_db
 from utils import is_uuid4
 from utils import LogSystem
+from utils import Config
 from .configure import LOG_PATH
 
 
@@ -79,7 +80,7 @@ class SetCellState(AsyncAPIView):
         num_column = gameplay.num_column
         if not isinstance(x, int) or not isinstance(y, int) or not (0 <= x < num_row) or not (0 <= y < num_column):
             return HttpResponseBadRequest("Invalid coordinate.")
-        if not isinstance(new_state, int) or not (0 <= new_state <= 4):
+        if not isinstance(new_state, int) or not (Config.GAME_BOARD_CELL_STATE_LOWERBOUND <= new_state <= Config.GAME_BOARD_CELL_STATE_UPPERBOUND):
             return HttpResponseBadRequest("Invalid state. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), 3(MARK_QUESTION), or 4(MARK_WRONG).")
         changed = await gameplay.async_mark(x, y, new_state)
         response_data = {"response": changed}
