@@ -13,6 +13,15 @@ from tests.config import testnonogramserver_healthcheck
 @events.init.add_listener
 def on_locust_init(environment, **kwargs):
     if isinstance(environment.runner, MasterRunner) or isinstance(environment.runner, LocalRunner):
+        @events.quit.add_listener
+        def on_locust_quit(exit_code, **kwargs):
+            print("finishing...")
+            test_condition = os.environ["TEST_CONDITION"]
+            if test_condition == "local":
+                test_path = Path(os.path.dirname(__file__)).parent.parent
+                docker_compose_file = str(test_path.joinpath("test_docker_compose.yaml"))
+                subprocess.call(f"docker compose -f {docker_compose_file} down", shell=True)
+
         print("initializing...")
         test_path = Path(os.path.dirname(__file__)).parent
         load_env(test_path)
@@ -42,13 +51,3 @@ def on_locust_init(environment, **kwargs):
                 time.sleep(0.1)
 
         print("initialization is done")
-
-
-@events.quitting.add_listener
-def on_locust_quit(environment, **kwargs):
-    if isinstance(environment.runner, MasterRunner) or isinstance(environment.runner, LocalRunner):
-        test_condition = os.environ["TEST_CONDITION"]
-        if test_condition == "local":
-            test_path = Path(os.path.dirname(__file__)).parent.parent
-            docker_compose_file = str(test_path.joinpath("test_docker_compose.yaml"))
-            subprocess.call(f"docker compose -f {docker_compose_file} down", shell=True)
