@@ -3,6 +3,7 @@ from locust import task
 from locust import between
 from json import JSONDecodeError
 from src.utils import Config
+import config
 
 
 response_code_to_str = [
@@ -18,7 +19,8 @@ class CreateNewGameUser(HttpUser):
     def on_start(self) -> None:
         self.user_num = CreateNewGameUser.user_cnt
         CreateNewGameUser.user_cnt += 1
-        with self.client.post("/sessions", json={"client_session_key": f"0.0.0.0_test-agent{self.user_num}"}, catch_response=True) as response:
+        self.client.headers.update({"User-Agent": f"test-agent{self.user_num}"})
+        with self.client.post("/sessions", catch_response=True) as response:
             try:
                 self.session_id = response.json()["session_id"]
                 print(f"Sucessfully got session_id: {self.session_id}")

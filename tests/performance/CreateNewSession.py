@@ -3,6 +3,7 @@ from locust import task
 from locust import between
 from json import JSONDecodeError
 import random
+import config
 
 
 class CreateNewSessionUser(HttpUser):
@@ -10,7 +11,8 @@ class CreateNewSessionUser(HttpUser):
 
     @task
     def single_session_id(self):
-        with self.client.post("/sessions", json={"client_session_key": "0.0.0.0_test-agent"}, catch_response=True) as response:
+        self.client.headers.update({"User-Agent": "test-agent"})
+        with self.client.post("/sessions", catch_response=True) as response:
             try:
                 session_id = response.json()["session_id"]
                 print(f"Sucessfully got session_id: {session_id}")
@@ -22,7 +24,8 @@ class CreateNewSessionUser(HttpUser):
     @task
     def random_session_id(self):
         random_number = random.randint(0, 1000000000)
-        with self.client.post("/sessions", json={"client_session_key": f"0.0.0.0_test-agent{random_number}"}, catch_response=True) as response:
+        self.client.headers.update({"User-Agent": f"test-agent{random_number}"})
+        with self.client.post("/sessions", catch_response=True) as response:
             try:
                 session_id = response.json()["session_id"]
                 print(f"Sucessfully got session_id: {session_id}")
