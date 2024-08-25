@@ -358,3 +358,15 @@ class LogSystem:
             return self._decorator(func, log_level)
 
         return wrapper
+
+
+class Config:
+    BLACK_THRESHOLD = 127
+    GAME_NOT_START = 0
+    LATEST_TURN = -1
+    RANDOM_BOARD = 0
+    GAME_EXIST = 0
+    NEW_GAME_STARTED = 1
+    CELL_UNCHANGED = 0
+    CELL_APPLIED = 1
+    BOARD_GAME_OVER = 2

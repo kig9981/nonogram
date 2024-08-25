@@ -11,6 +11,7 @@ from ..models import NonogramBoard
 from utils import RealBoardCellState
 from utils import is_base64
 from utils import LogSystem
+from utils import Config
 from PIL import Image
 from .configure import LOG_PATH
 
@@ -40,7 +41,6 @@ class AddNonogramBoard(AsyncAPIView):
         self,
         request: HttpRequest,
     ) -> HttpResponse:
-        BLACK_THRESHOLD = 127
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
         query = json.loads(request.body)
@@ -75,7 +75,7 @@ class AddNonogramBoard(AsyncAPIView):
         pixels = resized_board_image.load()
 
         board = [
-            [int(RealBoardCellState.BLACK) if pixels[x, y] <= BLACK_THRESHOLD else int(RealBoardCellState.WHITE) for y in range(num_column)]
+            [int(RealBoardCellState.BLACK) if pixels[x, y] <= Config.BLACK_THRESHOLD else int(RealBoardCellState.WHITE) for y in range(num_column)]
             for x in range(num_row)
         ]
 
