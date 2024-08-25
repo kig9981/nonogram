@@ -2,13 +2,10 @@ from locust import HttpUser
 from locust import task
 from locust import between
 from json import JSONDecodeError
+from src.utils import Config
 import random
 import config
 
-
-RANDOM_BOARD = 0
-GAME_EXIST = 0
-NEW_GAME_STARTED = 1
 
 response_code_to_str = [
     "GAME_EXIST",
@@ -35,7 +32,7 @@ class CreateNewGameUser(HttpUser):
 
     @task
     def create_new_game(self):
-        with self.client.put(f"/sessions/{self.session_id}", json={"board_id": RANDOM_BOARD}, catch_response=True) as response:
+        with self.client.put(f"/sessions/{self.session_id}", json={"board_id": Config.RANDOM_BOARD}, catch_response=True) as response:
             try:
                 board_id = response.json()["board_id"]
                 response_code = response.json()["response"]
