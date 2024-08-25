@@ -45,6 +45,8 @@ class CreateNewSession(AsyncAPIView):
 
         client_session_key = f"{client_ip}_{user_agent}"
 
+        CreateNewSession.logger.log(f"client_session_key: {client_session_key}")
+
         query["client_session_key"] = client_session_key
         response = await send_request(
             method_type="POST",

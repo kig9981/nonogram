@@ -347,12 +347,15 @@ class LogSystem:
 
     def log(
         self,
-        func: Optional[LogFunction] = None,
+        func_or_msg: Optional[Union[LogFunction, str]] = None,
         *,
         log_level: int = logging.INFO,
-    ) -> LogFunction | Callable[[LogFunction], LogFunction]:
-        if func:
-            return self._decorator(func, log_level)
+    ) -> Optional[Union[LogFunction, Callable[[LogFunction], LogFunction]]]:
+        if isinstance(func_or_msg, str):
+            self._log(func_or_msg, log_level=log_level)
+            return
+        if func_or_msg:
+            return self._decorator(func_or_msg, log_level)
 
         def wrapper(func: LogFunction):
             return self._decorator(func, log_level)
