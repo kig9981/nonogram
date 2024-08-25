@@ -14,7 +14,7 @@ from tests.config import testnonogramserver_healthcheck
 def on_locust_init(environment, **kwargs):
     if isinstance(environment.runner, MasterRunner) or isinstance(environment.runner, LocalRunner):
         print("initializing...")
-        test_path = Path(os.path.dirname(__file__)).parent.parent
+        test_path = Path(os.path.dirname(__file__)).parent
         load_env(test_path)
         test_condition = os.environ["TEST_CONDITION"]
         if test_condition == "local":

@@ -104,9 +104,7 @@ def test_game(
 
         response = requests.post(
             f"{api_server_url}/sessions",
-            json={
-                "client_session_key": "0.0.0.0_test-agent"
-            }
+            headers={"User-Agent": "test-agent"}
         )
 
         assert response.status_code == HTTPStatus.OK
