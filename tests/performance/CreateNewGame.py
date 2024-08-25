@@ -3,8 +3,6 @@ from locust import task
 from locust import between
 from json import JSONDecodeError
 from src.utils import Config
-import random
-import config
 
 
 response_code_to_str = [
@@ -36,10 +34,9 @@ class CreateNewGameUser(HttpUser):
             try:
                 board_id = response.json()["board_id"]
                 response_code = response.json()["response"]
-                
+
                 print(f"Sucessfully got response({response_code_to_str[response_code]}): {board_id}")
             except JSONDecodeError:
                 response.failure("Response could not be decoded as JSON")
             except KeyError:
                 response.failure("Response did not contain expected key 'session_id'")
-

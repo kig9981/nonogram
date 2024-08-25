@@ -1,6 +1,5 @@
 import pytest
 import json
-import uuid
 from typing import Any
 from typing import List
 from typing import Dict
