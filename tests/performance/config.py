@@ -18,7 +18,7 @@ def on_locust_init(environment, **kwargs):
             print("finishing...")
             test_condition = os.environ["TEST_CONDITION"]
             if test_condition == "local":
-                test_path = Path(os.path.dirname(__file__)).parent.parent
+                test_path = Path(os.path.dirname(__file__)).parent
                 docker_compose_file = str(test_path.joinpath("test_docker_compose.yaml"))
                 subprocess.call(f"docker compose -f {docker_compose_file} down", shell=True)
 
