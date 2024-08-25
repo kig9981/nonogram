@@ -41,7 +41,7 @@ class GamePlayUser(HttpUser):
                 num_row, num_column = json_response["num_row"], json_response["num_column"]
 
                 print(f"Sucessfully got response({response_code_to_str[response_code]}): {board_id}")
-                
+
                 move_pool = [(x, y) for x in range(num_row) for y in range(num_column)]
 
                 random.shuffle(move_pool)
@@ -60,7 +60,7 @@ class GamePlayUser(HttpUser):
                     ) as response:
                         response = response.json()["response"]
                         print(f"Sucessfully got response({response})")
-                
+
             except JSONDecodeError:
                 response.failure("Response could not be decoded as JSON")
             except KeyError:
