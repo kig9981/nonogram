@@ -1,4 +1,5 @@
 import json
+import uuid
 from django.test.client import RequestFactory
 from django.http import HttpRequest
 from django.http import HttpResponse
@@ -46,3 +47,11 @@ async def send_test_request(
         raise Exception("Invalid method type")
 
     return response
+
+
+class TestConfig:
+    BOARD_ID_UNUSED_FOR_TEST = str(uuid.uuid4())
+    SESSION_ID_UNUSED_FOR_TEST = str(uuid.uuid4())
+    INCORRECT_ID = "xxxxxxx"
+    GAME_NOT_START = 0
+    INVALID_GAME_TURN = -2

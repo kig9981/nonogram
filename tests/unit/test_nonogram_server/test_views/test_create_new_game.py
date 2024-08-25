@@ -8,10 +8,8 @@ from NonogramServer.views.HandleGame import HandleGame
 from django.test.client import RequestFactory
 from ...util import send_test_request
 from src.utils import is_uuid4
+from src.utils import Config
 
-RANDOM_BOARD = 0
-GAME_EXIST = 0
-NEW_GAME_STARTED = 1
 
 create_new_game = HandleGame.as_view()
 
@@ -71,7 +69,7 @@ async def test_create_new_game(
         assert response.status_code == HTTPStatus.OK
         response_data = json.loads(response.content)
 
-        assert response_data["response"] == GAME_EXIST
+        assert response_data["response"] == Config.GAME_EXIST
 
         query_dict = {
             'session_id': session_id,
@@ -91,12 +89,12 @@ async def test_create_new_game(
         assert response.status_code == HTTPStatus.OK
         response_data = json.loads(response.content)
 
-        assert response_data["response"] == NEW_GAME_STARTED
+        assert response_data["response"] == Config.NEW_GAME_STARTED
         assert response_data["board_id"] == board_id
 
         query_dict = {
             'session_id': session_id,
-            'board_id': RANDOM_BOARD,
+            'board_id': Config.RANDOM_BOARD,
             'force_new_game': True,
         }
 
@@ -112,7 +110,7 @@ async def test_create_new_game(
         assert response.status_code == HTTPStatus.OK
         response_data = json.loads(response.content)
 
-        assert response_data["response"] == NEW_GAME_STARTED
+        assert response_data["response"] == Config.NEW_GAME_STARTED
         assert is_uuid4(response_data["board_id"])
 
 
@@ -146,4 +144,4 @@ async def test_create_new_game_with_new_session(
         assert response.status_code == HTTPStatus.OK
         response_data = json.loads(response.content)
 
-        assert response_data["response"] == NEW_GAME_STARTED
+        assert response_data["response"] == Config.NEW_GAME_STARTED

@@ -9,13 +9,7 @@ from NonogramServer.models import Session
 from NonogramServer.views.GetNonogramPlay import GetNonogramPlay
 from django.test.client import RequestFactory
 from ...util import send_test_request
-
-
-BOARD_ID_UNUSED_FOR_TEST = str(uuid.uuid4())
-INCORRECT_ID = "xxxxxxx"
-BOARD_QUERY = 0
-GAME_NOT_START = 0
-INVALID_GAME_TURN = -2
+from ...util import TestConfig
 
 
 get_nonogram_play = GetNonogramPlay.as_view()
@@ -37,7 +31,7 @@ async def test_session_for_get_nonogram_play(
 
         query_dict = {
             "session_id": session_id,
-            "game_turn_str": str(INVALID_GAME_TURN),
+            "game_turn_str": str(TestConfig.INVALID_GAME_TURN),
         }
         response = await send_test_request(
             method_type="GET",
@@ -91,8 +85,8 @@ async def test_get_nonogram_play(
     add_test_data,
 ):
     query_dict = {
-        "session_id": INCORRECT_ID,
-        "game_turn_str": str(GAME_NOT_START),
+        "session_id": TestConfig.INCORRECT_ID,
+        "game_turn_str": str(TestConfig.GAME_NOT_START),
     }
 
     response = await send_test_request(
@@ -104,4 +98,4 @@ async def test_get_nonogram_play(
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.content.decode() == f"session_id '{INCORRECT_ID}' is not valid id."
+    assert response.content.decode() == f"session_id '{TestConfig.INCORRECT_ID}' is not valid id."
