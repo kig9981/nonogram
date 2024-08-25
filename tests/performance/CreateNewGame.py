@@ -3,7 +3,7 @@ from locust import task
 from locust import between
 from json import JSONDecodeError
 import random
-import tests.performance.config
+import config
 
 
 RANDOM_BOARD = 0
@@ -16,13 +16,13 @@ response_code_to_str = [
 ]
 
 
-class HandleGameUser(HttpUser):
+class CreateNewGameUser(HttpUser):
     wait_time = between(0.5, 2)
     user_cnt = 1
 
     def on_start(self) -> None:
-        self.user_num = HandleGameUser.user_cnt
-        HandleGameUser.user_cnt += 1
+        self.user_num = CreateNewGameUser.user_cnt
+        CreateNewGameUser.user_cnt += 1
         with self.client.post("/sessions", json={"client_session_key": f"0.0.0.0_test-agent{self.user_num}"}, catch_response=True) as response:
             try:
                 self.session_id = response.json()["session_id"]
