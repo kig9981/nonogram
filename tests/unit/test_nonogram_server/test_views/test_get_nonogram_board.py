@@ -8,13 +8,7 @@ from http import HTTPStatus
 from NonogramServer.views.GetNonogramBoard import GetNonogramBoard
 from django.test.client import RequestFactory
 from ...util import send_test_request
-
-
-BOARD_ID_UNUSED_FOR_TEST = str(uuid.uuid4())
-INCORRECT_ID = "xxxxxxx"
-BOARD_QUERY = 0
-GAME_NOT_START = 0
-INVALID_GAME_TURN = -2
+from ...util import TestConfig
 
 
 get_nonogram_board = GetNonogramBoard.as_view()
@@ -59,7 +53,7 @@ async def test_get_nonogram_board(
     add_test_data,
 ):
     query_dict = {
-        "board_id": BOARD_ID_UNUSED_FOR_TEST,
+        "board_id": TestConfig.BOARD_ID_UNUSED_FOR_TEST,
     }
 
     response = await send_test_request(
@@ -71,10 +65,10 @@ async def test_get_nonogram_board(
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.content.decode() == f"board_id '{BOARD_ID_UNUSED_FOR_TEST}' not found."
+    assert response.content.decode() == f"board_id '{TestConfig.BOARD_ID_UNUSED_FOR_TEST}' not found."
 
     query_dict = {
-        "board_id": INCORRECT_ID,
+        "board_id": TestConfig.INCORRECT_ID,
     }
 
     response = await send_test_request(
@@ -86,4 +80,4 @@ async def test_get_nonogram_board(
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.content.decode() == f"board_id '{INCORRECT_ID}' is not valid id."
+    assert response.content.decode() == f"board_id '{TestConfig.INCORRECT_ID}' is not valid id."

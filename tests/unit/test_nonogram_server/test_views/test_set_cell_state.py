@@ -12,9 +12,7 @@ from src.utils import GameBoardCellState
 from Nonogram.NonogramBoard import NonogramGameplay
 from django.test.client import RequestFactory
 from ...util import send_test_request
-
-SESSION_ID_UNUSED_FOR_TEST = str(uuid.uuid4())
-INCORRECT_ID = "xxxxxxx"
+from ...util import TestConfig
 
 set_cell_state = SetCellState.as_view()
 
@@ -101,7 +99,7 @@ async def test_set_cell_state(
     assert response.content.decode() == "x_coord is missing."
 
     query_dict = {
-        "session_id": SESSION_ID_UNUSED_FOR_TEST,
+        "session_id": TestConfig.SESSION_ID_UNUSED_FOR_TEST,
         "x_coord": 0,
         "y_coord": 0,
         "new_state": GameBoardCellState.NOT_SELECTED,
@@ -111,16 +109,16 @@ async def test_set_cell_state(
         method_type="POST",
         mock_request=mock_request,
         request_function=set_cell_state,
-        url=get_url(SESSION_ID_UNUSED_FOR_TEST),
+        url=get_url(TestConfig.SESSION_ID_UNUSED_FOR_TEST),
         query_dict=query_dict,
-        session_id=SESSION_ID_UNUSED_FOR_TEST,
+        session_id=TestConfig.SESSION_ID_UNUSED_FOR_TEST,
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.content.decode() == f"session_id '{SESSION_ID_UNUSED_FOR_TEST}' not found."
+    assert response.content.decode() == f"session_id '{TestConfig.SESSION_ID_UNUSED_FOR_TEST}' not found."
 
     query_dict = {
-        "session_id": INCORRECT_ID,
+        "session_id": TestConfig.INCORRECT_ID,
         "x_coord": 0,
         "y_coord": 0,
         "new_state": GameBoardCellState.NOT_SELECTED,
@@ -130,10 +128,10 @@ async def test_set_cell_state(
         method_type="POST",
         mock_request=mock_request,
         request_function=set_cell_state,
-        url=get_url(INCORRECT_ID),
+        url=get_url(TestConfig.INCORRECT_ID),
         query_dict=query_dict,
-        session_id=INCORRECT_ID,
+        session_id=TestConfig.INCORRECT_ID,
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.content.decode() == f"session_id '{INCORRECT_ID}' is not valid id."
+    assert response.content.decode() == f"session_id '{TestConfig.INCORRECT_ID}' is not valid id."

@@ -7,13 +7,7 @@ from http import HTTPStatus
 from NonogramServer.views.HandleGame import HandleGame
 from django.test.client import RequestFactory
 from ...util import send_test_request
-
-
-SESSION_ID_UNUSED_FOR_TEST = str(uuid.uuid4())
-INCORRECT_ID = "xxxxxxx"
-BOARD_QUERY = 0
-GAME_NOT_START = 0
-INVALID_GAME_TURN = -2
+from ...util import TestConfig
 
 
 get_session_board = HandleGame.as_view()
@@ -31,7 +25,7 @@ async def test_get_session_board(
     add_test_data,
 ):
     query_dict = {
-        "session_id": SESSION_ID_UNUSED_FOR_TEST,
+        "session_id": TestConfig.SESSION_ID_UNUSED_FOR_TEST,
     }
 
     response = await send_test_request(
@@ -43,10 +37,10 @@ async def test_get_session_board(
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.content.decode() == f"session_id '{SESSION_ID_UNUSED_FOR_TEST}' not found."
+    assert response.content.decode() == f"session_id '{TestConfig.SESSION_ID_UNUSED_FOR_TEST}' not found."
 
     query_dict = {
-        "session_id": INCORRECT_ID,
+        "session_id": TestConfig.INCORRECT_ID,
     }
 
     response = await send_test_request(
@@ -58,7 +52,7 @@ async def test_get_session_board(
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.content.decode() == f"session_id '{INCORRECT_ID}' is not valid id."
+    assert response.content.decode() == f"session_id '{TestConfig.INCORRECT_ID}' is not valid id."
 
     for test_session in test_sessions:
         session_id = test_session["session_id"]
