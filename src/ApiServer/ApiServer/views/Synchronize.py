@@ -43,19 +43,13 @@ class Synchronize(AsyncAPIView):
         session_id: str,
         game_turn: int,
     ) -> HttpResponse:
-        LATEST_TURN = -1
-
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return HttpResponseBadRequest(f"'{session_id}' is not valid id.")
 
-        url = f"{NONOGRAM_SERVER_URL}/get_nonogram_board"
-        query_dict = {
-            "session_id": session_id,
-            "game_turn": LATEST_TURN,
-        }
+        url = f"{NONOGRAM_SERVER_URL}/{session_id}/turn/{game_turn}"
         response = await send_request(
+            method_type="GET",
             url=url,
-            request=query_dict,
         )
         status_code = response["status_code"]
 
