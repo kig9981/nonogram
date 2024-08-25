@@ -3,7 +3,7 @@ from locust import task
 from locust import between
 from json import JSONDecodeError
 import random
-import tests.performance.config
+import config
 
 
 class CreateNewSessionUser(HttpUser):
