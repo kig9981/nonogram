@@ -13,6 +13,7 @@ from utils import async_get_from_db
 from utils import is_uuid4
 from utils import deserialize_gameboard
 from utils import LogSystem
+from utils import Config
 from .configure import LOG_PATH
 
 
@@ -100,9 +101,6 @@ class HandleGame(AsyncAPIView):
         session_id: str,
         force_new_game: bool,
     ) -> HttpResponse:
-        RANDOM_BOARD = 0
-        GAME_EXIST = 0
-        NEW_GAME_STARTED = 1
         query = json.loads(request.body)
         if 'board_id' not in query:
             return HttpResponseBadRequest("board_id is missing.")
@@ -111,7 +109,7 @@ class HandleGame(AsyncAPIView):
 
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
-        if board_id != RANDOM_BOARD and (not isinstance(board_id, str) or not is_uuid4(board_id)):
+        if board_id != Config.RANDOM_BOARD and (not isinstance(board_id, str) or not is_uuid4(board_id)):
             return HttpResponseBadRequest(f"board_id '{board_id}' is not valid id.")
 
         try:
@@ -127,7 +125,7 @@ class HandleGame(AsyncAPIView):
         if session_data.board_data is not None:
             if not force_new_game:
                 response_data = {
-                    "response": GAME_EXIST,
+                    "response": Config.GAME_EXIST,
                     "board_id": session_data.board_data.board_id,
                 }
                 return JsonResponse(response_data)
@@ -135,7 +133,7 @@ class HandleGame(AsyncAPIView):
             session = NonogramGameplay(session_data)
             await session.async_reset()
 
-        if board_id == RANDOM_BOARD:
+        if board_id == Config.RANDOM_BOARD:
             # TODO: 더 빠르게 랜덤셀렉트하는걸로 바꾸기
             board_data = await NonogramBoard.objects.order_by('?').afirst()
             board_id = str(board_data.board_id)
@@ -158,7 +156,7 @@ class HandleGame(AsyncAPIView):
         await session.asave()
 
         response_data = {
-            "response": NEW_GAME_STARTED,
+            "response": Config.NEW_GAME_STARTED,
             "board_id": board_id,
             "board": deserialize_gameboard(board_data.board),
             "num_row": board_data.num_row,

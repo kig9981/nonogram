@@ -4,11 +4,7 @@ from NonogramServer.models import NonogramBoard
 from src.utils import GameBoardCellState
 from src.utils import RealBoardCellState
 from src.utils import serialize_gameboard
-
-
-UNCHANGED = 0
-APPLIED = 1
-GAME_OVER = 2
+from src.utils import Config
 
 
 @pytest.mark.django_db
@@ -38,25 +34,25 @@ def test_nonogram_board_mark(
 
         for x in range(num_row):
             for y in range(num_column):
-                expected_result = APPLIED if black_counter > 0 else GAME_OVER
+                expected_result = Config.CELL_APPLIED if black_counter > 0 else Config.BOARD_GAME_OVER
                 assert game_board.mark(x, y, GameBoardCellState.MARK_X) == expected_result
                 assert game_board.mark(x, y, GameBoardCellState.MARK_QUESTION) == expected_result
                 assert game_board.mark(x, y, GameBoardCellState.NOT_SELECTED) == expected_result
 
                 if board[x][y] == RealBoardCellState.BLACK:
-                    expected_result = APPLIED
+                    expected_result = Config.CELL_APPLIED
                 elif black_counter > 0:
-                    expected_result = UNCHANGED
+                    expected_result = Config.CELL_UNCHANGED
                 else:
-                    expected_result = GAME_OVER
+                    expected_result = Config.BOARD_GAME_OVER
 
                 assert game_board.mark(x, y, GameBoardCellState.REVEALED) == expected_result
 
-                if expected_result == APPLIED:
+                if expected_result == Config.CELL_APPLIED:
                     black_counter -= 1
-                    expected_result = UNCHANGED if black_counter > 0 else GAME_OVER
-                elif expected_result == UNCHANGED:
-                    expected_result = APPLIED
+                    expected_result = Config.CELL_UNCHANGED if black_counter > 0 else Config.BOARD_GAME_OVER
+                elif expected_result == Config.CELL_UNCHANGED:
+                    expected_result = Config.CELL_APPLIED
 
                 assert game_board.mark(x, y, GameBoardCellState.MARK_X) == expected_result
                 assert game_board.mark(x, y, GameBoardCellState.MARK_QUESTION) == expected_result

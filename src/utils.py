@@ -347,14 +347,31 @@ class LogSystem:
 
     def log(
         self,
-        func: Optional[LogFunction] = None,
+        func_or_msg: Optional[Union[LogFunction, str]] = None,
         *,
         log_level: int = logging.INFO,
-    ) -> LogFunction | Callable[[LogFunction], LogFunction]:
-        if func:
-            return self._decorator(func, log_level)
+    ) -> Optional[Union[LogFunction, Callable[[LogFunction], LogFunction]]]:
+        if isinstance(func_or_msg, str):
+            self._log(func_or_msg, log_level=log_level)
+            return
+        if func_or_msg:
+            return self._decorator(func_or_msg, log_level)
 
         def wrapper(func: LogFunction):
             return self._decorator(func, log_level)
 
         return wrapper
+
+
+class Config:
+    BLACK_THRESHOLD = 127
+    GAME_NOT_START = 0
+    LATEST_TURN = -1
+    RANDOM_BOARD = 0
+    GAME_EXIST = 0
+    NEW_GAME_STARTED = 1
+    CELL_UNCHANGED = 0
+    CELL_APPLIED = 1
+    BOARD_GAME_OVER = 2
+    GAME_BOARD_CELL_STATE_LOWERBOUND = 0
+    GAME_BOARD_CELL_STATE_UPPERBOUND = 4

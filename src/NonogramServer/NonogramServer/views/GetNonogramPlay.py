@@ -11,6 +11,7 @@ from utils import async_get_from_db
 from utils import deserialize_gameplay
 from utils import is_uuid4
 from utils import LogSystem
+from utils import Config
 from .configure import LOG_PATH
 from Nonogram.NonogramBoard import NonogramGameplay
 
@@ -53,9 +54,6 @@ class GetNonogramPlay(AsyncAPIView):
         session_id: str,
         game_turn_str: str,
     ) -> HttpResponse:
-        GAME_NOT_START = 0
-        LATEST_TURN = -1
-
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
 
@@ -77,12 +75,12 @@ class GetNonogramPlay(AsyncAPIView):
         board_data = session.board_data
 
         latest_turn_info = session.current_game
-        latest_turn = GAME_NOT_START if latest_turn_info is None else latest_turn_info.current_turn
+        latest_turn = Config.GAME_NOT_START if latest_turn_info is None else latest_turn_info.current_turn
 
         if not isinstance(game_turn, int) or not (-1 <= game_turn <= latest_turn):
             return HttpResponseBadRequest(f"invalid game_turn. must be between 0 to {latest_turn}(latest turn)")
 
-        if game_turn == latest_turn or game_turn == LATEST_TURN:
+        if game_turn == latest_turn or game_turn == Config.LATEST_TURN:
             if board_data is None:
                 return HttpResponseNotFound("board not found.")
             board = deserialize_gameplay(

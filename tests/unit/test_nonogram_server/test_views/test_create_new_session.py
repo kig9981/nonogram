@@ -15,7 +15,9 @@ create_new_session = CreateNewSession.as_view()
 @pytest.mark.django_db(transaction=True)
 async def test_create_new_session(mock_request: RequestFactory):
     url = '/sessions/'
-    query_dict = {}
+    query_dict = {
+        "client_session_key": "0.0.0.0_test-agent"
+    }
     response = await send_test_request(
         method_type="POST",
         mock_request=mock_request,
@@ -33,3 +35,15 @@ async def test_create_new_session(mock_request: RequestFactory):
         await Session.objects.aget(pk=session_id)
     except ObjectDoesNotExist:
         assert "session_id saving failed." and False
+
+    response = await send_test_request(
+        method_type="POST",
+        mock_request=mock_request,
+        request_function=create_new_session,
+        url=url,
+        query_dict=query_dict,
+    )
+    assert response.status_code == HTTPStatus.OK
+    response_data = json.loads(response.content)
+
+    assert session_id == response_data["session_id"]

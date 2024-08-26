@@ -9,6 +9,7 @@ from django.http import HttpResponseServerError
 from utils import is_uuid4
 from utils import send_request
 from utils import LogSystem
+from utils import Config
 from .configure import LOG_PATH
 from http import HTTPStatus
 
@@ -42,12 +43,10 @@ class GetNonogramPlay(AsyncAPIView):
         request: HttpRequest,
         session_id: str,
     ) -> HttpResponse:
-        LATEST_TURN = -1
-
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return HttpResponseBadRequest(f"'{session_id}' is not valid id.")
 
-        url = f"{NONOGRAM_SERVER_URL}/sessions/{session_id}/turn/{LATEST_TURN}"
+        url = f"{NONOGRAM_SERVER_URL}/sessions/{session_id}/turn/{Config.LATEST_TURN}"
         response = await send_request(
             method_type="GET",
             url=url,

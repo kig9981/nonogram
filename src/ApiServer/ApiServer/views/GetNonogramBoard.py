@@ -43,19 +43,13 @@ class GetNonogramBoard(AsyncAPIView):
         request: HttpRequest,
         session_id: str,
     ) -> HttpResponse:
-        GAMEBOARD_QUERY = 0
-
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return HttpResponseBadRequest(f"'{session_id}' is not valid id.")
 
-        url = f"{NONOGRAM_SERVER_URL}/get_nonogram_server"
-        query_dict = {
-            "session_id": session_id,
-            "game_turn": GAMEBOARD_QUERY,
-        }
+        url = f"{NONOGRAM_SERVER_URL}/{session_id}"
         response = await send_request(
+            method_type="GET",
             url=url,
-            request=query_dict,
         )
         status_code = response["status_code"]
 
