@@ -44,6 +44,8 @@ services:
       start_period: 10s
     ports:
       - "${NONOGRAM_SERVER_PORT}:${NONOGRAM_SERVER_PORT}"
+    volumes:
+      - ./logs:/logs
     networks:
       - test_nonogram_net
     depends_on:
@@ -77,6 +79,8 @@ services:
       start_period: 10s
     ports:
       - "${API_SERVER_PORT}:${API_SERVER_PORT}"
+    volumes:
+      - ./logs:/logs
     networks:
       - test_nonogram_net
     env_file:

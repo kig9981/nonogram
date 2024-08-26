@@ -8,15 +8,11 @@ from utils import deserialize_gameboard
 from utils import serialize_gameplay
 from utils import deserialize_gameplay
 from utils import is_uuid4
+from utils import Config
 from typing import Union
 from typing import Optional
 import uuid
 import asyncio
-
-
-UNCHANGED = 0
-APPLIED = 1
-GAME_OVER = 2
 
 
 class NonogramGameplay:
@@ -70,7 +66,7 @@ class NonogramGameplay:
         save_db: bool = True,
     ) -> int:
         mark_result = self._mark(x, y, new_state)
-        if mark_result != APPLIED:
+        if mark_result != Config.CELL_APPLIED:
             return mark_result
         if save_db and self.db_sync:
             self.session.current_game.save()
@@ -87,7 +83,7 @@ class NonogramGameplay:
         save_db: bool = True,
     ) -> int:
         mark_result = self._mark(x, y, new_state)
-        if mark_result != APPLIED:
+        if mark_result != Config.CELL_APPLIED:
             return mark_result
         if save_db and self.db_sync:
             await self.session.current_game.asave()
@@ -103,16 +99,16 @@ class NonogramGameplay:
         new_state: Union[GameBoardCellState, int],
     ) -> int:
         if self.unrevealed_counter == 0:
-            return GAME_OVER
+            return Config.BOARD_GAME_OVER
         if not self._markable(x, y, new_state):
-            return UNCHANGED
+            return Config.CELL_UNCHANGED
         self.playboard[x][y] = new_state
         if new_state == GameBoardCellState.REVEALED:
             self.unrevealed_counter -= 1
         self.session.board = serialize_gameplay(self.playboard)
         self.session.unrevealed_counter = self.unrevealed_counter
         self.session.current_game = self._create_history(x, y, new_state)
-        return APPLIED
+        return Config.CELL_APPLIED
 
     def _create_history(
         self,

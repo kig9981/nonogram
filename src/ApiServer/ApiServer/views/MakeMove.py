@@ -10,6 +10,7 @@ from django.http import HttpResponseServerError
 from utils import is_uuid4
 from utils import send_request
 from utils import LogSystem
+from utils import Config
 from .configure import LOG_PATH
 from http import HTTPStatus
 
@@ -67,7 +68,7 @@ class MakeMove(AsyncAPIView):
             return HttpResponseBadRequest(f"'{session_id}' is not valid id.")
         if not isinstance(x, int) or not isinstance(y, int):
             return HttpResponseBadRequest("Invalid coordinate(type must be integer)")
-        if not isinstance(state, int) or not (0 <= state <= 4):
+        if not isinstance(state, int) or not (Config.GAME_BOARD_CELL_STATE_LOWERBOUND <= state <= Config.GAME_BOARD_CELL_STATE_UPPERBOUND):
             return HttpResponseBadRequest("Invalid state(type must be integer)")
 
         url = f"{NONOGRAM_SERVER_URL}/sessions/{session_id}/move"

@@ -9,8 +9,9 @@ from django.http import HttpResponseBadRequest
 from django.http import HttpResponseServerError
 from utils import is_uuid4
 from utils import send_request
-from http import HTTPStatus
 from utils import LogSystem
+from utils import Config
+from http import HTTPStatus
 from .configure import LOG_PATH
 
 
@@ -68,17 +69,16 @@ class CreateNewGame(AsyncAPIView):
         session_id: str,
         force_new_game: bool,
     ) -> HttpResponse:
-        RANDOM_BOARD = 0
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
 
         query = json.loads(request.body)
 
-        board_id = query["board_id"] if "board_id" in query else RANDOM_BOARD
+        board_id = query["board_id"] if "board_id" in query else Config.RANDOM_BOARD
 
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
-        if board_id != RANDOM_BOARD and (not isinstance(board_id, str) or not is_uuid4(board_id)):
+        if board_id != Config.RANDOM_BOARD and (not isinstance(board_id, str) or not is_uuid4(board_id)):
             return HttpResponseBadRequest(f"board_id '{board_id}' is not valid id.")
 
         url = f"{NONOGRAM_SERVER_URL}/sessions/{session_id}"
