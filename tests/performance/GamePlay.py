@@ -63,5 +63,5 @@ class GamePlayUser(HttpUser):
 
             except JSONDecodeError:
                 response.failure("Response could not be decoded as JSON")
-            except KeyError:
-                response.failure("Response did not contain expected key 'session_id'")
+            except KeyError as key:
+                response.failure(f"Response did not contain expected key '{key}'")
