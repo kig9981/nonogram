@@ -42,7 +42,7 @@ class NonogramBoard(models.Model):
 
 
 class History(models.Model):
-    gameplay = models.ForeignKey("Game", db_index=True)
+    gameplay = models.ForeignKey("Game", on_delete=models.CASCADE, db_index=True)
     occured_at = models.DateTimeField()
     recorded_at = models.DateTimeField(auto_now_add=True)
     current_turn = models.IntegerField()
@@ -52,16 +52,23 @@ class History(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=["current_turn"])
+            models.Index(fields=["gameplay", "current_turn"]),
+            models.Index(fields=["current_turn"]),
         ]
 
 
 class Game(models.Model):
-    current_session = models.ForeignKey("Session", on_delete=models.SET_NULL, null=True)
+    current_session = models.ForeignKey("Session", on_delete=models.SET_NULL, null=True, db_index=True)
     gameplay_id = models.UUIDField(validators=[validate_uuid4], editable=False)
     board_data = models.ForeignKey("NonogramBoard", on_delete=models.SET_DEFAULT, null=True, default=None)
     board = models.TextField(null=True, default=None)
     unrevealed_counter = models.IntegerField(default=0)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["current_session", "active"]),
+        ]
 
 
 class Session(models.Model):
