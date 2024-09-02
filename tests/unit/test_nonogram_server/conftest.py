@@ -77,6 +77,17 @@ def test_boards():
 
 
 @pytest.fixture(scope="session")
+def test_games():
+    cwd = os.path.dirname(__file__)
+    test_data_path = os.path.join(cwd, 'test_data')
+    test_game_path = os.path.join(test_data_path, 'test_game.json')
+    with open(test_game_path, 'r') as f:
+        test_games = json.load(f)
+
+    return test_games
+
+
+@pytest.fixture(scope="session")
 def test_sessions():
     cwd = os.path.dirname(__file__)
     test_data_path = os.path.join(cwd, 'test_data')
@@ -120,27 +131,38 @@ def add_board_test_data(
 
 
 @pytest.fixture
-def add_session_test_data(
+def add_game_test_data(
     django_db_setup,
     django_db_blocker,
     add_board_test_data,
-    test_sessions,
+    add_session_test_data,
+    test_games,
 ):
     from NonogramServer.models import NonogramBoard
+    from NonogramServer.models import Session
+    from NonogramServer.models import Game
     from Nonogram.NonogramBoard import NonogramGameplay
 
-    for test_session in test_sessions:
-        board_id = test_session['board_id']
+    for test_game in test_games:
+        board_id = test_game['board_id']
+        gameplay_id = test_game['gameplay_id']
+        session_id = test_game['session_id']
+        
         with django_db_blocker.unblock():
             board_data = NonogramBoard.objects.get(board_id=board_id)
-            NonogramGameplay(
+            session = Session.objects.get(session_id=session_id)
+            gameplay = NonogramGameplay(
                 data=board_data,
-                session_id=test_session['session_id']
+                session=session,
+                delayed_save=True,
             )
+            gameplay.game.gameplay_id = gameplay_id
+
+            gameplay.save()
 
 
 @pytest.fixture
-def add_new_session_test_data(
+def add_session_test_data(
     django_db_setup,
     django_db_blocker,
     test_sessions,
@@ -148,11 +170,7 @@ def add_new_session_test_data(
     from NonogramServer.models import Session
 
     for test_session in test_sessions:
-        session = Session(
-            session_id=test_session['session_id'],
-            board_data=None,
-            board=None,
-        )
+        session = Session(**test_session)
         with django_db_blocker.unblock():
             session.save()
 
@@ -161,15 +179,16 @@ def add_new_session_test_data(
 def add_history_test_data(
     django_db_setup,
     django_db_blocker,
+    add_game_test_data,
     test_histories,
 ):
-    from NonogramServer.models import Session
+    from NonogramServer.models import Game
     from Nonogram.NonogramBoard import NonogramGameplay
 
     for test_history in test_histories:
         with django_db_blocker.unblock():
-            session_data = Session.objects.get(pk=test_history["session_id"])
-            board = NonogramGameplay(session_data)
+            gameplay_data = Game.objects.get(gameplay_id=test_history["gameplay_id"])
+            board = NonogramGameplay(gameplay_data)
         for move in test_history["moves"]:
             x = move["x"]
             y = move["y"]
@@ -183,6 +202,7 @@ def add_test_data(
     django_db_setup,
     django_db_blocker,
     add_board_test_data,
+    add_game_test_data,
     add_session_test_data,
     add_history_test_data
 ):
