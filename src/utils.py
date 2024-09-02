@@ -313,10 +313,16 @@ class LogSystem:
         self,
         func: LogFunction,
         log_level: int,
+        print_args: bool,
     ) -> LogFunction:
         def sync_wrapper(*args, **kwargs) -> Any:
             self._log(f"{func.__name__} begins", log_level=log_level)
             start_time = time.time()
+            if print_args:
+                kwargs_message = "kwargs: "
+                for arg_name, arg_value in kwargs.items():
+                    kwargs_message += f"{arg_name}({type(arg_value)}): {arg_value}, "
+                self._log(kwargs_message, log_level=log_level)
             try:
                 result = func(*args, **kwargs)
             except Exception as e:
@@ -350,15 +356,16 @@ class LogSystem:
         func_or_msg: Optional[Union[LogFunction, str]] = None,
         *,
         log_level: int = logging.INFO,
+        print_args: bool = False,
     ) -> Optional[Union[LogFunction, Callable[[LogFunction], LogFunction]]]:
         if isinstance(func_or_msg, str):
             self._log(func_or_msg, log_level=log_level)
             return
         if func_or_msg:
-            return self._decorator(func_or_msg, log_level)
+            return self._decorator(func_or_msg, log_level, print_args)
 
         def wrapper(func: LogFunction):
-            return self._decorator(func, log_level)
+            return self._decorator(func, log_level, print_args)
 
         return wrapper
 
