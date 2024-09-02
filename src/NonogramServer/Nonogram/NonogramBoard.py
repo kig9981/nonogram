@@ -1,5 +1,6 @@
 from __future__ import annotations
 from NonogramServer.models import NonogramBoard
+from NonogramServer.models import Game
 from NonogramServer.models import Session
 from NonogramServer.models import History
 from utils import GameBoardCellState
@@ -11,23 +12,25 @@ from utils import is_uuid4
 from utils import Config
 from typing import Union
 from typing import Optional
+from typing import Tuple
 import uuid
 import asyncio
+from datetime import datetime
 
 
 class NonogramGameplay:
     def __init__(
         self,
-        data: Union[NonogramBoard, Session],
+        data: Union[NonogramBoard, Game],
         db_sync: bool = True,
-        session_id: Optional[uuid.UUID] = None,
+        session: Optional[Session] = None,
         delayed_save: bool = False,
     ):
-        if isinstance(data, Session):
+        if isinstance(data, Game):
             board_data = data.board_data
             self.unrevealed_counter = data.unrevealed_counter
             self.playboard = deserialize_gameplay(data.board)
-            self.session = data
+            self.game = data
         elif isinstance(data, NonogramBoard):
             board_data = data
             self.unrevealed_counter = data.black_counter
@@ -35,19 +38,16 @@ class NonogramGameplay:
                 [int(GameBoardCellState.NOT_SELECTED) for _ in range(data.num_column)]
                 for _ in range(data.num_row)
             ]
-            if session_id is None:
-                session_id = str(uuid.uuid4())
-            elif not is_uuid4(session_id):
-                raise ValueError("Not uuid4 format")
-            self.session = Session(
-                session_id=session_id,
+            self.game = Game(
+                current_session=session,
+                gameplay_id=str(uuid.uuid4()),
                 board_data=data,
                 board=serialize_gameplay(self.playboard),
                 unrevealed_counter=self.unrevealed_counter,
             )
             if db_sync:
                 if not delayed_save:
-                    self.session.save()
+                    self.game.save()
         else:
             raise TypeError("invalid model type.")
         self.board_data = board_data
@@ -63,14 +63,20 @@ class NonogramGameplay:
         x: int,
         y: int,
         new_state: Union[GameBoardCellState, int],
+        occured_at: datetime = datetime.now(),
         save_db: bool = True,
     ) -> int:
         mark_result = self._mark(x, y, new_state)
         if mark_result != Config.CELL_APPLIED:
             return mark_result
         if save_db and self.db_sync:
-            self.session.current_game.save()
-            self.session.save()
+            new_turn = History.objects.filter(
+                gameplay=self.game,
+            ).count()
+            self._create_history(x, y, new_state, new_turn, occured_at).save()
+            self.game.save()
+            if self.game.current_session:
+                self.game.current_session.save()
         else:
             self.db_sync = False
         return mark_result
@@ -80,14 +86,21 @@ class NonogramGameplay:
         x: int,
         y: int,
         new_state: Union[GameBoardCellState, int],
+        occured_at: datetime = datetime.now(),
         save_db: bool = True,
     ) -> int:
         mark_result = self._mark(x, y, new_state)
         if mark_result != Config.CELL_APPLIED:
             return mark_result
         if save_db and self.db_sync:
-            await self.session.current_game.asave()
-            await self.session.asave()
+            latest_turn = await History.objects.filter(
+                gameplay=self.game,
+            ).acount()
+            new_turn = latest_turn + 1
+            await self._create_history(x, y, new_state, new_turn, occured_at).asave()
+            await self.game.asave()
+            if self.game.current_session:
+                await self.game.current_session.asave()
         else:
             self.db_sync = False
         return mark_result
@@ -105,9 +118,8 @@ class NonogramGameplay:
         self.playboard[x][y] = new_state
         if new_state == GameBoardCellState.REVEALED:
             self.unrevealed_counter -= 1
-        self.session.board = serialize_gameplay(self.playboard)
-        self.session.unrevealed_counter = self.unrevealed_counter
-        self.session.current_game = self._create_history(x, y, new_state)
+        self.game.board = serialize_gameplay(self.playboard)
+        self.game.unrevealed_counter = self.unrevealed_counter
         return Config.CELL_APPLIED
 
     def _create_history(
@@ -115,17 +127,13 @@ class NonogramGameplay:
         x: int,
         y: int,
         new_state: GameBoardCellState,
+        new_turn: int,
+        occured_at: datetime,
     ) -> History:
-        current_game = self.session.current_game
-        if current_game is None:
-            gameplay_id = str(uuid.uuid4())
-            new_turn = 1
-        else:
-            gameplay_id = current_game.gameplay_id
-            new_turn = current_game.current_turn + 1
+        current_game = self.game
         return History(
-            current_session=self.session,
-            gameplay_id=gameplay_id,
+            gameplay=current_game,
+            occured_at=occured_at,
             current_turn=new_turn,
             type_of_move=new_state,
             x_coord=x,
@@ -152,11 +160,11 @@ class NonogramGameplay:
 
     def save(self) -> None:
         if self.db_sync:
-            self.session.save()
+            self.game.save()
 
     async def asave(self) -> None:
         if self.db_sync:
-            await self.session.asave()
+            await self.game.asave()
 
     def reset(
         self,
@@ -166,9 +174,8 @@ class NonogramGameplay:
         if self.db_sync:
             self.db_sync = db_sync
             if db_sync:
-                for history in History.objects.filter(current_session=self.session):
-                    history.current_session = None
-                    history.save()
+                self.game.save()
+                
 
     async def async_reset(
         self,
@@ -178,12 +185,7 @@ class NonogramGameplay:
         if self.db_sync:
             self.db_sync = db_sync
             if db_sync:
-                # TODO: 비동기 task queue를 사용해서 업데이트하는 로직으로 변경
-                coroutine = []
-                async for history in History.objects.filter(current_session=self.session):
-                    history.current_session = None
-                    coroutine.append(asyncio.create_task(history.asave()))
-                await asyncio.gather(*coroutine)
+                await self.game.asave()
 
     def _reset(self):
         self.unrevealed_counter = self.black_counter
@@ -191,6 +193,10 @@ class NonogramGameplay:
             [int(GameBoardCellState.NOT_SELECTED) for y in range(self.num_column)]
             for x in range(self.num_row)
         ]
-        self.session.board = serialize_gameplay(self.playboard)
-        self.session.unrevealed_counter = self.unrevealed_counter
-        self.session.current_game = None
+        self.game = Game(
+            current_session=self.game.session,
+            gameplay_id=str(uuid.uuid4()),
+            board_data=self.board_data,
+            board=serialize_gameplay(self.playboard),
+            unrevealed_counter=self.unrevealed_counter,
+        )
