@@ -75,3 +75,10 @@ class Session(models.Model):
     session_id = models.UUIDField(primary_key=True, validators=[validate_uuid4], editable=False, unique=True)
     latest_update_time = models.DateTimeField(auto_now=True)
     client_session_key = models.TextField()
+
+    def save(self, *args, **kwargs):
+        if kwargs.has_key('update_fields'):
+            kwargs = list(set(list(kwargs['update_fields']) + ['latest_update_time']))
+        else:
+            kwargs['update_fields'] = ['latest_update_time']
+        return super().save(*args, **kwargs)
