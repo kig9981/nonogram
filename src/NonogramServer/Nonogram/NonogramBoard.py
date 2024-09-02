@@ -1,4 +1,5 @@
 from __future__ import annotations
+from django.utils import timezone
 from NonogramServer.models import NonogramBoard
 from NonogramServer.models import Game
 from NonogramServer.models import Session
@@ -14,9 +15,7 @@ from utils import Config
 from utils import LogSystem
 from typing import Union
 from typing import Optional
-from typing import Tuple
 import uuid
-import asyncio
 from datetime import datetime
 
 
@@ -71,17 +70,24 @@ class NonogramGameplay:
         x: int,
         y: int,
         new_state: Union[GameBoardCellState, int],
-        occured_at: datetime = datetime.now(),
+        occured_at: datetime = timezone.now(),
         save_db: bool = True,
     ) -> int:
         mark_result = self._mark(x, y, new_state)
         if mark_result != Config.CELL_APPLIED:
             return mark_result
         if save_db and self.db_sync:
-            new_turn = History.objects.filter(
+            latest_turn = History.objects.filter(
                 gameplay=self.game,
             ).count()
-            self._create_history(x, y, new_state, new_turn, occured_at).save()
+            new_turn = latest_turn + 1
+            self._create_history(
+                x=x,
+                y=y,
+                new_state=new_state,
+                new_turn=new_turn,
+                occured_at=occured_at,
+            ).save()
             self.game.save()
             if self.game.current_session:
                 self.game.current_session.save()
@@ -95,7 +101,7 @@ class NonogramGameplay:
         x: int,
         y: int,
         new_state: Union[GameBoardCellState, int],
-        occured_at: datetime = datetime.now(),
+        occured_at: datetime = timezone.now(),
         save_db: bool = True,
     ) -> int:
         mark_result = self._mark(x, y, new_state)
@@ -106,7 +112,13 @@ class NonogramGameplay:
                 gameplay=self.game,
             ).acount()
             new_turn = latest_turn + 1
-            await self._create_history(x, y, new_state, new_turn, occured_at).asave()
+            await self._create_history(
+                x=x,
+                y=y,
+                new_state=new_state,
+                new_turn=new_turn,
+                occured_at=occured_at,
+            ).asave()
             await self.game.asave()
             if self.game.current_session:
                 await self.game.current_session.asave()
@@ -132,7 +144,7 @@ class NonogramGameplay:
         self.game.unrevealed_counter = self.unrevealed_counter
         return Config.CELL_APPLIED
 
-    @logger.log
+    @logger.log(print_args=True)
     def _create_history(
         self,
         x: int,
