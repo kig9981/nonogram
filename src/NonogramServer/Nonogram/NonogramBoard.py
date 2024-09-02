@@ -3,6 +3,7 @@ from NonogramServer.models import NonogramBoard
 from NonogramServer.models import Game
 from NonogramServer.models import Session
 from NonogramServer.models import History
+from NonogramServer.views.configure import LOG_PATH
 from utils import GameBoardCellState
 from utils import RealBoardCellState
 from utils import deserialize_gameboard
@@ -10,6 +11,7 @@ from utils import serialize_gameplay
 from utils import deserialize_gameplay
 from utils import is_uuid4
 from utils import Config
+from utils import LogSystem
 from typing import Union
 from typing import Optional
 from typing import Tuple
@@ -19,6 +21,11 @@ from datetime import datetime
 
 
 class NonogramGameplay:
+    logger = LogSystem(
+        module_name=__name__,
+        log_path=LOG_PATH,
+    )
+
     def __init__(
         self,
         data: Union[NonogramBoard, Game],
@@ -58,6 +65,7 @@ class NonogramGameplay:
         self.black_counter = board_data.black_counter
         self.db_sync = db_sync
 
+    @logger.log
     def mark(
         self,
         x: int,
@@ -81,6 +89,7 @@ class NonogramGameplay:
             self.db_sync = False
         return mark_result
 
+    @logger.log
     async def async_mark(
         self,
         x: int,
@@ -105,6 +114,7 @@ class NonogramGameplay:
             self.db_sync = False
         return mark_result
 
+    @logger.log
     def _mark(
         self,
         x: int,
@@ -122,6 +132,7 @@ class NonogramGameplay:
         self.game.unrevealed_counter = self.unrevealed_counter
         return Config.CELL_APPLIED
 
+    @logger.log
     def _create_history(
         self,
         x: int,
@@ -140,6 +151,7 @@ class NonogramGameplay:
             y_coord=y,
         )
 
+    @logger.log
     def _markable(
         self,
         x: int,
@@ -158,14 +170,17 @@ class NonogramGameplay:
             return current_cell == RealBoardCellState.WHITE
         return current_cell_state != new_state
 
+    @logger.log
     def save(self) -> None:
         if self.db_sync:
             self.game.save()
 
+    @logger.log
     async def asave(self) -> None:
         if self.db_sync:
             await self.game.asave()
 
+    @logger.log
     def reset(
         self,
         db_sync: bool = True,
@@ -175,8 +190,8 @@ class NonogramGameplay:
             self.db_sync = db_sync
             if db_sync:
                 self.game.save()
-                
 
+    @logger.log
     async def async_reset(
         self,
         db_sync: bool = True,
@@ -187,6 +202,7 @@ class NonogramGameplay:
             if db_sync:
                 await self.game.asave()
 
+    @logger.log
     def _reset(self):
         self.unrevealed_counter = self.black_counter
         self.playboard = [
