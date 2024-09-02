@@ -49,19 +49,26 @@ class HandleGame(AsyncAPIView):
             return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
 
         try:
-            session_data = await async_get_from_db(
+            session = await async_get_from_db(
                 model_class=Session,
                 label=f"session_id '{session_id}'",
-                select_related=['current_game', 'board_data'],
                 session_id=session_id,
             )
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
 
-        board_data = session_data.board_data
-
-        if board_data is None:
+        try:
+            current_game = await async_get_from_db(
+                model_class=Game,
+                label="",
+                select_related=["board_data"],
+                current_session=session,
+                active=True,
+            )
+        except ObjectDoesNotExist:
             return HttpResponseNotFound("board data not found.")
+
+        board_data = current_game.board_data
 
         response_data = {
             "board": deserialize_gameboard(board_data.board),
