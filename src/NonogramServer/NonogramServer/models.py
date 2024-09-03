@@ -78,7 +78,7 @@ class Session(models.Model):
 
     def save(self, *args, **kwargs):
         if 'update_fields' in kwargs:
-            kwargs = list(set(list(kwargs['update_fields']) + ['latest_update_time']))
+            kwargs['update_fields'] = list(set(list(kwargs['update_fields']) + ['latest_update_time']))
         else:
             kwargs['update_fields'] = ['latest_update_time']
         return super().save(*args, **kwargs)
