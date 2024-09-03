@@ -37,7 +37,7 @@ class CreateNewSession(AsyncAPIView):
         if "client_session_key" not in query:
             return HttpResponseBadRequest("client_session_key is missing.")
         if "session_id" in query:
-            return await self._get_existing_session(query["session_id"])
+            return await self._get_existing_session(query["session_id"], query["client_session_key"])
         client_session_key = query["client_session_key"]
         return await self._create_new_session(client_session_key)
 
@@ -66,9 +66,9 @@ class CreateNewSession(AsyncAPIView):
         return JsonResponse(response_data)
 
     @logger.log
-    async def _get_existing_session(self, session_id: str) -> HttpResponse:
+    async def _get_existing_session(self, session_id: str, client_session_key: str) -> HttpResponse:
         if not isinstance(session_id, str) or not is_uuid4(session_id):
-            return await self._create_new_session()
+            return await self._create_new_session(client_session_key)
         try:
             session = await async_get_from_db(
                 model_class=Session,
@@ -77,6 +77,6 @@ class CreateNewSession(AsyncAPIView):
             )
             await session.asave()
         except ObjectDoesNotExist:
-            return await self._create_new_session()
+            return await self._create_new_session(client_session_key)
         response_data = {"session_id": session_id}
         return JsonResponse(response_data)
