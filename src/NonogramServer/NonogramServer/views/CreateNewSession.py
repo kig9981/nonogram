@@ -74,6 +74,7 @@ class CreateNewSession(AsyncAPIView):
                 model_class=Session,
                 label=f"session_id '{session_id}'",
                 session_id=session_id,
+                client_session_key=client_session_key,
             )
             await session.asave()
         except ObjectDoesNotExist:
