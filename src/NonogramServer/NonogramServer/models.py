@@ -77,7 +77,7 @@ class Session(models.Model):
     client_session_key = models.TextField()
 
     def save(self, *args, **kwargs):
-        if kwargs.has_key('update_fields'):
+        if 'update_fields' in kwargs:
             kwargs = list(set(list(kwargs['update_fields']) + ['latest_update_time']))
         else:
             kwargs['update_fields'] = ['latest_update_time']
