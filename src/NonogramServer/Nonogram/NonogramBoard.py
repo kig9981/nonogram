@@ -10,7 +10,6 @@ from utils import RealBoardCellState
 from utils import deserialize_gameboard
 from utils import serialize_gameplay
 from utils import deserialize_gameplay
-from utils import is_uuid4
 from utils import Config
 from utils import LogSystem
 from typing import Union
