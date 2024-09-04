@@ -129,51 +129,49 @@ class HandleGame(AsyncAPIView):
             )
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
-        
-        with transaction.atomic():
-            try:
-                current_game = await async_get_from_db(
-                    model_class=Game,
-                    label="",
-                    select_related=["board_data"],
-                    current_session=session,
-                    active=True,
-                )
-                if not force_new_game:
-                    response_data = {
-                        "response": Config.GAME_EXIST,
-                        "board_id": current_game.board_data.board_id,
-                    }
-                    return JsonResponse(response_data)
-                else:
-                    current_game.active = False
-                    await current_game.asave()
-            except ObjectDoesNotExist:
-                pass
-
-            if board_id == Config.RANDOM_BOARD:
-                # TODO: 더 빠르게 랜덤셀렉트하는걸로 바꾸기
-                board_data = await NonogramBoard.objects.order_by('?').afirst()
-                board_id = str(board_data.board_id)
-            else:
-                try:
-                    board_data = await async_get_from_db(
-                        model_class=NonogramBoard,
-                        label=f"board_id '{board_id}'",
-                        board_id=board_id,
-                    )
-                except ObjectDoesNotExist as error:
-                    return HttpResponseNotFound(f"{error} not found.")
-
-            gameplay = NonogramGameplay(
-                data=board_data,
-                session=session,
-                delayed_save=True
+        try:
+            current_game = await async_get_from_db(
+                model_class=Game,
+                label="",
+                select_related=["board_data"],
+                current_session=session,
+                active=True,
             )
+            if not force_new_game:
+                response_data = {
+                    "response": Config.GAME_EXIST,
+                    "board_id": current_game.board_data.board_id,
+                }
+                return JsonResponse(response_data)
+            else:
+                current_game.active = False
+                await current_game.asave()
+        except ObjectDoesNotExist:
+            pass
 
-            gameplay.game.current_session = session
+        if board_id == Config.RANDOM_BOARD:
+            # TODO: 더 빠르게 랜덤셀렉트하는걸로 바꾸기
+            board_data = await NonogramBoard.objects.order_by('?').afirst()
+            board_id = str(board_data.board_id)
+        else:
+            try:
+                board_data = await async_get_from_db(
+                    model_class=NonogramBoard,
+                    label=f"board_id '{board_id}'",
+                    board_id=board_id,
+                )
+            except ObjectDoesNotExist as error:
+                return HttpResponseNotFound(f"{error} not found.")
 
-            await gameplay.asave()
+        gameplay = NonogramGameplay(
+            data=board_data,
+            session=session,
+            delayed_save=True
+        )
+
+        gameplay.game.current_session = session
+
+        await gameplay.asave()
 
         response_data = {
             "response": Config.NEW_GAME_STARTED,
