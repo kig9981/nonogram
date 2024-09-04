@@ -140,14 +140,13 @@ def add_game_test_data(
 ):
     from NonogramServer.models import NonogramBoard
     from NonogramServer.models import Session
-    from NonogramServer.models import Game
     from Nonogram.NonogramBoard import NonogramGameplay
 
     for test_game in test_games:
         board_id = test_game['board_id']
         gameplay_id = test_game['gameplay_id']
         session_id = test_game['session_id']
-        
+
         with django_db_blocker.unblock():
             board_data = NonogramBoard.objects.get(board_id=board_id)
             session = Session.objects.get(session_id=session_id)

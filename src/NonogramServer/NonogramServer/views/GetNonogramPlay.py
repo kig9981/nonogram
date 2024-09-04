@@ -71,7 +71,7 @@ class GetNonogramPlay(AsyncAPIView):
             )
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
-        
+
         try:
             current_game = await async_get_from_db(
                 model_class=Game,
