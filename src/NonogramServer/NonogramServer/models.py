@@ -42,26 +42,36 @@ class NonogramBoard(models.Model):
 
 
 class History(models.Model):
-    current_session = models.ForeignKey("Session", on_delete=models.SET_NULL, null=True)
-    gameplay_id = models.UUIDField(validators=[validate_uuid4], editable=False)
+    gameplay = models.ForeignKey("Game", on_delete=models.CASCADE, db_index=True)
+    occured_at = models.DateTimeField()
+    recorded_at = models.DateTimeField(auto_now_add=True)
     current_turn = models.IntegerField()
     type_of_move = models.IntegerField(choices=MoveType)
     x_coord = models.IntegerField()
     y_coord = models.IntegerField()
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['gameplay_id', 'current_turn'],
-                name="(game, turn) tuple"
-            ),
+        indexes = [
+            models.Index(fields=["gameplay", "current_turn"]),
+            models.Index(fields=["current_turn"]),
+        ]
+
+
+class Game(models.Model):
+    current_session = models.ForeignKey("Session", on_delete=models.SET_NULL, null=True, db_index=True)
+    gameplay_id = models.UUIDField(validators=[validate_uuid4], editable=False)
+    board_data = models.ForeignKey("NonogramBoard", on_delete=models.SET_DEFAULT, null=True, default=None)
+    board = models.TextField(null=True, default=None)
+    unrevealed_counter = models.IntegerField(default=0)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["current_session", "active"]),
         ]
 
 
 class Session(models.Model):
     session_id = models.UUIDField(primary_key=True, validators=[validate_uuid4], editable=False, unique=True)
+    latest_update_time = models.DateTimeField(auto_now=True)
     client_session_key = models.TextField()
-    current_game = models.ForeignKey("History", on_delete=models.SET_DEFAULT, null=True, default=None)
-    board_data = models.ForeignKey("NonogramBoard", on_delete=models.SET_DEFAULT, null=True, default=None)
-    board = models.TextField(null=True, default=None)
-    unrevealed_counter = models.IntegerField(default=0)

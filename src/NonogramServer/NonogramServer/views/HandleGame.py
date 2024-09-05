@@ -8,6 +8,7 @@ from django.http import HttpResponseBadRequest
 from django.core.exceptions import ObjectDoesNotExist
 from ..models import NonogramBoard
 from ..models import Session
+from ..models import Game
 from Nonogram.NonogramBoard import NonogramGameplay
 from utils import async_get_from_db
 from utils import is_uuid4
@@ -48,19 +49,26 @@ class HandleGame(AsyncAPIView):
             return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
 
         try:
-            session_data = await async_get_from_db(
+            session = await async_get_from_db(
                 model_class=Session,
                 label=f"session_id '{session_id}'",
-                select_related=['current_game', 'board_data'],
                 session_id=session_id,
             )
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
 
-        board_data = session_data.board_data
-
-        if board_data is None:
+        try:
+            current_game = await async_get_from_db(
+                model_class=Game,
+                label="",
+                select_related=["board_data"],
+                current_session=session,
+                active=True,
+            )
+        except ObjectDoesNotExist:
             return HttpResponseNotFound("board data not found.")
+
+        board_data = current_game.board_data
 
         response_data = {
             "board": deserialize_gameboard(board_data.board),
@@ -113,25 +121,32 @@ class HandleGame(AsyncAPIView):
             return HttpResponseBadRequest(f"board_id '{board_id}' is not valid id.")
 
         try:
-            session_data = await async_get_from_db(
+            session = await async_get_from_db(
                 model_class=Session,
                 label=f"session_id '{session_id}'",
-                select_related=['current_game', 'board_data'],
                 session_id=session_id,
             )
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
-
-        if session_data.board_data is not None:
+        try:
+            current_game = await async_get_from_db(
+                model_class=Game,
+                label="",
+                select_related=["board_data"],
+                current_session=session,
+                active=True,
+            )
             if not force_new_game:
                 response_data = {
                     "response": Config.GAME_EXIST,
-                    "board_id": session_data.board_data.board_id,
+                    "board_id": current_game.board_data.board_id,
                 }
                 return JsonResponse(response_data)
-
-            session = NonogramGameplay(session_data)
-            await session.async_reset()
+            else:
+                current_game.active = False
+                await current_game.asave()
+        except ObjectDoesNotExist:
+            pass
 
         if board_id == Config.RANDOM_BOARD:
             # TODO: 더 빠르게 랜덤셀렉트하는걸로 바꾸기
@@ -147,13 +162,15 @@ class HandleGame(AsyncAPIView):
             except ObjectDoesNotExist as error:
                 return HttpResponseNotFound(f"{error} not found.")
 
-        session = NonogramGameplay(
+        gameplay = NonogramGameplay(
             data=board_data,
-            session_id=session_id,
+            session=session,
             delayed_save=True
         )
 
-        await session.asave()
+        gameplay.game.current_session = session
+
+        await gameplay.asave()
 
         response_data = {
             "response": Config.NEW_GAME_STARTED,

@@ -7,6 +7,7 @@ from django.http import HttpResponseBadRequest
 from django.core.exceptions import ObjectDoesNotExist
 from ..models import Session
 from ..models import History
+from ..models import Game
 from utils import async_get_from_db
 from utils import deserialize_gameplay
 from utils import is_uuid4
@@ -66,16 +67,23 @@ class GetNonogramPlay(AsyncAPIView):
             session = await async_get_from_db(
                 model_class=Session,
                 label=f"session_id '{session_id}'",
-                select_related=['board_data', 'current_game'],
                 session_id=session_id,
             )
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
 
-        board_data = session.board_data
-
-        latest_turn_info = session.current_game
-        latest_turn = Config.GAME_NOT_START if latest_turn_info is None else latest_turn_info.current_turn
+        try:
+            current_game = await async_get_from_db(
+                model_class=Game,
+                label="",
+                select_related=["board_data"],
+                current_session=session,
+                active=True,
+            )
+            board_data = current_game.board_data
+            latest_turn = await History.objects.filter(gameplay=current_game).acount()
+        except ObjectDoesNotExist:
+            return HttpResponseNotFound("Game not found.")
 
         if not isinstance(game_turn, int) or not (-1 <= game_turn <= latest_turn):
             return HttpResponseBadRequest(f"invalid game_turn. must be between 0 to {latest_turn}(latest turn)")
@@ -84,7 +92,7 @@ class GetNonogramPlay(AsyncAPIView):
             if board_data is None:
                 return HttpResponseNotFound("board not found.")
             board = deserialize_gameplay(
-                serialized_string=session.board,
+                serialized_string=current_game.board,
                 return_int=True,
             )
         else:
@@ -94,7 +102,7 @@ class GetNonogramPlay(AsyncAPIView):
             )
 
             async for move in History.objects.filter(
-                gameplay_id=latest_turn_info.gameplay_id,
+                gameplay=current_game,
                 current_turn__lte=game_turn,
             ).order_by("current_turn"):
                 gameplay.mark(
