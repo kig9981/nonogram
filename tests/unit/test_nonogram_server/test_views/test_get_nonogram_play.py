@@ -4,7 +4,8 @@ from typing import Any
 from typing import List
 from typing import Dict
 from http import HTTPStatus
-from NonogramServer.models import Session
+from NonogramServer.models import Game
+from NonogramServer.models import History
 from NonogramServer.views.GetNonogramPlay import GetNonogramPlay
 from django.test.client import RequestFactory
 from ...util import send_test_request
@@ -20,13 +21,14 @@ def get_url(session_id, game_turn_str):
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
-async def test_session_for_get_nonogram_play(
+async def test_game_for_get_nonogram_play(
     mock_request: RequestFactory,
-    test_sessions: List[Dict[str, Any]],
+    test_games: List[Dict[str, Any]],
     add_test_data,
 ):
-    for test_session in test_sessions:
-        session_id = test_session["session_id"]
+    for test_game in test_games:
+        session_id = test_game["session_id"]
+        gameplay_id = test_game["gameplay_id"]
 
         query_dict = {
             "session_id": session_id,
@@ -40,8 +42,8 @@ async def test_session_for_get_nonogram_play(
             **query_dict,
         )
 
-        session = await Session.objects.select_related('current_game').aget(pk=session_id)
-        latest_turn = 0 if session.current_game is None else session.current_game.current_turn
+        game = await Game.objects.aget(gameplay_id=gameplay_id)
+        latest_turn = await History.objects.filter(gameplay=game).acount()
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.content.decode() == f"invalid game_turn. must be between 0 to {latest_turn}(latest turn)"

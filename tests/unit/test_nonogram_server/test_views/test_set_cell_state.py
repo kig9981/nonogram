@@ -4,7 +4,7 @@ from typing import Any
 from typing import List
 from typing import Dict
 from http import HTTPStatus
-from NonogramServer.models import Session
+from NonogramServer.models import Game
 from NonogramServer.views.SetCellState import SetCellState
 from src.utils import async_get_from_db
 from src.utils import GameBoardCellState
@@ -24,7 +24,7 @@ def get_url(session_id):
 @pytest.mark.django_db(transaction=True)
 async def test_session_for_set_cell_state(
     mock_request: RequestFactory,
-    test_sessions: List[Dict[str, Any]],
+    test_games: List[Dict[str, Any]],
     add_test_data,
 ):
     moves = [
@@ -37,17 +37,18 @@ async def test_session_for_set_cell_state(
         GameBoardCellState.MARK_QUESTION,
     ]
 
-    for test_session in test_sessions:
-        session_id = test_session["session_id"]
+    for test_game in test_games:
+        session_id = test_game["session_id"]
+        gameplay_id = test_game["gameplay_id"]
 
-        session = await async_get_from_db(
-            model_class=Session,
-            label=f"session_id '{session_id}'",
-            select_related=['board_data', 'current_game'],
-            session_id=session_id,
+        game = await async_get_from_db(
+            model_class=Game,
+            label=f"gameplay_id '{gameplay_id}'",
+            select_related=['board_data'],
+            gameplay_id=gameplay_id,
         )
         play = NonogramGameplay(
-            data=session,
+            data=game,
             db_sync=False,
         )
 

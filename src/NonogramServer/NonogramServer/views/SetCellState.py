@@ -8,6 +8,7 @@ from django.http import HttpResponseBadRequest
 from django.core.exceptions import ObjectDoesNotExist
 from Nonogram.NonogramBoard import NonogramGameplay
 from ..models import Session
+from ..models import Game
 from utils import async_get_from_db
 from utils import is_uuid4
 from utils import LogSystem
@@ -66,16 +67,27 @@ class SetCellState(AsyncAPIView):
             session = await async_get_from_db(
                 model_class=Session,
                 label=f"session_id '{session_id}'",
-                select_related=['current_game', 'board_data'],
                 session_id=session_id,
             )
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
 
-        if session.board_data is None:
+        try:
+            current_game = await async_get_from_db(
+                model_class=Game,
+                label="",
+                select_related=["current_session", "board_data"],
+                current_session=session,
+                active=True,
+            )
+        except ObjectDoesNotExist:
             return HttpResponseNotFound("gameplay not found.")
 
-        gameplay = NonogramGameplay(session)
+        gameplay = NonogramGameplay(
+            data=current_game,
+            session=session,
+            delayed_save=True,
+        )
         num_row = gameplay.num_row
         num_column = gameplay.num_column
         if not isinstance(x, int) or not isinstance(y, int) or not (0 <= x < num_row) or not (0 <= y < num_column):
