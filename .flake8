@@ -1,0 +1,8 @@
+[flake8]
+exclude =
+    admin.py
+    tests.py
+    node_modules
+
+ignore =
+        E501

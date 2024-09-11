@@ -1,0 +1,32 @@
+[
+    {
+        "board": [[1, 1], [1, 1]],
+        "valid": true,
+        "result": true
+    },
+    {
+        "board": [[1, -1], [0, 1]],
+        "valid": true,
+        "result": false
+    },
+    {
+        "board": [[1, -1], [0, 1, 1]],
+        "valid": false,
+        "exception_message": "Invalid gameboard(Row length error)."
+    },
+    {
+        "board": 14,
+        "valid": false,
+        "exception_message": "Invalid gameboard(Invalid type)."
+    },
+    {
+        "board": [["1", 3.1], [[1], {"1": 1}]],
+        "valid": false,
+        "exception_message": "Invalid gameboard(Invalid item type)."
+    },
+    {
+        "board": [[1, -1], [0, 2]],
+        "valid": false,
+        "exception_message": "Invalid gameboard(Invalid range(-1 ~ 1))."
+    }
+]

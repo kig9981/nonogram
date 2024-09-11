@@ -1,0 +1,10 @@
+ARG VERSION=latest
+
+FROM common_base_python:$VERSION
+
+COPY src/ApiServer /src/ApiServer
+COPY src/utils.py /src/utils.py
+
+RUN chmod +x /src/ApiServer/docker_entrypoint.sh
+
+ENTRYPOINT ["/src/ApiServer/docker_entrypoint.sh"]

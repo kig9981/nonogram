@@ -1,0 +1,10 @@
+ARG VERSION=latest
+
+FROM common_base_python:$VERSION
+
+COPY src/NonogramServer /src/NonogramServer
+COPY src/utils.py /src/utils.py
+
+RUN chmod +x /src/NonogramServer/docker_entrypoint.sh
+
+ENTRYPOINT ["/src/NonogramServer/docker_entrypoint.sh"]

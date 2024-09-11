@@ -1,0 +1,130 @@
+:root{
+  --cell_size: 20px
+}
+
+.game-board-container {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr auto; /* 첫 번째 열은 자동 크기, 두 번째 열은 가변 크기 */
+  grid-template-rows: 1fr auto; /* 첫 번째 행은 자동 크기, 두 번째 행은 가변 크기 */
+  align-content: stretch;
+  justify-content: stretch;
+}
+
+.unused {
+  background-color: transparent; /* 배경색 없음 */
+  border: none; /* 테두리 없음 */
+}
+
+.hints-row {
+  display: flex;
+  justify-content: space-around;
+}
+
+.hint-col {
+  width: var(--cell_size);
+  display: flex;
+  gap: 3px;
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: flex-start;
+  border-top: none;
+  border-left: 2px solid black;
+  border-bottom: 2px solid black;
+  border-right: none;
+  padding-bottom: 3px;
+}
+
+.hint-num {
+  font-size: calc(var(--cell_size) * 7 / 10);
+  line-height: calc(var(--cell_size) * 3 / 5);
+  user-select: none;
+}
+
+.hints-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.hint-row {
+  flex: 1;
+  height: var(--cell_size);
+  display: flex;
+  gap: 3px;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: row-reverse;
+  border-top: 2px solid black;
+  border-left: none;
+  border-bottom: none;
+  border-right: 2px solid black;
+  padding-right: 3px;
+}
+
+.hint-row .hint-num {
+  font-size: calc(var(--cell_size) * 7 / 10);
+  line-height: calc(var(--cell_size) * 3 / 5);
+  user-select: none;
+}
+
+.game-board {
+  display: flex;
+  flex-direction: column;
+}
+
+.game-row {
+  display: flex;
+}
+
+.game-row:nth-child(1) {
+  border-top: 4px solid black;
+}
+
+.game-row:nth-child(5n + 6) {
+  border-top: 3px solid black;
+}
+
+.game-cell {
+  width: var(--cell_size);
+  height: var(--cell_size);
+  border: 1px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.game-cell:nth-child(1) {
+  border-left: 4px solid black;
+}
+
+.game-cell:nth-child(5n + 6) {
+  border-left: 3px solid black;
+}
+
+.game-cell.marked {
+  background-color: black;
+}
+
+.cell-content.red-marked {
+  font-size: calc(var(--cell_size) * 4 / 5);
+  line-height: var(--cell_size);
+  color: red;
+}
+
+.cell-content.x {
+  font-size: calc(var(--cell_size) * 4 / 5);
+  line-height: var(--cell_size);
+}
+
+.cell-content.question {
+  font-size: calc(var(--cell_size) * 3 / 5);
+  color: blue;
+}
+
+.cell-content {
+  position: absolute;
+}
