@@ -78,10 +78,14 @@ def pytest_configure():
     os.environ["DB_PORT"] = f"{DB_PORT}"
     os.environ["CACHE_HOST"] = "localhost"
     os.environ["CACHE_PORT"] = f"{CACHE_PORT}"
+    os.environ["NONOGRAM_SERVER_PROTOCOL"] = "http"
     os.environ["NONOGRAM_SERVER_HOST"] = "localhost"
+    os.environ["API_SERVER_PROTOCOL"] = "http"
     os.environ["API_SERVER_HOST"] = "localhost"
+    os.environ["API_SERVER_PORT"] = f"{8001}"
     os.environ["ENABLE_PROMETHEUS"] = "False"
     os.environ["DEBUG"] = "True"
+    os.environ["LOG_PATH"] = "./logs"
     django.setup()
 
 
