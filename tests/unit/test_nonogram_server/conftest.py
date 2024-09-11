@@ -85,7 +85,7 @@ def pytest_configure():
     os.environ["API_SERVER_PORT"] = f"{8001}"
     os.environ["ENABLE_PROMETHEUS"] = "False"
     os.environ["DEBUG"] = "True"
-    os.environ["LOG_PATH"] = "./logs"
+    os.environ["LOG_PATH"] = "logs"
     django.setup()
 
 
