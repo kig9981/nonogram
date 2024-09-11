@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import redis
 import requests
 import psycopg2
 from http import HTTPStatus
@@ -63,3 +64,13 @@ def testnonogramserver_healthcheck(
         return response.status_code == HTTPStatus.OK
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
         return False
+
+
+def testcache_healthcheck() -> bool:
+    try:
+        redis_connection = redis.Redis("localhost", os.environ["CACHE_PORT"])
+        redis_connection.ping()
+        redis_connection.close()
+    except (redis.exceptions.ConnectionError, ConnectionRefusedError):
+        return False
+    return True
