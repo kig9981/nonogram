@@ -406,7 +406,7 @@ class LockManager:
             time.sleep(self.retry_interval)
 
         return self.is_locked
-    
+
     def __exit__(self, type, value, traceback):
         if self.is_locked:
             cache.delete(self.lock_key)
@@ -420,7 +420,7 @@ class LockManager:
             await asyncio.sleep(self.retry_interval)
 
         return self.is_locked
-    
+
     async def __aexit__(self, type, value, traceback):
         if self.is_locked:
             await cache.adelete(self.lock_key)

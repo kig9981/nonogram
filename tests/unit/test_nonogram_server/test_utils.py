@@ -108,7 +108,7 @@ def test_sync_lock_manager():
             assert not lock2
         with LockManager("sync_test2") as lock2:
             assert lock2
-        
+
 
 @pytest.mark.asyncio
 async def test_async_lock_manager():
