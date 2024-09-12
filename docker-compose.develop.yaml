@@ -25,6 +25,10 @@ services:
     command: --port ${CACHE_PORT}
     ports:
       - "${CACHE_PORT}:${CACHE_PORT}"
+    networks:
+      - nonogram_net
+    env_file:
+      - .env
 
   nonogramserver:
     image: nonogram_server:${NONOGRAM_SERVER_VERSION:-latest}
