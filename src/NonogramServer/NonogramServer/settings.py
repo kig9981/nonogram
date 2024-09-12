@@ -139,7 +139,7 @@ CACHE_PORT = env("CACHE_PORT")
 
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "BACKEND": "django_prometheus.cache.backends.redis.RedisCache",
         "LOCATION": f"redis://{CACHE_HOST}:{CACHE_PORT}",
     }
 }
