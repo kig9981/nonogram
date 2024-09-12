@@ -6,6 +6,7 @@ import base64
 import inspect
 import hashlib
 import aiohttp
+import asyncio
 import logging
 from http import HTTPStatus
 from pathlib import Path
@@ -17,6 +18,7 @@ from typing import Optional
 from typing import Callable
 from typing import TypeVar
 from django.db.models import Model
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 
@@ -382,3 +384,43 @@ class Config:
     BOARD_GAME_OVER = 2
     GAME_BOARD_CELL_STATE_LOWERBOUND = 0
     GAME_BOARD_CELL_STATE_UPPERBOUND = 4
+
+
+class LockManager:
+    def __init__(
+        self,
+        lock_key: str,
+        max_retries: int = 10,
+        retry_interval: float = 0.1
+    ):
+        self.lock_key = f"lock|{lock_key}"
+        self.max_retries = max_retries
+        self.retry_interval = retry_interval
+
+    def __enter__(self):
+        self.is_locked = False
+        for _ in range(self.max_retries):
+            if cache.add(self.lock_key, 0):
+                self.is_locked = True
+                break
+            time.sleep(self.retry_interval)
+
+        return self.is_locked
+    
+    def __exit__(self, type, value, traceback):
+        if self.is_locked:
+            cache.delete(self.lock_key)
+
+    async def __aenter__(self):
+        self.is_locked = False
+        for _ in range(self.max_retries):
+            if await cache.aadd(self.lock_key, 0):
+                self.is_locked = True
+                break
+            await asyncio.sleep(self.retry_interval)
+
+        return self.is_locked
+    
+    async def __aexit__(self, type, value, traceback):
+        if self.is_locked:
+            await cache.adelete(self.lock_key)
