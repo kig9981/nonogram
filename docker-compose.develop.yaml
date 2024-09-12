@@ -20,7 +20,7 @@ services:
 
   nonogramservercache:
     image: redis:latest
-    container_name: ${CACHE_NAME}
+    container_name: ${CACHE_HOST}
     restart: always
     command: --port ${CACHE_PORT}
     ports:
