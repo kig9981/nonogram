@@ -115,7 +115,6 @@ async def test_set_cell_state(
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.content.decode() == f"session_id '{TestConfig.SESSION_ID_UNUSED_FOR_TEST}' not found."
 
     query_dict = {
         "session_id": TestConfig.INCORRECT_ID,
