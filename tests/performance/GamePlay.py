@@ -57,6 +57,7 @@ class GamePlayUser(HttpUser):
                                 Config.GAME_BOARD_CELL_STATE_UPPERBOUND,
                             )
                         },
+                        catch_response=True,
                     ) as response:
                         response = response.json()["response"]
                         print(f"Sucessfully got response({response})")
