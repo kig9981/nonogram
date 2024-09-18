@@ -127,19 +127,11 @@ class HandleGame(AsyncAPIView):
             if not lock_result:
                 return HttpResponse("Too many requests. Try again.", status=HTTPStatus.TOO_MANY_REQUESTS)
             try:
-                session = await async_get_from_db(
-                    model_class=Session,
-                    label=f"session_id '{session_id}'",
-                    session_id=session_id,
-                )
-            except ObjectDoesNotExist as error:
-                return HttpResponseNotFound(f"{error} not found.")
-            try:
                 current_game = await async_get_from_db(
                     model_class=Game,
                     label="",
-                    select_related=["board_data"],
-                    current_session=session,
+                    select_related=["current_session", "board_data"],
+                    current_session__session_id=session_id,
                     active=True,
                 )
                 if not force_new_game:
@@ -150,9 +142,17 @@ class HandleGame(AsyncAPIView):
                     return JsonResponse(response_data)
                 else:
                     current_game.active = False
+                    session = current_game.current_session
                     await current_game.asave()
             except ObjectDoesNotExist:
-                pass
+                try:
+                    session = await async_get_from_db(
+                        model_class=Session,
+                        label=f"session_id '{session_id}'",
+                        session_id=session_id,
+                    )
+                except ObjectDoesNotExist as error:
+                    return HttpResponseNotFound(f"{error} not found.")
 
             if board_id == Config.RANDOM_BOARD:
                 # TODO: 더 빠르게 랜덤셀렉트하는걸로 바꾸기
