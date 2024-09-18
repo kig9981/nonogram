@@ -63,21 +63,13 @@ class SetCellState(AsyncAPIView):
         new_state = query['new_state']
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
-        try:
-            session = await async_get_from_db(
-                model_class=Session,
-                label=f"session_id '{session_id}'",
-                session_id=session_id,
-            )
-        except ObjectDoesNotExist as error:
-            return HttpResponseNotFound(f"{error} not found.")
 
         try:
             current_game = await async_get_from_db(
                 model_class=Game,
                 label="",
                 select_related=["current_session", "board_data"],
-                current_session=session,
+                current_session__session_id=session_id,
                 active=True,
             )
         except ObjectDoesNotExist:
@@ -85,8 +77,6 @@ class SetCellState(AsyncAPIView):
 
         gameplay = NonogramGameplay(
             data=current_game,
-            session=session,
-            delayed_save=True,
         )
         num_row = gameplay.num_row
         num_column = gameplay.num_column
