@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.http import HttpResponseNotFound
 from django.http import HttpResponseBadRequest
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from ..models import NonogramBoard
 from ..models import Session
@@ -122,7 +123,7 @@ class HandleGame(AsyncAPIView):
         if board_id != Config.RANDOM_BOARD and (not isinstance(board_id, str) or not is_uuid4(board_id)):
             return HttpResponseBadRequest(f"board_id '{board_id}' is not valid id.")
 
-        async with LockManager(lock_key="create_new_game", max_retries=30, retry_interval=0.1) as lock_result:
+        async with LockManager(lock_key=f"create_new_game:{session_id}", max_retries=30, retry_interval=0.1) as lock_result:
             if not lock_result:
                 return HttpResponse("Too many requests. Try again.", status=HTTPStatus.TOO_MANY_REQUESTS)
             try:
