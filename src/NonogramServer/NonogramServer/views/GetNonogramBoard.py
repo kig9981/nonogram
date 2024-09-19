@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.http import HttpResponseNotFound
 from django.http import HttpResponseBadRequest
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.cache import cache
 from ..models import NonogramBoard
 from utils import async_get_from_db
 from utils import deserialize_gameboard
@@ -52,6 +53,17 @@ class GetNonogramBoard(AsyncAPIView):
     ) -> HttpResponse:
         if not isinstance(board_id, str) or not is_uuid4(board_id):
             return HttpResponseBadRequest(f"board_id '{board_id}' is not valid id.")
+        
+        cached_board_data = await cache.aget(f"BD|{board_id}")
+
+        if cached_board_data:
+            response_data = {
+                "board": deserialize_gameboard(cached_board_data),
+                "num_row": len(cached_board_data),
+                "num_column": len(cached_board_data[0]),
+            }
+
+            return JsonResponse(response_data)
 
         try:
             board_data = await async_get_from_db(
@@ -61,6 +73,8 @@ class GetNonogramBoard(AsyncAPIView):
             )
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
+        
+        await cache.aset(f"BD|{board_id}", board_data.board, 180)
 
         response_data = {
             "board": deserialize_gameboard(board_data.board),

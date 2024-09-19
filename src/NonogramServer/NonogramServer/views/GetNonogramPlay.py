@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.http import HttpResponseNotFound
 from django.http import HttpResponseBadRequest
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.cache import cache
 from ..models import Session
 from ..models import History
 from ..models import Game
@@ -64,24 +65,18 @@ class GetNonogramPlay(AsyncAPIView):
             return HttpResponseBadRequest("game_turn_str must be integer.")
 
         try:
-            session = await async_get_from_db(
-                model_class=Session,
-                label=f"session_id '{session_id}'",
-                session_id=session_id,
-            )
-        except ObjectDoesNotExist as error:
-            return HttpResponseNotFound(f"{error} not found.")
-
-        try:
             current_game = await async_get_from_db(
                 model_class=Game,
                 label="",
                 select_related=["board_data"],
-                current_session=session,
+                current_session__session_id=session_id,
                 active=True,
             )
             board_data = current_game.board_data
-            latest_turn = await History.objects.filter(gameplay=current_game).acount()
+            latest_turn = await cache.aget(f"LT|{current_game.gameplay_id}")
+            if latest_turn is None:
+                latest_turn = await History.objects.filter(gameplay=current_game).acount()
+                await cache.aset(f"LT|{current_game.gameplay_id}", latest_turn, 60)
         except ObjectDoesNotExist:
             return HttpResponseNotFound("Game not found.")
 
