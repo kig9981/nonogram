@@ -6,7 +6,6 @@ from django.http import HttpResponseNotFound
 from django.http import HttpResponseBadRequest
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.cache import cache
-from ..models import Session
 from ..models import History
 from ..models import Game
 from utils import async_get_from_db

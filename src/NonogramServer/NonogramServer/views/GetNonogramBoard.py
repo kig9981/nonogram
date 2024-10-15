@@ -53,7 +53,7 @@ class GetNonogramBoard(AsyncAPIView):
     ) -> HttpResponse:
         if not isinstance(board_id, str) or not is_uuid4(board_id):
             return HttpResponseBadRequest(f"board_id '{board_id}' is not valid id.")
-        
+
         cached_board_data = await cache.aget(f"BD|{board_id}")
 
         if cached_board_data:
@@ -73,7 +73,7 @@ class GetNonogramBoard(AsyncAPIView):
             )
         except ObjectDoesNotExist as error:
             return HttpResponseNotFound(f"{error} not found.")
-        
+
         await cache.aset(f"BD|{board_id}", board_data.board, 180)
 
         response_data = {

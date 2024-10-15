@@ -7,7 +7,6 @@ from django.http import HttpResponseNotFound
 from django.http import HttpResponseBadRequest
 from django.core.exceptions import ObjectDoesNotExist
 from Nonogram.NonogramBoard import NonogramGameplay
-from ..models import Session
 from ..models import Game
 from http import HTTPStatus
 from utils import async_get_from_db

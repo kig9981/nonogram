@@ -5,7 +5,6 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.http import HttpResponseNotFound
 from django.http import HttpResponseBadRequest
-from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from ..models import NonogramBoard
 from ..models import Session

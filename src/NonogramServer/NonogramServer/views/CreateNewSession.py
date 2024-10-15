@@ -72,7 +72,7 @@ class CreateNewSession(AsyncAPIView):
     async def _get_existing_session(self, session_id: str, client_session_key: str) -> HttpResponse:
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return await self._create_new_session(client_session_key)
-        
+
         cached_session_id = await cache.aget(f"CSK|{client_session_key}")
 
         if cached_session_id:
