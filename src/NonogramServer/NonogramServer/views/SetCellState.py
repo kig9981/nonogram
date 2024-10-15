@@ -9,10 +9,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from Nonogram.NonogramBoard import NonogramGameplay
 from ..models import Session
 from ..models import Game
+from http import HTTPStatus
 from utils import async_get_from_db
 from utils import is_uuid4
 from utils import LogSystem
 from utils import Config
+from utils import LockManager
 from .configure import LOG_PATH
 
 
@@ -64,26 +66,29 @@ class SetCellState(AsyncAPIView):
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
 
-        try:
-            current_game = await async_get_from_db(
-                model_class=Game,
-                label="",
-                select_related=["current_session", "board_data"],
-                current_session__session_id=session_id,
-                active=True,
-            )
-        except ObjectDoesNotExist:
-            return HttpResponseNotFound("gameplay not found.")
+        async with LockManager(lock_key=f"set_cell_state:{session_id}", max_retries=0, retry_interval=0.1) as lock_result:
+            if not lock_result:
+                return HttpResponse("Too many requests. Try again.", status=HTTPStatus.TOO_MANY_REQUESTS)
+            try:
+                current_game = await async_get_from_db(
+                    model_class=Game,
+                    label="",
+                    select_related=["current_session", "board_data"],
+                    current_session__session_id=session_id,
+                    active=True,
+                )
+            except ObjectDoesNotExist:
+                return HttpResponseNotFound("gameplay not found.")
 
-        gameplay = NonogramGameplay(
-            data=current_game,
-        )
-        num_row = gameplay.num_row
-        num_column = gameplay.num_column
-        if not isinstance(x, int) or not isinstance(y, int) or not (0 <= x < num_row) or not (0 <= y < num_column):
-            return HttpResponseBadRequest("Invalid coordinate.")
-        if not isinstance(new_state, int) or not (Config.GAME_BOARD_CELL_STATE_LOWERBOUND <= new_state <= Config.GAME_BOARD_CELL_STATE_UPPERBOUND):
-            return HttpResponseBadRequest("Invalid state. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), 3(MARK_QUESTION), or 4(MARK_WRONG).")
-        changed = await gameplay.async_mark(x, y, new_state)
-        response_data = {"response": changed}
-        return JsonResponse(response_data)
+            gameplay = NonogramGameplay(
+                data=current_game,
+            )
+            num_row = gameplay.num_row
+            num_column = gameplay.num_column
+            if not isinstance(x, int) or not isinstance(y, int) or not (0 <= x < num_row) or not (0 <= y < num_column):
+                return HttpResponseBadRequest("Invalid coordinate.")
+            if not isinstance(new_state, int) or not (Config.GAME_BOARD_CELL_STATE_LOWERBOUND <= new_state <= Config.GAME_BOARD_CELL_STATE_UPPERBOUND):
+                return HttpResponseBadRequest("Invalid state. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), 3(MARK_QUESTION), or 4(MARK_WRONG).")
+            changed = await gameplay.async_mark(x, y, new_state)
+            response_data = {"response": changed}
+            return JsonResponse(response_data)
