@@ -399,7 +399,7 @@ class LockManager:
 
     def __enter__(self):
         self.is_locked = False
-        for _ in range(self.max_retries):
+        for _ in range(self.max_retries + 1):
             if cache.add(self.lock_key, 0):
                 self.is_locked = True
                 break
@@ -413,7 +413,7 @@ class LockManager:
 
     async def __aenter__(self):
         self.is_locked = False
-        for _ in range(self.max_retries):
+        for _ in range(self.max_retries + 1):
             if await cache.aadd(self.lock_key, 0):
                 self.is_locked = True
                 break
