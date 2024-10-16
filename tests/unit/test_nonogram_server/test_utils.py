@@ -1,5 +1,6 @@
 import os
 import json
+import pytest
 from src.utils import validate_gameboard
 from src.utils import deserialize_gameboard
 from src.utils import serialize_gameboard
@@ -8,6 +9,7 @@ from src.utils import deserialize_gameplay
 from src.utils import serialize_gameplay
 from src.utils import RealBoardCellState
 from src.utils import GameBoardCellState
+from src.utils import LockManager
 
 
 def test_validate_gameboard():
@@ -97,3 +99,22 @@ def test_serialize_gameplay():
     board_str = "[[1, 1], [1, 1]]"
 
     assert serialize_gameplay(board) == board_str
+
+
+def test_sync_lock_manager():
+    with LockManager("sync_test") as lock1:
+        assert lock1
+        with LockManager("sync_test") as lock2:
+            assert not lock2
+        with LockManager("sync_test2") as lock2:
+            assert lock2
+
+
+@pytest.mark.asyncio
+async def test_async_lock_manager():
+    async with LockManager("async_test") as lock1:
+        assert lock1
+        async with LockManager("async_test") as lock2:
+            assert not lock2
+        async with LockManager("async_test2") as lock2:
+            assert lock2

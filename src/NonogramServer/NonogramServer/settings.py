@@ -134,6 +134,16 @@ DATABASES = {
 #     }
 # }
 
+CACHE_HOST = env("CACHE_HOST")
+CACHE_PORT = env("CACHE_PORT")
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_prometheus.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{CACHE_HOST}:{CACHE_PORT}",
+    }
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

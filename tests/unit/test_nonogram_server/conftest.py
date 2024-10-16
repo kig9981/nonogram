@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import redis
 import django
 import pytest
 import psycopg2
@@ -12,6 +13,7 @@ DB_USER = "testdb"
 DB_PASSWORD = "testdbpassword"
 DB_HOST = "localhost"
 DB_PORT = 5433
+CACHE_PORT = 6380
 
 
 def testdb_healthcheck() -> bool:
@@ -32,6 +34,16 @@ def testdb_healthcheck() -> bool:
         return False
 
 
+def testcache_healthcheck() -> bool:
+    try:
+        redis_connection = redis.Redis("localhost", CACHE_PORT)
+        redis_connection.ping()
+        redis_connection.close()
+    except (redis.exceptions.ConnectionError, ConnectionRefusedError):
+        return False
+    return True
+
+
 @pytest.fixture(scope='session')
 def django_db_modify_db_settings(
     docker_services,
@@ -41,6 +53,12 @@ def django_db_modify_db_settings(
         timeout=30.0,
         pause=0.1,
         check=lambda: testdb_healthcheck()
+    )
+
+    docker_services.wait_until_responsive(
+        timeout=30.0,
+        pause=0.1,
+        check=lambda: testcache_healthcheck()
     )
 
 
@@ -58,10 +76,16 @@ def pytest_configure():
     os.environ["DB_PASSWORD"] = DB_PASSWORD
     os.environ["DB_HOST"] = DB_HOST
     os.environ["DB_PORT"] = f"{DB_PORT}"
+    os.environ["CACHE_HOST"] = "localhost"
+    os.environ["CACHE_PORT"] = f"{CACHE_PORT}"
+    os.environ["NONOGRAM_SERVER_PROTOCOL"] = "http"
     os.environ["NONOGRAM_SERVER_HOST"] = "localhost"
+    os.environ["API_SERVER_PROTOCOL"] = "http"
     os.environ["API_SERVER_HOST"] = "localhost"
+    os.environ["API_SERVER_PORT"] = f"{8001}"
     os.environ["ENABLE_PROMETHEUS"] = "False"
     os.environ["DEBUG"] = "True"
+    os.environ["LOG_PATH"] = "logs"
     django.setup()
 
 

@@ -5,6 +5,7 @@ from django.http import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.http import HttpResponseBadRequest
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from ..models import Session
 from utils import is_uuid4
@@ -62,6 +63,8 @@ class CreateNewSession(AsyncAPIView):
         else:
             session_id = str(session.session_id)
             await session.asave()
+
+        await cache.aset(f"CSK|{client_session_key}", session_id, timeout=60)
         response_data = {"session_id": session_id}
         return JsonResponse(response_data)
 
@@ -69,6 +72,13 @@ class CreateNewSession(AsyncAPIView):
     async def _get_existing_session(self, session_id: str, client_session_key: str) -> HttpResponse:
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return await self._create_new_session(client_session_key)
+
+        cached_session_id = await cache.aget(f"CSK|{client_session_key}")
+
+        if cached_session_id:
+            response_data = {"session_id": session_id}
+            return JsonResponse(response_data)
+
         try:
             session = await async_get_from_db(
                 model_class=Session,

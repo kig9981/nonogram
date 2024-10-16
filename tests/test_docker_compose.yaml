@@ -18,6 +18,16 @@ services:
     env_file:
       - test.env
 
+  testnonogramservercache:
+    image: redis:latest
+    container_name: ${CACHE_HOST}
+    restart: always
+    command: --port ${CACHE_PORT}
+    ports:
+      - "${CACHE_PORT}:${CACHE_PORT}"
+    networks:
+      - test_nonogram_net
+
   testnonogramserver:
     image: nonogram_server:${NONOGRAM_SERVER_VERSION:-latest}
     container_name: ${NONOGRAM_SERVER_HOST}

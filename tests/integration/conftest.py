@@ -3,6 +3,7 @@ import pytest
 from pathlib import Path
 from ..config import load_env
 from ..config import testdb_healthcheck
+from ..config import testcache_healthcheck
 from ..config import testnonogramserver_healthcheck
 from ..config import testapiserver_healthcheck
 
@@ -104,6 +105,12 @@ def load_servers(
             db_password,
             db_port,
         ),
+    )
+
+    docker_services.wait_until_responsive(
+        timeout=30.0,
+        pause=0.1,
+        check=lambda: testcache_healthcheck(),
     )
 
     docker_services.wait_until_responsive(
