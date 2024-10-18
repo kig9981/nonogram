@@ -57,9 +57,7 @@ async def test_session_for_set_cell_state(
                 for new_state in moves:
                     expected_result = play.mark(x, y, new_state)
                     query_dict = {
-                        "x_coord": x,
-                        "y_coord": y,
-                        "new_state": new_state,
+                        "moves": [[x, y, new_state]],
                     }
 
                     response = await send_test_request(
@@ -96,13 +94,10 @@ async def test_set_cell_state(
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.content.decode() == "x_coord is missing."
+    assert response.content.decode() == "moves are missing."
 
     query_dict = {
-        "session_id": TestConfig.SESSION_ID_UNUSED_FOR_TEST,
-        "x_coord": 0,
-        "y_coord": 0,
-        "new_state": GameBoardCellState.NOT_SELECTED,
+        "moves": [[0, 0, GameBoardCellState.NOT_SELECTED]],
     }
 
     response = await send_test_request(
@@ -117,10 +112,7 @@ async def test_set_cell_state(
     assert response.status_code == HTTPStatus.NOT_FOUND
 
     query_dict = {
-        "session_id": TestConfig.INCORRECT_ID,
-        "x_coord": 0,
-        "y_coord": 0,
-        "new_state": GameBoardCellState.NOT_SELECTED,
+        "moves": [[0, 0, GameBoardCellState.NOT_SELECTED]],
     }
 
     response = await send_test_request(
