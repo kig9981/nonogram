@@ -12,6 +12,8 @@ from utils import serialize_gameplay
 from utils import deserialize_gameplay
 from utils import Config
 from utils import LogSystem
+from typing import List
+from typing import Tuple
 from typing import Union
 from typing import Optional
 import uuid
@@ -55,6 +57,7 @@ class NonogramGameplay:
                     self.game.save()
         else:
             raise TypeError("invalid model type.")
+        self.histories = []
         self.board_data = board_data
         self.board_id = board_data.board_id
         self.board = deserialize_gameboard(board_data.board)
@@ -124,6 +127,54 @@ class NonogramGameplay:
         else:
             self.db_sync = False
         return mark_result
+    
+    @logger.log
+    def marks(
+        self,
+        moves: List[Tuple[int, int, Union[GameBoardCellState, int], datetime]],
+        save_db: bool = True,
+    ) -> int:
+        applied_move_cnt = 0
+        new_turn = History.objects.filter(
+            gameplay=self.game,
+        ).count() + 1
+
+        for turn_cnt, (x, y, new_state, occured_at) in enumerate(moves):
+            mark_result = self._mark(x, y, new_state)
+            if mark_result == Config.CELL_APPLIED:
+                applied_move_cnt += 1
+            if save_db and self.db_sync:
+                self.histories.append(self._create_history(x, y, new_state, new_turn + turn_cnt, occured_at))
+        
+        if save_db and self.db_sync:
+            self.game.save()
+            if self.game.current_session:
+                self.game.current_session.save()
+        return applied_move_cnt
+
+    @logger.log
+    async def async_marks(
+        self,
+        moves: List[Tuple[int, int, Union[GameBoardCellState, int], datetime]],
+        save_db: bool = True,
+    ) -> int:
+        applied_move_cnt = 0
+        new_turn = await History.objects.filter(
+            gameplay=self.game,
+        ).acount() + 1
+
+        for turn_cnt, (x, y, new_state, occured_at) in enumerate(moves):
+            mark_result = self._mark(x, y, new_state)
+            if mark_result == Config.CELL_APPLIED:
+                applied_move_cnt += 1
+            if save_db and self.db_sync:
+                self.histories.append(self._create_history(x, y, new_state, new_turn + turn_cnt, occured_at))
+        
+        if save_db and self.db_sync:
+            await self.game.asave()
+            if self.game.current_session:
+                await self.game.current_session.asave()
+        return applied_move_cnt
 
     @logger.log
     def _mark(
@@ -185,11 +236,17 @@ class NonogramGameplay:
     def save(self) -> None:
         if self.db_sync:
             self.game.save()
+            if len(self.histories) > 0:
+                History.objects.bulk_update(self.histories)
+                self.histories.clear()
 
     @logger.log
     async def asave(self) -> None:
         if self.db_sync:
             await self.game.asave()
+            if len(self.histories) > 0:
+                await History.objects.abulk_update(self.histories)
+                self.histories.clear()
 
     @logger.log
     def reset(
