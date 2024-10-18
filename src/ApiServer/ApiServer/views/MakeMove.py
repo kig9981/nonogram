@@ -72,11 +72,13 @@ class MakeMove(AsyncAPIView):
             return HttpResponseBadRequest("Invalid state(type must be integer)")
 
         url = f"{NONOGRAM_SERVER_URL}/sessions/{session_id}/move"
+
+        moves = [x, y, state]
+
         query_dict = {
-            "x_coord": x,
-            "y_coord": y,
-            "new_state": state,
+            "moves": moves,
         }
+        
         response = await send_request(
             method_type="POST",
             url=url,
