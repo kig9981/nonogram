@@ -53,17 +53,16 @@ class SetCellState(AsyncAPIView):
         if request.content_type != "application/json":
             return HttpResponseBadRequest("Must be Application/json request.")
         query = json.loads(request.body)
-        if 'x_coord' not in query:
-            return HttpResponseBadRequest("x_coord is missing.")
-        if 'y_coord' not in query:
-            return HttpResponseBadRequest("y_coord is missing.")
-        if 'new_state' not in query:
-            return HttpResponseBadRequest("new_state is missing.")
-        x = query['x_coord']
-        y = query['y_coord']
-        new_state = query['new_state']
+        if 'moves' not in query:
+            return HttpResponseBadRequest("moves are missing.")
+        
+        moves = query['moves']
+
         if not isinstance(session_id, str) or not is_uuid4(session_id):
             return HttpResponseBadRequest(f"session_id '{session_id}' is not valid id.")
+        
+        if not isinstance(moves, list):
+            return HttpResponseBadRequest(f"Invalid moves list.")
 
         async with LockManager(lock_key=f"set_cell_state:{session_id}", max_retries=0, retry_interval=0.1) as lock_result:
             if not lock_result:
@@ -84,10 +83,19 @@ class SetCellState(AsyncAPIView):
             )
             num_row = gameplay.num_row
             num_column = gameplay.num_column
-            if not isinstance(x, int) or not isinstance(y, int) or not (0 <= x < num_row) or not (0 <= y < num_column):
-                return HttpResponseBadRequest("Invalid coordinate.")
-            if not isinstance(new_state, int) or not (Config.GAME_BOARD_CELL_STATE_LOWERBOUND <= new_state <= Config.GAME_BOARD_CELL_STATE_UPPERBOUND):
-                return HttpResponseBadRequest("Invalid state. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), 3(MARK_QUESTION), or 4(MARK_WRONG).")
-            changed = await gameplay.async_mark(x, y, new_state)
+
+            for elem in moves:
+                if (
+                    not isinstance(elem, list) or
+                    len(elem) != 3
+                ):
+                    return HttpResponseBadRequest(f"Invalid moves list.")
+                x, y, new_state = elem
+                if not isinstance(x, int) or not isinstance(y, int) or not (0 <= x < num_row) or not (0 <= y < num_column):
+                    return HttpResponseBadRequest("Invalid coordinate.")
+                if not isinstance(new_state, int) or not (Config.GAME_BOARD_CELL_STATE_LOWERBOUND <= new_state <= Config.GAME_BOARD_CELL_STATE_UPPERBOUND):
+                    return HttpResponseBadRequest("Invalid state. Either 0(NOT_SELECTED), 1(REVEALED), 2(MARK_X), 3(MARK_QUESTION), or 4(MARK_WRONG).")
+                changed = await gameplay.async_mark(x, y, new_state)
+
             response_data = {"response": changed}
             return JsonResponse(response_data)
